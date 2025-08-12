@@ -43,7 +43,7 @@ const TikZEditor: React.FC<TikZEditorProps> = ({ initialContent }) => {
     <div style={{ height: '100vh', width: '100vw' }}>
       <Editor
         height="100%"
-        defaultLanguage="latex"
+        defaultLanguage="tex"
         defaultValue={content}
         value={content}
         onChange={handleEditorChange}
@@ -64,6 +64,68 @@ const TikZEditor: React.FC<TikZEditorProps> = ({ initialContent }) => {
         }}
         onMount={(editor, monaco) => {
           console.log('Monaco editor mounted successfully');
+          
+          // Register TikZ/LaTeX language if not already registered
+          if (!monaco.languages.getLanguages().find(lang => lang.id === 'tikz')) {
+            monaco.languages.register({ id: 'tikz' });
+            
+            // Define TikZ syntax highlighting
+            monaco.languages.setMonarchTokensProvider('tikz', {
+              tokenizer: {
+                root: [
+                  // Comments
+                  [/%.*$/, 'comment'],
+                  
+                  // TikZ commands
+                  [/\\(begin|end)\{tikzpicture\}/, 'keyword'],
+                  [/\\(node|draw|path|fill|coordinate|pic)/, 'keyword'],
+                  [/\\(foreach|let|pgfmathsetmacro)/, 'keyword'],
+                  
+                  // General LaTeX commands
+                  [/\\[a-zA-Z@]+/, 'type'],
+                  
+                  // Options in square brackets
+                  [/\[/, { token: 'delimiter.bracket', next: '@options' }],
+                  
+                  // Math mode
+                  [/\$/, { token: 'string', next: '@math' }],
+                  
+                  // Braces
+                  [/[{}]/, 'delimiter.curly'],
+                  
+                  // Coordinates
+                  [/\(([^)]*)\)/, 'number'],
+                  
+                  // Numbers
+                  [/-?\d*\.?\d+/, 'number'],
+                  
+                  // Strings
+                  [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                  [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                ],
+                
+                options: [
+                  [/[^\]]+/, 'attribute.name'],
+                  [/\]/, { token: 'delimiter.bracket', next: '@pop' }],
+                ],
+                
+                math: [
+                  [/[^$]+/, 'string'],
+                  [/\$/, { token: 'string', next: '@pop' }],
+                ],
+                
+                string: [
+                  [/[^\\"]+/, 'string'],
+                  [/\\./, 'string.escape.invalid'],
+                  [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+                ],
+              },
+            });
+            
+            // Set language to tikz
+            monaco.editor.setModelLanguage(editor.getModel()!, 'tikz');
+          }
+          
           // Ensure the editor is focused and ready
           editor.focus();
         }}
