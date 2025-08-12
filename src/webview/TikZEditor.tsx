@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Split from 'react-split';
 import CodeEditor from './CodeEditor';
+import GraphEditor from './GraphEditor';
 
 interface TikZEditorProps {
   initialContent: string;
 }
 
-const TikZEditor: React.FC<TikZEditorProps> = ({ initialContent }) => {
+const TikZEditor = ({ initialContent }: TikZEditorProps) => {
   const [content, setContent] = useState(initialContent);
   const vscode = useRef<any>(null);
 
@@ -59,9 +60,7 @@ const TikZEditor: React.FC<TikZEditorProps> = ({ initialContent }) => {
         cursor="row-resize"
         style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
       >
-        <div style={{ height: '100%', padding: '10px', backgroundColor: '#1e1e1e', color: '#d4d4d4', overflow: 'auto' }}>
-          <h3>GraphView here</h3>
-        </div>
+        <GraphEditor />
         <CodeEditor
           content={content}
           onChange={handleEditorChange}

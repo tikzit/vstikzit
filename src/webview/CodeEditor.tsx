@@ -1,4 +1,3 @@
-import React from 'react';
 import Editor from '@monaco-editor/react';
 
 interface CodeEditorProps {
@@ -6,7 +5,7 @@ interface CodeEditorProps {
   onChange: (value: string | undefined) => void;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ content, onChange }) => {
+const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
   return (
     <div style={{ height: '100%', overflow: 'hidden' }}>
       <Editor
