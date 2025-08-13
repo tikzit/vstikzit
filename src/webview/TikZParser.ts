@@ -29,8 +29,14 @@ function matchDelimString(text: string, startOffset: number): [string] | null {
 
 const WhiteSpace = createToken({ name: "WhiteSpace", pattern: /[ \t\n\r]+/, group: Lexer.SKIPPED });
 
-const BeginTikzPictureCmd = createToken({ name: "BeginTikzPictureCmd", pattern: /\\begin\{tikzpicture\}/ });
-const EndTikzPictureCmd = createToken({ name: "EndTikzPictureCmd", pattern: /\\end\{tikzpicture\}/ });
+const BeginTikzPictureCmd = createToken({
+    name: "BeginTikzPictureCmd",
+    pattern: /\\begin\{tikzpicture\}/,
+});
+const EndTikzPictureCmd = createToken({
+    name: "EndTikzPictureCmd",
+    pattern: /\\end\{tikzpicture\}/,
+});
 const BeginLayerCmd = createToken({ name: "BeginLayerCmd", pattern: /\\begin\{pgfonlayer\}/ });
 const EndLayerCmd = createToken({ name: "EndLayerCmd", pattern: /\\end\{pgfonlayer\}/ });
 const TikzStyleCmd = createToken({ name: "TikzStyleCmd", pattern: /\\tikzstyle/ });
@@ -84,7 +90,7 @@ const allTokens = [
     ArrowDef,
     Identifier,
     Int,
-    Float
+    Float,
 ];
 
 class TikzParser extends CstParser {
@@ -179,10 +185,7 @@ class TikzParser extends CstParser {
     });
 
     private num = this.RULE("num", () => {
-        this.OR([
-            { ALT: () => this.CONSUME(Int) },
-            { ALT: () => this.CONSUME(Float) },
-        ]);
+        this.OR([{ ALT: () => this.CONSUME(Int) }, { ALT: () => this.CONSUME(Float) }]);
     });
 
     private nodeRef = this.RULE("nodeRef", () => {
@@ -198,7 +201,12 @@ class TikzParser extends CstParser {
     private optNodeRef = this.RULE("optNodeRef", () => {
         this.OR([
             { ALT: () => this.SUBRULE(this.nodeRef) },
-            { ALT: () => { this.CONSUME(LParen); this.CONSUME(RParen); } },
+            {
+                ALT: () => {
+                    this.CONSUME(LParen);
+                    this.CONSUME(RParen);
+                },
+            },
             { ALT: () => this.CONSUME(Cycle) },
         ]);
     });
@@ -241,11 +249,15 @@ class TikzParser extends CstParser {
 
     private ignore = this.RULE("ignore", () => {
         this.OR([
-            { ALT: () => { this.CONSUME(BeginLayerCmd); this.CONSUME(DelimString); } },
+            {
+                ALT: () => {
+                    this.CONSUME(BeginLayerCmd);
+                    this.CONSUME(DelimString);
+                },
+            },
             { ALT: () => this.CONSUME(EndLayerCmd) },
         ]);
     });
-
 }
 
 export default TikzParser;

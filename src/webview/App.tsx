@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import TikzEditor from './TikzEditor';
+import React, { useState, useEffect } from "react";
+import TikzEditor from "./TikzEditor";
 
 interface AppProps {
-  initialContent: string;
+    initialContent: string;
 }
 
 const App: React.FC<AppProps> = ({ initialContent }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    console.log('App component mounted with content:', initialContent);
-    setIsLoaded(true);
-  }, [initialContent]);
+    useEffect(() => {
+        console.log("App component mounted with content:", initialContent);
+        setIsLoaded(true);
+    }, [initialContent]);
 
-  if (!isLoaded) {
-    return <div style={{ padding: '20px', color: 'white' }}>Initializing TikZ Editor...</div>;
-  }
+    if (!isLoaded) {
+        return <div style={{ padding: "20px", color: "white" }}>Initializing TikZ Editor...</div>;
+    }
 
-  return <TikzEditor initialContent={initialContent} />;
+    return <TikzEditor initialContent={initialContent} />;
 };
 
 export default App;
