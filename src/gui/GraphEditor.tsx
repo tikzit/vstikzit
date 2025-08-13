@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import TikzParser, { Lexer } from './TikzParser';
+import TikzParser, { Lexer } from '../data/TikzParser';
 
 interface GraphEditorProps {
   code: string;
