@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import TikZEditor from './TikZEditor';
+import TikzEditor from './TikzEditor';
 
 interface AppProps {
   initialContent: string;
@@ -17,7 +17,7 @@ const App: React.FC<AppProps> = ({ initialContent }) => {
     return <div style={{ padding: '20px', color: 'white' }}>Initializing TikZ Editor...</div>;
   }
 
-  return <TikZEditor initialContent={initialContent} />;
+  return <TikzEditor initialContent={initialContent} />;
 };
 
 export default App;

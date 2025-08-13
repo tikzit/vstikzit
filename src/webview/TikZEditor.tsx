@@ -7,7 +7,7 @@ interface TikZEditorProps {
   initialContent: string;
 }
 
-const TikZEditor = ({ initialContent }: TikZEditorProps) => {
+const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   const [content, setContent] = useState(initialContent);
   const vscode = useRef<any>(null);
 
@@ -70,4 +70,4 @@ const TikZEditor = ({ initialContent }: TikZEditorProps) => {
   );
 };
 
-export default TikZEditor;
+export default TikzEditor;
