@@ -53,6 +53,7 @@ const Equals = createToken({ name: "Equals", pattern: /=/ });
 const DrawCmd = createToken({ name: "DrawCmd", pattern: /\\draw/ });
 const NodeCmd = createToken({ name: "NodeCmd", pattern: /\\node/ });
 const PathCmd = createToken({ name: "PathCmd", pattern: /\\path/ });
+const Node = createToken({ name: "Node", pattern: /node/ });
 const Rectangle = createToken({ name: "Rectangle", pattern: /rectangle/ });
 const At = createToken({ name: "At", pattern: /at/ });
 const To = createToken({ name: "To", pattern: /to/ });
@@ -82,21 +83,26 @@ const allTokens = [
   DrawCmd,
   NodeCmd,
   PathCmd,
+  Node,
   Rectangle,
   At,
   To,
   Cycle,
   DelimString,
-  ArrowDef,
   Identifier,
-  Int,
   Float,
+  Int,
+  ArrowDef,
 ];
 
 class TikzParser extends CstParser {
   constructor() {
     super(allTokens);
     this.performSelfAnalysis();
+  }
+
+  getAllTokens() {
+    return allTokens;
   }
 
   public tikz = this.RULE("tikz", () => {
@@ -148,7 +154,7 @@ class TikzParser extends CstParser {
       this.CONSUME(Equals);
       this.OR([
         { ALT: () => this.CONSUME(DelimString) },
-        { ALT: () => this.SUBRULE(this.propertyVal) },
+        { ALT: () => this.SUBRULE1(this.propertyVal) },
       ]);
     });
   });
@@ -164,11 +170,25 @@ class TikzParser extends CstParser {
     });
   });
 
+  private nodeName = this.RULE("nodeName", () => {
+    this.OR([
+      { ALT: () => this.CONSUME(Identifier) },
+      { ALT: () => this.CONSUME(Int) },
+    ]);
+  });
+
+  private nodeAnchor = this.RULE("nodeAnchor", () => {
+    this.OR([
+      { ALT: () => this.CONSUME(Identifier) },
+      { ALT: () => this.CONSUME(Int) },
+    ]);
+  });
+
   private node = this.RULE("node", () => {
     this.CONSUME(NodeCmd);
     this.SUBRULE(this.optProperties);
     this.CONSUME(LParen);
-    this.CONSUME(Identifier);
+    this.SUBRULE(this.nodeName);
     this.CONSUME(RParen);
     this.CONSUME(At);
     this.SUBRULE(this.coord);
@@ -180,7 +200,7 @@ class TikzParser extends CstParser {
     this.CONSUME(LParen);
     this.SUBRULE(this.num);
     this.CONSUME(Comma);
-    this.SUBRULE(this.num);
+    this.SUBRULE1(this.num);
     this.CONSUME(RParen);
   });
 
@@ -190,10 +210,10 @@ class TikzParser extends CstParser {
 
   private nodeRef = this.RULE("nodeRef", () => {
     this.CONSUME(LParen);
-    this.CONSUME(Identifier);
+    this.SUBRULE(this.nodeName);
     this.OPTION(() => {
       this.CONSUME(Period);
-      this.CONSUME(Identifier);
+      this.SUBRULE1(this.nodeAnchor);
     });
     this.CONSUME(RParen);
   });
@@ -243,7 +263,7 @@ class TikzParser extends CstParser {
     this.SUBRULE(this.optProperties);
     this.SUBRULE(this.coord);
     this.CONSUME(Rectangle);
-    this.SUBRULE(this.coord);
+    this.SUBRULE1(this.coord);
     this.CONSUME(Semicolon);
   });
 
@@ -261,3 +281,4 @@ class TikzParser extends CstParser {
 }
 
 export default TikzParser;
+export { allTokens, Lexer };

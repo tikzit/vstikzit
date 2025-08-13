@@ -1,11 +1,11 @@
 import Editor from "@monaco-editor/react";
 
 interface CodeEditorProps {
-  content: string;
+  code: string;
   onChange: (value: string | undefined) => void;
 }
 
-const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
+const CodeEditor = ({ code: content, onChange }: CodeEditorProps) => {
   return (
     <div style={{ height: "100%", overflow: "hidden" }}>
       <Editor

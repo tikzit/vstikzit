@@ -8,7 +8,7 @@ interface TikZEditorProps {
 }
 
 const TikzEditor = ({ initialContent }: TikZEditorProps) => {
-  const [content, setContent] = useState(initialContent);
+  const [code, setCode] = useState(initialContent);
   const vscode = useRef<any>(null);
 
   // Lazy initialization of VS Code API
@@ -21,12 +21,12 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
       const message = event.data;
       switch (message.type) {
         case "update":
-          setContent(message.content);
+          setCode(message.content);
           break;
         case "getFileData":
           vscode.current.postMessage({
             type: "getFileData",
-            content: content,
+            content: code,
           });
           break;
       }
@@ -34,11 +34,11 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [content]);
+  }, [code]);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      setContent(value);
+      setCode(value);
       vscode.current.postMessage({
         type: "edit",
         content: value,
@@ -60,8 +60,8 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
         cursor="row-resize"
         style={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
-        <GraphEditor />
-        <CodeEditor content={content} onChange={handleEditorChange} />
+        <GraphEditor code={code} />
+        <CodeEditor code={code} onChange={handleEditorChange} />
       </Split>
     </div>
   );
