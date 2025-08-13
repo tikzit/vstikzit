@@ -1,24 +1,29 @@
 // @ts-ignore - esbuild handles ES module conversion
 import { createToken, CstParser } from "chevrotain";
 
-function matchDelimString(text: string, startOffset: number): RegExpExecArray | null {
+function matchDelimString(text: string, startOffset: number): [string] | null {
     let endOffset = startOffset;
     let depth = 0;
+
+    if (endOffset < text.length && text[endOffset] === "{") {
+        depth++;
+        endOffset++;
+    } else {
+        return null;
+    }
+
     while (endOffset < text.length) {
         if (text[endOffset] === "{") {
             depth++;
         } else if (text[endOffset] === "}") {
             depth--;
             if (depth === 0) {
-                const matched = text.slice(startOffset, endOffset + 1);
-                const result = [matched] as RegExpExecArray;
-                result.index = startOffset;
-                result.input = text;
-                return result;
+                return [text.slice(startOffset, endOffset + 1)];
             }
         }
         endOffset++;
     }
+
     return null;
 }
 
