@@ -13,7 +13,7 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
         defaultLanguage="tex"
         value={content}
         onChange={onChange}
-        theme="vs-dark"
+        theme="vs"
         loading="Loading TikZ Editor..."
         options={{
           fontSize: 14,
@@ -29,8 +29,6 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
           formatOnPaste: true,
         }}
         onMount={(editor, monaco) => {
-          console.log('Monaco editor mounted successfully');
-          
           // Register TikZ/LaTeX language if not already registered
           if (!monaco.languages.getLanguages().find(lang => lang.id === 'tikz')) {
             monaco.languages.register({ id: 'tikz' });
