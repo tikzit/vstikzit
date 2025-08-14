@@ -55,6 +55,9 @@ class NodeData extends Data {
 class EdgeData extends Data {
     public source: number;
     public target: number;
+    public sourceAnchor?: string;
+    public targetAnchor?: string;
+    public edgeNode?: NodeData;
 
     constructor(id: number, source: number, target: number) {
         super(id);
@@ -63,8 +66,18 @@ class EdgeData extends Data {
     }
 }
 
+class PathData {
+    public id: number;
+    public edges: number[] = [];
+    public isCycle: boolean = false;
+
+    constructor(id: number) {
+        this.id = id;
+    }
+}
+
 class StyleData extends Data {
     public name: string = "";
 }
 
-export { Data, NodeData, EdgeData, StyleData, Coord };
+export { Data, NodeData, EdgeData, StyleData, PathData, Coord };

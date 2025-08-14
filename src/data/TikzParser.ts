@@ -1,7 +1,7 @@
 // @ts-ignore - esbuild handles ES module conversion
 import { createToken, Lexer, EmbeddedActionsParser, defaultParserErrorProvider } from "chevrotain";
 import Graph from "./Graph";
-import { Coord, Data, NodeData, StyleData } from "./Data";
+import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
   let endOffset = startOffset;
@@ -120,6 +120,7 @@ class TikzParser extends EmbeddedActionsParser {
   private styles: StyleData[] = [];
   private d: Data = new Data(-1);
   private nodeTab: Map<string, number> = new Map();
+  private currentPath?: PathData;
 
   constructor() {
     super(allTokens);
@@ -306,43 +307,76 @@ class TikzParser extends EmbeddedActionsParser {
     return [id, anchor] as [number, string?];
   });
 
-  private optNodeRef = this.RULE("optNodeRef", () => {
+  private optEdgeNode = this.RULE("optEdgeNode", () => {
+    this.OPTION(() => {
+      let ed = this.d as EdgeData;
+      let d = new NodeData(-1);
+      this.d = d;
+      this.CONSUME(Node);
+      this.SUBRULE(this.optProperties);
+      d.label = stripBraces(this.CONSUME(DelimString).image);
+      ed.edgeNode = d;
+      this.d = ed;
+    });
+  });
+
+  private edgeSource = this.RULE("edgeSource", () => {
+    let d = new EdgeData(this.graph.freshEdgeId(), -1, -1);
+    this.d = d;
+    this.SUBRULE(this.optProperties);
+    const [source, anchor] = this.SUBRULE(this.nodeRef);
+    d.source = source;
+    d.sourceAnchor = anchor;
+  });
+
+  private edgeTarget = this.RULE("edgeTarget", () => {
+    this.CONSUME(To);
+    this.SUBRULE(this.optProperties);
+    let d = this.d as EdgeData;
+    this.SUBRULE(this.optEdgeNode);
     this.OR([
-      { ALT: () => this.SUBRULE(this.nodeRef) },
+      {
+        ALT: () => {
+          const [target, anchor] = this.SUBRULE(this.nodeRef);
+          d.target = target;
+          d.targetAnchor = anchor;
+        }
+      },
       {
         ALT: () => {
           this.CONSUME(LParen);
           this.CONSUME(RParen);
-        },
+          d.target = d.source;
+          d.targetAnchor = d.sourceAnchor;
+        }
       },
-      { ALT: () => this.CONSUME(Cycle) },
+      {
+        ALT: () => {
+          const cycleToken = this.CONSUME(Cycle);
+          if (this.currentPath && this.currentPath.edges.length > 0) {
+            this.currentPath.isCycle = true;
+            d.target = this.graph.edgeData.get(this.currentPath.edges[0])?.source ?? -1;
+          } else {
+            throw new ParseError(
+              cycleToken.startLine ?? 1,
+              cycleToken.startColumn ?? 1,
+              "'cycle' can only be used in paths of length 2 or more"
+            );
+          }
+        }
+      },
     ]);
+
+    this.graph.addEdgeWithData(d);
+    this.currentPath?.edges.push(d.id);
+    this.d = new EdgeData(this.graph.freshEdgeId(), d.target, -1);
   });
 
-  private optEdgeNode = this.RULE("optEdgeNode", () => {
-    this.OPTION(() => {
-      this.CONSUME(Node);
-      this.SUBRULE(this.optProperties);
-      this.CONSUME(DelimString);
-    });
-  });
-
-  private edgeSource = this.RULE("edgeSource", (graph?: Graph) => {
-    this.SUBRULE(this.optProperties);
-    this.SUBRULE(this.nodeRef);
-  });
-
-  private edgeTarget = this.RULE("edgeTarget", (source?: number, graph?: Graph) => {
-    this.CONSUME(To);
-    this.SUBRULE(this.optProperties);
-    this.SUBRULE(this.optEdgeNode);
-    this.SUBRULE(this.optNodeRef);
-  });
-
-  private edge = this.RULE("edge", (graph?: Graph) => {
+  private edge = this.RULE("edge", () => {
     this.CONSUME(DrawCmd);
+    this.currentPath = new PathData(this.graph.freshPathId());
     this.SUBRULE(this.edgeSource);
-    this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget, { ARGS: [0, graph] }));
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget));
     this.CONSUME(Semicolon);
   });
 
