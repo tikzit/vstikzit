@@ -1,3 +1,5 @@
+type Coord = [number, number];
+
 class Data {
     public id: number;
     private pairs: [string, string | null][];
@@ -37,19 +39,17 @@ class Data {
 
     public atom(key: string): boolean {
         const i = this.pairs.findIndex(pair => pair[0] === key);
-        return (i !== -1);
+        return i !== -1;
     }
 }
 
 class NodeData extends Data {
-    public inEdges: string[];
-    public outEdges: string[];
-
-    constructor(id: number) {
-        super(id);
-        this.inEdges = [];
-        this.outEdges = [];
-    }
+    public inEdges: string[] = [];
+    public outEdges: string[] = [];
+    public coord: Coord = [0, 0];
+    public label: string = "";
+    public labelStart?: number;
+    public labelEnd?: number;
 }
 
 class EdgeData extends Data {
@@ -63,4 +63,8 @@ class EdgeData extends Data {
     }
 }
 
-export { Data, NodeData, EdgeData };
+class StyleData extends Data {
+    public name: string = "";
+}
+
+export { Data, NodeData, EdgeData, StyleData, Coord };

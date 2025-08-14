@@ -1,5 +1,7 @@
 // @ts-ignore - esbuild handles ES module conversion
-import { createToken, Lexer, CstParser, CstNode } from "chevrotain";
+import { createToken, Lexer, EmbeddedActionsParser, defaultParserErrorProvider } from "chevrotain";
+import Graph from "./Graph";
+import { Coord, Data, NodeData, StyleData } from "./Data";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
   let endOffset = startOffset;
@@ -25,6 +27,14 @@ function matchDelimString(text: string, startOffset: number): [string] | null {
   }
 
   return null;
+}
+
+function stripBraces(s: string) {
+  if (s.startsWith("{") && s.endsWith("}")) {
+    return s.slice(1, -1);
+  } else {
+    return s;
+  }
 }
 
 const WhiteSpace = createToken({ name: "WhiteSpace", pattern: /[ \t\n\r]+/, group: Lexer.SKIPPED });
@@ -95,14 +105,32 @@ const allTokens = [
   ArrowDef,
 ];
 
-class TikzParser extends CstParser {
+class ParseError extends Error {
+  public line: number;
+  public column: number;
+  constructor(line: number, column: number, message: string) {
+    super(message);
+    this.line = line;
+    this.column = column;
+  }
+}
+
+class TikzParser extends EmbeddedActionsParser {
+  private graph: Graph = new Graph();
+  private styles: StyleData[] = [];
+  private d: Data = new Data(-1);
+  private nodeTab: Map<string, number> = new Map();
+
   constructor() {
     super(allTokens);
     this.performSelfAnalysis();
   }
 
-  getAllTokens() {
-    return allTokens;
+  public reset() {
+    this.graph = new Graph();
+    this.styles = [];
+    this.d = new Data(-1);
+    this.nodeTab = new Map();
   }
 
   public tikz = this.RULE("tikz", () => {
@@ -124,13 +152,29 @@ class TikzParser extends CstParser {
       ]);
     });
     this.CONSUME(EndTikzPictureCmd);
+
+    return this.graph;
   });
 
   public tikzStyles = this.RULE("tikzStyles", () => {
+    this.MANY(() => {
+      this.SUBRULE(this.style);
+    });
+
+    return this.styles;
+  });
+
+  public style = this.RULE("style", () => {
     this.CONSUME(TikzStyleCmd);
-    this.CONSUME(DelimString);
+
+    const d = new StyleData(this.styles.length);
+    d.name = stripBraces(this.CONSUME(DelimString).image);
+
     this.CONSUME(Equals);
+
+    this.d = d;
     this.SUBRULE(this.properties);
+    this.styles.push(d);
   });
 
   private optProperties = this.RULE("optProperties", () => {
@@ -149,73 +193,117 @@ class TikzParser extends CstParser {
   });
 
   private property = this.RULE("property", () => {
-    this.SUBRULE(this.propertyVal);
+    const key = this.SUBRULE(this.propertyVal);
+    let val = null;
     this.OPTION(() => {
       this.CONSUME(Equals);
       this.OR([
-        { ALT: () => this.CONSUME(DelimString) },
-        { ALT: () => this.SUBRULE1(this.propertyVal) },
+        { ALT: () => (val = stripBraces(this.CONSUME(DelimString).image)) },
+        { ALT: () => (val = this.SUBRULE1(this.propertyVal)) },
       ]);
     });
+
+    if (val !== null) {
+      this.d.setProperty(key, val);
+    } else {
+      this.d.setAtom(key);
+    }
   });
 
   private propertyVal = this.RULE("propertyVal", () => {
+    let s = "";
     this.MANY(() => {
       this.OR([
-        { ALT: () => this.CONSUME(Identifier) },
-        { ALT: () => this.CONSUME(Int) },
-        { ALT: () => this.CONSUME(Float) },
-        { ALT: () => this.CONSUME(ArrowDef) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Identifier).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Int).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Float).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(ArrowDef).image) },
       ]);
     });
+    return s;
   });
 
   private nodeName = this.RULE("nodeName", () => {
-    this.OR([
+    return this.OR([
       { ALT: () => this.CONSUME(Identifier) },
       { ALT: () => this.CONSUME(Int) },
     ]);
   });
 
   private nodeAnchor = this.RULE("nodeAnchor", () => {
-    this.OR([
-      { ALT: () => this.CONSUME(Identifier) },
-      { ALT: () => this.CONSUME(Int) },
+    return this.OR([
+      { ALT: () => this.CONSUME(Identifier).image },
+      { ALT: () => this.CONSUME(Int).image }
     ]);
   });
 
   private node = this.RULE("node", () => {
+    const d = new NodeData(-1);
+
     this.CONSUME(NodeCmd);
+
+    this.d = d;
     this.SUBRULE(this.optProperties);
+
     this.CONSUME(LParen);
-    this.SUBRULE(this.nodeName);
+
+    const name = this.SUBRULE(this.nodeName).image;
+    const parsed = parseInt(name, 10);
+    d.id = isNaN(parsed) ? this.graph.freshNodeId() : parsed;
+    this.nodeTab.set(name, d.id);
+
     this.CONSUME(RParen);
     this.CONSUME(At);
-    this.SUBRULE(this.coord);
-    this.CONSUME(DelimString);
+    d.coord = this.SUBRULE(this.coord);
+
+    const labelToken = this.CONSUME(DelimString);
+    d.label = stripBraces(labelToken.image);
+    d.labelStart = labelToken.startOffset;
+    d.labelEnd = labelToken.endOffset;
     this.CONSUME(Semicolon);
+
+    this.graph.addNodeWithData(d);
   });
 
   private coord = this.RULE("coord", () => {
     this.CONSUME(LParen);
-    this.SUBRULE(this.num);
+    const x = this.SUBRULE(this.num);
     this.CONSUME(Comma);
-    this.SUBRULE1(this.num);
+    const y = this.SUBRULE1(this.num);
     this.CONSUME(RParen);
+
+    return [x, y] as Coord;
   });
 
   private num = this.RULE("num", () => {
-    this.OR([{ ALT: () => this.CONSUME(Int) }, { ALT: () => this.CONSUME(Float) }]);
+    return this.OR([
+      { ALT: () => parseInt(this.CONSUME(Int).image, 10) },
+      { ALT: () => parseFloat(this.CONSUME(Float).image) },
+    ]);
   });
 
   private nodeRef = this.RULE("nodeRef", () => {
     this.CONSUME(LParen);
-    this.SUBRULE(this.nodeName);
-    this.OPTION(() => {
+    const nameToken = this.SUBRULE(this.nodeName);
+    const name = nameToken.image;
+    let id = 0;
+    if (this.nodeTab.has(name)) {
+      id = this.nodeTab.get(name) ?? 0;
+    } else {
+      throw new ParseError(
+        nameToken.startLine ?? 1,
+        nameToken.startColumn ?? 1,
+        `Node reference not found: ${name}`
+      );
+    }
+
+    const anchor = this.OPTION(() => {
       this.CONSUME(Period);
-      this.SUBRULE1(this.nodeAnchor);
+      return this.SUBRULE1(this.nodeAnchor);
     });
     this.CONSUME(RParen);
+
+    return [id, anchor] as [number, string?];
   });
 
   private optNodeRef = this.RULE("optNodeRef", () => {
@@ -239,22 +327,22 @@ class TikzParser extends CstParser {
     });
   });
 
-  private edgeSource = this.RULE("edgeSource", () => {
+  private edgeSource = this.RULE("edgeSource", (graph?: Graph) => {
     this.SUBRULE(this.optProperties);
     this.SUBRULE(this.nodeRef);
   });
 
-  private edgeTarget = this.RULE("edgeTarget", () => {
+  private edgeTarget = this.RULE("edgeTarget", (source?: number, graph?: Graph) => {
     this.CONSUME(To);
     this.SUBRULE(this.optProperties);
     this.SUBRULE(this.optEdgeNode);
     this.SUBRULE(this.optNodeRef);
   });
 
-  private edge = this.RULE("edge", () => {
+  private edge = this.RULE("edge", (graph?: Graph) => {
     this.CONSUME(DrawCmd);
     this.SUBRULE(this.edgeSource);
-    this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget));
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget, { ARGS: [0, graph] }));
     this.CONSUME(Semicolon);
   });
 
@@ -283,14 +371,8 @@ class TikzParser extends CstParser {
 const lexer = new Lexer(allTokens);
 const parser = new TikzParser();
 
-interface ParseError {
-  line: number;
-  column: number;
-  message: string;
-}
-
 interface ParseTikzPictureResult {
-  result: CstNode | null;
+  result?: Graph;
   errors: ParseError[];
 }
 
@@ -299,29 +381,42 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
   const lexResult = lexer.tokenize(input);
   if (lexResult.errors.length > 0) {
     return {
-      result: null,
-      errors: lexResult.errors.map(e => (
-        { line: e.line || 1, column: e.column || 1, message: e.message }
-      ))
+      errors: lexResult.errors.map(e => new ParseError(
+        e.line || 1,
+        e.column || 1,
+        e.message
+      )),
     };
   }
 
   parser.input = lexResult.tokens;
-  const cst = parser.tikzPicture();
 
-  if (parser.errors.length > 0) {
+  try {
+    const graph = parser.tikzPicture();
+
+    if (parser.errors.length > 0) {
+      return {
+        errors: parser.errors.map(e => new ParseError(
+          e.token?.startLine || 1,
+          e.token?.startColumn || 1,
+          e.message
+        )),
+      };
+    }
+
     return {
-      result: null,
-      errors: parser.errors.map(e => (
-        { line: e.token?.startLine || 1, column: e.token?.startColumn || 1, message: e.message }
-      ))
+      result: graph,
+      errors: [],
     };
+  } catch (e) {
+    if (e instanceof ParseError) {
+      return {
+        errors: [e],
+      };
+    } else {
+      throw e;
+    }
   }
-
-  return {
-    result: cst,
-    errors: [],
-  };
 }
 
 export { parseTikzPicture, ParseTikzPictureResult };

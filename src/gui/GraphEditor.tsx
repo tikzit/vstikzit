@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { parseTikzPicture } from '../data/TikzParser';
+import { useMemo } from "react";
+import { parseTikzPicture } from "../data/TikzParser";
 
 interface GraphEditorProps {
   code: string;
@@ -13,23 +13,27 @@ const GraphEditor = ({ code }: GraphEditorProps) => {
       <h3>TikZ Parse Tree</h3>
 
       {parseResult.result != null ? (
-        <pre style={{
-          padding: '10px',
-          fontSize: '12px',
-          fontFamily: 'monospace'
-        }}>
+        <pre
+          style={{
+            padding: "10px",
+            fontSize: "12px",
+            fontFamily: "monospace",
+          }}
+        >
           Parsed!
         </pre>
       ) : (
         <div>
-          <h4 style={{ color: 'red' }}>Parse Errors:</h4>
-          <pre style={{
-            padding: '10px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontFamily: 'monospace'
-          }}>
-            {parseResult.errors?.map(e => `${e.line} (${e.column}): ${e.message}`).join('\n')}
+          <h4 style={{ color: "red" }}>Parse Errors:</h4>
+          <pre
+            style={{
+              padding: "10px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              fontFamily: "monospace",
+            }}
+          >
+            {parseResult.errors?.map(e => `${e.line} (${e.column}): ${e.message}`).join("\n")}
           </pre>
         </div>
       )}
