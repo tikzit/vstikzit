@@ -1,7 +1,9 @@
 class Data {
+    public id: number;
     private pairs: [string, string | null][];
 
-    constructor() {
+    constructor(id: number) {
+        this.id = id;
         this.pairs = [];
     }
 
@@ -39,62 +41,65 @@ class Data {
     }
 }
 
-class Node {
-    public name: string;
-    public inEdges: Edge[];
-    public outEdges: Edge[];
-    public data: Data;
+class NodeData extends Data {
+    public inEdges: string[];
+    public outEdges: string[];
 
-    constructor(name: string) {
-        this.name = name;
+    constructor(id: number) {
+        super(id);
         this.inEdges = [];
         this.outEdges = [];
-        this.data = new Data();
     }
 }
 
-class Edge {
-    public source: Node;
-    public target: Node;
-    public data: Data;
+class EdgeData extends Data {
+    public source: number;
+    public target: number;
 
-    constructor(source: Node, target: Node) {
+    constructor(id: number, source: number, target: number) {
+        super(id);
         this.source = source;
         this.target = target;
-        this.source.inEdges.push(this);
-        this.target.outEdges.push(this);
-        this.data = new Data();
     }
 }
 
 class Graph {
-    public nodes: Node[];
-    public edges: Edge[];
+    public nodes: number[];
+    public edges: number[];
+    public nodeData: Map<number, NodeData>;
+    public edgeData: Map<number, EdgeData>;
+    private maxNodeId = -1;
+    private maxEdgeId = -1;
 
     constructor() {
         this.nodes = [];
         this.edges = [];
+        this.nodeData = new Map<number, NodeData>();
+        this.edgeData = new Map<number, EdgeData>();
     }
 
-    public addNode(name: string): Node {
-        const newNode = new Node(name);
-        this.nodes.push(newNode);
-        return newNode;
+    public addNode(id: number): void {
+        const newNode = new NodeData(id);
+        this.nodes.push(id);
+        this.nodeData.set(id, newNode);
+        if (id > this.maxNodeId) {
+            this.maxNodeId = id;
+        }
     }
 
-    public getNode(name: string): Node | null {
-        return this.nodes.find(node => node.name === name) || null;
+    public freshNodeId(): number {
+        return this.maxNodeId + 1;
     }
 
-    public addEdge(sourceName: string, targetName: string): Edge | null {
-        const source = this.getNode(sourceName);
-        const target = this.getNode(targetName);
-        if (!source || !target) { return null; }
-        const newEdge = new Edge(source, target);
-        this.edges.push(newEdge);
-        return newEdge;
+    public addEdge(source: number, target: number): number {
+        this.maxEdgeId++;
+        const id = this.maxEdgeId;
+        const d = new EdgeData(id, source, target);
+        this.edges.push(id);
+        this.edgeData.set(id, d);
+        return id;
     }
 }
 
 export default Graph;
-export { Node, Edge, Data };
+export { NodeData, EdgeData, Data };
