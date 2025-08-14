@@ -4,7 +4,7 @@
 		\node [style=none] (14) at (19, 2.25) {};
 		\node [style=none] (15) at (14, 1.25) {};
 		\node [style=none] (16) at (19, 1.25) {};
-		\node [style=none] (17) at (14, 0.25) {};
+		\node [style=none] (17) at  (14, 0.25) {};
 		\node [style=none] (18) at (19, 0.25) {};
 		\node [style=none] (19) at (14, -0.75) {};
 		\node [style=none] (20) at (19, -0.75) {};

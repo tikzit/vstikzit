@@ -1,5 +1,5 @@
 // @ts-ignore - esbuild handles ES module conversion
-import { createToken, Lexer, CstParser } from "chevrotain";
+import { createToken, Lexer, CstParser, CstNode } from "chevrotain";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
   let endOffset = startOffset;
@@ -280,5 +280,48 @@ class TikzParser extends CstParser {
   });
 }
 
-export default TikzParser;
-export { allTokens, Lexer };
+const lexer = new Lexer(allTokens);
+const parser = new TikzParser();
+
+interface ParseError {
+  line: number;
+  column: number;
+  message: string;
+}
+
+interface ParseTikzPictureResult {
+  result: CstNode | null;
+  errors: ParseError[];
+}
+
+function parseTikzPicture(input: string): ParseTikzPictureResult {
+  parser.reset();
+  const lexResult = lexer.tokenize(input);
+  if (lexResult.errors.length > 0) {
+    return {
+      result: null,
+      errors: lexResult.errors.map(e => (
+        { line: e.line || 1, column: e.column || 1, message: e.message }
+      ))
+    };
+  }
+
+  parser.input = lexResult.tokens;
+  const cst = parser.tikzPicture();
+
+  if (parser.errors.length > 0) {
+    return {
+      result: null,
+      errors: parser.errors.map(e => (
+        { line: e.token?.startLine || 1, column: e.token?.startColumn || 1, message: e.message }
+      ))
+    };
+  }
+
+  return {
+    result: cst,
+    errors: [],
+  };
+}
+
+export { parseTikzPicture, ParseTikzPictureResult };
