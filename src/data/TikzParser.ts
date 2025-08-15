@@ -225,16 +225,13 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   private nodeName = this.RULE("nodeName", () => {
-    return this.OR([
-      { ALT: () => this.CONSUME(Identifier) },
-      { ALT: () => this.CONSUME(Int) },
-    ]);
+    return this.OR([{ ALT: () => this.CONSUME(Identifier) }, { ALT: () => this.CONSUME(Int) }]);
   });
 
   private nodeAnchor = this.RULE("nodeAnchor", () => {
     return this.OR([
       { ALT: () => this.CONSUME(Identifier).image },
-      { ALT: () => this.CONSUME(Int).image }
+      { ALT: () => this.CONSUME(Int).image },
     ]);
   });
 
@@ -340,7 +337,7 @@ class TikzParser extends EmbeddedActionsParser {
           const [target, anchor] = this.SUBRULE(this.nodeRef);
           d.target = target;
           d.targetAnchor = anchor;
-        }
+        },
       },
       {
         ALT: () => {
@@ -348,7 +345,7 @@ class TikzParser extends EmbeddedActionsParser {
           this.CONSUME(RParen);
           d.target = d.source;
           d.targetAnchor = d.sourceAnchor;
-        }
+        },
       },
       {
         ALT: () => {
@@ -363,7 +360,7 @@ class TikzParser extends EmbeddedActionsParser {
               "'cycle' can only be used in paths of length 2 or more"
             );
           }
-        }
+        },
       },
     ]);
 
@@ -415,11 +412,7 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
   const lexResult = lexer.tokenize(input);
   if (lexResult.errors.length > 0) {
     return {
-      errors: lexResult.errors.map(e => new ParseError(
-        e.line || 1,
-        e.column || 1,
-        e.message
-      )),
+      errors: lexResult.errors.map(e => new ParseError(e.line || 1, e.column || 1, e.message)),
     };
   }
 
@@ -430,11 +423,9 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
 
     if (parser.errors.length > 0) {
       return {
-        errors: parser.errors.map(e => new ParseError(
-          e.token?.startLine || 1,
-          e.token?.startColumn || 1,
-          e.message
-        )),
+        errors: parser.errors.map(
+          e => new ParseError(e.token?.startLine || 1, e.token?.startColumn || 1, e.message)
+        ),
       };
     }
 
