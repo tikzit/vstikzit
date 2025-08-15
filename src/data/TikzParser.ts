@@ -1,4 +1,4 @@
-// @ts-ignore - esbuild handles ES module conversion
+// @ts-ignore: TSC complains about using an ES module from CommonJS, but esbuild can handle this
 import { createToken, Lexer, EmbeddedActionsParser, defaultParserErrorProvider } from "chevrotain";
 import Graph from "./Graph";
 import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
@@ -14,8 +14,13 @@ function matchDelimString(text: string, startOffset: number): [string] | null {
     return null;
   }
 
+  let escape = false;
   while (endOffset < text.length) {
-    if (text[endOffset] === "{") {
+    if (escape) {
+      escape = false;
+    } else if (text[endOffset] === "\\") {
+      escape = true;
+    } else if (text[endOffset] === "{") {
       depth++;
     } else if (text[endOffset] === "}") {
       depth--;
