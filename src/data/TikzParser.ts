@@ -375,6 +375,11 @@ class TikzParser extends EmbeddedActionsParser {
     this.SUBRULE(this.edgeSource);
     this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget));
     this.CONSUME(Semicolon);
+    if (this.currentPath.edges.length > 1) {
+      this.graph.addPathWithData(this.currentPath);
+    } else {
+      this.currentPath = undefined;
+    }
   });
 
   private boundingBox = this.RULE("boundingBox", () => {
