@@ -226,7 +226,7 @@ class TikzParser extends EmbeddedActionsParser {
     });
   });
 
-  private propertyVal = this.RULE("propertyVal", () => {
+  public propertyVal = this.RULE("propertyVal", () => {
     let s = "";
     this.MANY(() => {
       this.OR([
@@ -483,7 +483,6 @@ interface ParseTikzPictureResult {
 }
 
 function parseTikzPicture(input: string): ParseTikzPictureResult {
-  parser.reset();
   const lexResult = lexer.tokenize(input);
   if (lexResult.errors.length > 0) {
     return {
@@ -519,4 +518,14 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
   }
 }
 
-export { parseTikzPicture, ParseTikzPictureResult };
+function isValidPropertyVal(value: string): boolean {
+  const lexResult = lexer.tokenize(value);
+  if (lexResult.errors.length > 0) {
+    return false;
+  }
+  parser.input = lexResult.tokens;
+  parser.propertyVal();
+  return parser.errors.length === 0;
+}
+
+export { parseTikzPicture, ParseTikzPictureResult, isValidPropertyVal };

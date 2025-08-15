@@ -1,8 +1,10 @@
+import { isValidPropertyVal } from "./TikzParser";
+
 type Coord = [number, number];
 
 class Data {
   public id: number;
-  private pairs: [string, string | null][];
+  private pairs: [string, string | undefined][];
 
   constructor(id: number) {
     this.id = id;
@@ -21,7 +23,7 @@ class Data {
   public setAtom(key: string): void {
     const i = this.pairs.findIndex(pair => pair[0] === key);
     if (i === -1) {
-      this.pairs.push([key, null]);
+      this.pairs.push([key, undefined]);
     }
   }
 
@@ -32,14 +34,48 @@ class Data {
     }
   }
 
-  public property(key: string): string | null {
+  public property(key: string): string | undefined {
     const pair = this.pairs.find(pair => pair[0] === key);
-    return pair ? pair[1] : null;
+    return pair !== undefined ? pair[1] : undefined;
   }
 
   public atom(key: string): boolean {
     const i = this.pairs.findIndex(pair => pair[0] === key);
     return i !== -1;
+  }
+
+  public toString(): string {
+    if (this.pairs.length === 0) {
+      return "";
+    } else {
+      let s = "[";
+      let first = true;
+
+      for (const p of this.pairs) {
+        if (!first) {
+          s += ", ";
+        } else {
+          first = false;
+        }
+
+        if (p[1] !== undefined) {
+          let val = p[1];
+          if (!isValidPropertyVal(val)) {
+            val = `{${val}}`;
+          }
+          s += `${p[0]}=${val}`;
+        } else {
+          s += `${p[0]}`;
+        }
+      }
+
+      s += "]";
+      return s;
+    }
+  }
+
+  public tikz(): string {
+    return this.toString();
   }
 }
 
