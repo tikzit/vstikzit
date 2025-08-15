@@ -121,22 +121,15 @@ class ParseError extends Error {
 }
 
 class TikzParser extends EmbeddedActionsParser {
-  private graph: Graph = new Graph();
-  private styles: StyleData[] = [];
-  private d: Data = new Data(-1);
-  private nodeTab: Map<string, number> = new Map();
+  private graph?: Graph;
+  private styles?: StyleData[];
+  private d?: Data;
+  private nodeTab?: Map<string, number>;
   private currentPath?: PathData;
 
   constructor() {
     super(allTokens);
     this.performSelfAnalysis();
-  }
-
-  public reset() {
-    this.graph = new Graph();
-    this.styles = [];
-    this.d = new Data(-1);
-    this.nodeTab = new Map();
   }
 
   public tikz = this.RULE("tikz", () => {
@@ -147,6 +140,12 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   public tikzPicture = this.RULE("tikzPicture", () => {
+    this.ACTION(() => {
+      this.graph = new Graph();
+      this.nodeTab = new Map();
+      this.d = this.graph.graphData;
+    });
+
     this.CONSUME(BeginTikzPictureCmd);
     this.SUBRULE(this.optProperties);
     this.MANY(() => {
@@ -172,15 +171,22 @@ class TikzParser extends EmbeddedActionsParser {
 
   public style = this.RULE("style", () => {
     this.CONSUME(TikzStyleCmd);
-
-    const d = new StyleData(this.styles.length);
-    d.name = stripBraces(this.CONSUME(DelimString).image);
-
+    const name = stripBraces(this.CONSUME(DelimString).image);
     this.CONSUME(Equals);
 
-    this.d = d;
+    this.ACTION(() => {
+      if (this.styles !== undefined) {
+        const d = new StyleData(this.styles.length);
+        d.name = name;
+        this.d = d;
+      }
+    });
+
     this.SUBRULE(this.properties);
-    this.styles.push(d);
+
+    this.ACTION(() => {
+      this.styles?.push(this.d as StyleData);
+    });
   });
 
   private optProperties = this.RULE("optProperties", () => {
@@ -200,7 +206,7 @@ class TikzParser extends EmbeddedActionsParser {
 
   private property = this.RULE("property", () => {
     const key = this.SUBRULE(this.propertyVal);
-    let val = null;
+    let val: string | undefined;
     this.OPTION(() => {
       this.CONSUME(Equals);
       this.OR([
@@ -209,11 +215,15 @@ class TikzParser extends EmbeddedActionsParser {
       ]);
     });
 
-    if (val !== null) {
-      this.d.setProperty(key, val);
-    } else {
-      this.d.setAtom(key);
-    }
+    this.ACTION(() => {
+      if (this.d !== undefined) {
+        if (val !== undefined) {
+          this.d.setProperty(key, val);
+        } else {
+          this.d.setAtom(key);
+        }
+      }
+    });
   });
 
   private propertyVal = this.RULE("propertyVal", () => {
@@ -241,31 +251,36 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   private node = this.RULE("node", () => {
-    const d = new NodeData(-1);
-
+    let d: NodeData | undefined;
     this.CONSUME(NodeCmd);
 
-    this.d = d;
+    this.ACTION(() => {
+      d = new NodeData(-1);
+      this.d = d;
+    });
+
     this.SUBRULE(this.optProperties);
 
     this.CONSUME(LParen);
-
     const name = this.SUBRULE(this.nodeName).image;
-    const parsed = parseInt(name, 10);
-    d.id = isNaN(parsed) ? this.graph.freshNodeId() : parsed;
-    this.nodeTab.set(name, d.id);
-
     this.CONSUME(RParen);
     this.CONSUME(At);
-    d.coord = this.SUBRULE(this.coord);
-
+    const coord = this.SUBRULE(this.coord);
     const labelToken = this.CONSUME(DelimString);
-    d.label = stripBraces(labelToken.image);
-    d.labelStart = labelToken.startOffset;
-    d.labelEnd = labelToken.endOffset;
     this.CONSUME(Semicolon);
 
-    this.graph.addNodeWithData(d);
+    this.ACTION(() => {
+      if (d !== undefined && this.graph !== undefined) {
+        const parsed = parseInt(name, 10);
+        d.id = isNaN(parsed) ? this.graph.freshNodeId() : parsed;
+        this.nodeTab?.set(name, d.id);
+        d.coord = coord;
+        d.label = stripBraces(labelToken.image);
+        d.labelStart = labelToken.startOffset;
+        d.labelEnd = labelToken.endOffset;
+        this.graph.addNodeWithData(d);
+      }
+    });
   });
 
   private coord = this.RULE("coord", () => {
@@ -290,101 +305,149 @@ class TikzParser extends EmbeddedActionsParser {
     const nameToken = this.SUBRULE(this.nodeName);
     const name = nameToken.image;
     let id = 0;
-    if (this.nodeTab.has(name)) {
-      id = this.nodeTab.get(name) ?? 0;
-    } else {
-      throw new ParseError(
-        nameToken.startLine ?? 1,
-        nameToken.startColumn ?? 1,
-        `Node reference not found: ${name}`
-      );
-    }
-
     const anchor = this.OPTION(() => {
       this.CONSUME(Period);
       return this.SUBRULE1(this.nodeAnchor);
     });
     this.CONSUME(RParen);
 
+    this.ACTION(() => {
+      if (this.nodeTab?.has(name)) {
+        id = this.nodeTab?.get(name) ?? 0;
+      } else {
+        throw new ParseError(
+          nameToken.startLine ?? 1,
+          nameToken.startColumn ?? 1,
+          `Node reference not found: ${name}`
+        );
+      }
+    });
+
     return [id, anchor] as [number, string?];
   });
 
   private optEdgeNode = this.RULE("optEdgeNode", () => {
     this.OPTION(() => {
-      let ed = this.d as EdgeData;
-      let d = new NodeData(-1);
-      this.d = d;
+      let ed: EdgeData | undefined;
+      let d: NodeData | undefined;
+
+      this.ACTION(() => {
+        ed = this.d as EdgeData;
+        d = new NodeData(-1);
+        this.d = d;
+      });
+
       this.CONSUME(Node);
       this.SUBRULE(this.optProperties);
-      d.label = stripBraces(this.CONSUME(DelimString).image);
-      ed.edgeNode = d;
-      this.d = ed;
+      const label = stripBraces(this.CONSUME(DelimString).image);
+
+      this.ACTION(() => {
+        if (d !== undefined && ed !== undefined) {
+          d.label = label;
+          ed.edgeNode = d;
+          this.d = ed;
+        }
+      });
     });
   });
 
   private edgeSource = this.RULE("edgeSource", () => {
-    let d = new EdgeData(this.graph.freshEdgeId(), -1, -1);
-    this.d = d;
+    let d: EdgeData | undefined;
+
+    this.ACTION(() => {
+      d = new EdgeData(this.graph?.freshEdgeId() ?? 0, -1, -1);
+      this.d = d;
+    });
+
     this.SUBRULE(this.optProperties);
-    const [source, anchor] = this.SUBRULE(this.nodeRef);
-    d.source = source;
-    d.sourceAnchor = anchor;
+    const nodeRef = this.SUBRULE(this.nodeRef);
+
+    this.ACTION(() => {
+      if (d !== undefined) {
+        d.source = nodeRef[0];
+        d.sourceAnchor = nodeRef[1];
+      }
+    });
   });
 
   private edgeTarget = this.RULE("edgeTarget", () => {
     this.CONSUME(To);
     this.SUBRULE(this.optProperties);
-    let d = this.d as EdgeData;
     this.SUBRULE(this.optEdgeNode);
+
     this.OR([
       {
         ALT: () => {
-          const [target, anchor] = this.SUBRULE(this.nodeRef);
-          d.target = target;
-          d.targetAnchor = anchor;
+          const nodeRef = this.SUBRULE(this.nodeRef);
+
+          this.ACTION(() => {
+            const d = this.d as EdgeData;
+            d.target = nodeRef[0];
+            d.targetAnchor = nodeRef[1];
+          });
         },
       },
       {
         ALT: () => {
           this.CONSUME(LParen);
           this.CONSUME(RParen);
-          d.target = d.source;
-          d.targetAnchor = d.sourceAnchor;
+
+          this.ACTION(() => {
+            const d = this.d as EdgeData;
+            d.target = d.source;
+            d.targetAnchor = d.sourceAnchor;
+          });
         },
       },
       {
         ALT: () => {
           const cycleToken = this.CONSUME(Cycle);
-          if (this.currentPath && this.currentPath.edges.length > 0) {
-            this.currentPath.isCycle = true;
-            d.target = this.graph.edgeData.get(this.currentPath.edges[0])?.source ?? -1;
-          } else {
-            throw new ParseError(
-              cycleToken.startLine ?? 1,
-              cycleToken.startColumn ?? 1,
-              "'cycle' can only be used in paths of length 2 or more"
-            );
-          }
+
+          this.ACTION(() => {
+            const d = this.d as EdgeData;
+            if (this.currentPath && this.currentPath.edges.length > 0) {
+              this.currentPath.isCycle = true;
+              d.target = this.graph?.edgeData.get(this.currentPath.edges[0])?.source ?? -1;
+            } else {
+              throw new ParseError(
+                cycleToken.startLine ?? 1,
+                cycleToken.startColumn ?? 1,
+                "'cycle' can only be used in paths of length 2 or more"
+              );
+            }
+          });
         },
       },
     ]);
 
-    this.graph.addEdgeWithData(d);
-    this.currentPath?.edges.push(d.id);
-    this.d = new EdgeData(this.graph.freshEdgeId(), d.target, -1);
+    this.ACTION(() => {
+      const d = this.d as EdgeData;
+      if (this.graph !== undefined) {
+        this.graph.addEdgeWithData(d);
+        this.currentPath?.edges.push(d.id);
+        this.d = new EdgeData(this.graph.freshEdgeId(), d.target, -1);
+      }
+    });
   });
 
   private edge = this.RULE("edge", () => {
     this.CONSUME(DrawCmd);
-    this.currentPath = new PathData(this.graph.freshPathId());
+
+    this.ACTION(() => {
+      this.currentPath = new PathData(this.graph?.freshPathId() ?? 0);
+    });
+
     this.SUBRULE(this.edgeSource);
     this.AT_LEAST_ONE(() => this.SUBRULE(this.edgeTarget));
     this.CONSUME(Semicolon);
-    if (this.currentPath.edges.length > 1) {
-      this.graph.addPathWithData(this.currentPath);
-    } else {
-      this.currentPath = undefined;
-    }
+
+    this.ACTION(() => {
+      if (this.currentPath !== undefined && this.currentPath.edges.length > 1) {
+        this.graph?.addPathWithData(this.currentPath);
+      } else {
+        this.currentPath = undefined;
+      }
+    });
   });
 
   private boundingBox = this.RULE("boundingBox", () => {

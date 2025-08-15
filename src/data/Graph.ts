@@ -1,9 +1,10 @@
-import { NodeData, EdgeData, PathData } from "./Data";
+import { NodeData, EdgeData, PathData, Data } from "./Data";
 
 class Graph {
   public nodes: number[];
   public edges: number[];
   public paths: number[];
+  public graphData: Data = new Data(0);
   public nodeData: Map<number, NodeData>;
   public edgeData: Map<number, EdgeData>;
   public pathData: Map<number, PathData>;
