@@ -60,7 +60,7 @@ class Graph {
     for (const n of this.nodes) {
       const d = this.nodeData.get(n);
       if (d) {
-        result += `\t\t\\node${d.tikz()} (${d.label}) at (${d.coord[0]}, ${d.coord[1]}) {${d.label}};\n`;
+        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord[0]}, ${d.coord[1]}) {${d.label}};\n`;
       }
     }
     result += "\t\\end{pgfonlayer}\n";

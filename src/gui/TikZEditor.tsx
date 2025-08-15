@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import CodeEditor from "./CodeEditor";
 import GraphEditor from "./GraphEditor";
+import Graph from "../data/Graph";
+import { parseTikzPicture } from "../data/TikzParser";
 
 interface TikZEditorProps {
   initialContent: string;
@@ -9,6 +11,7 @@ interface TikZEditorProps {
 
 const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   const [code, setCode] = useState(initialContent);
+  const [graph, setGraph] = useState<Graph>(new Graph());
   const vscode = useRef<any>(null);
 
   // Lazy initialization of VS Code API
@@ -22,6 +25,12 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
       switch (message.type) {
         case "update":
           setCode(message.content);
+
+          const parsed = parseTikzPicture(message.content);
+          if (parsed.result !== undefined) {
+            setGraph(parsed.result);
+          }
+
           break;
         case "getFileData":
           vscode.current.postMessage({
@@ -39,11 +48,17 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
+
       vscode.current.postMessage({
         type: "edit",
         content: value,
       });
     }
+  };
+
+  const handleGraphChange = (graph: Graph) => {
+    setGraph(graph);
+    setCode(graph.tikz());
   };
 
   return (
@@ -60,7 +75,7 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
         cursor="row-resize"
         style={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
-        <GraphEditor code={code} />
+        <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
         <CodeEditor code={code} onChange={handleEditorChange} />
       </Split>
     </div>
