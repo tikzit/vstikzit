@@ -355,7 +355,7 @@ class TikzParser extends EmbeddedActionsParser {
     let d: EdgeData | undefined;
 
     this.ACTION(() => {
-      d = new EdgeData(this.graph?.freshEdgeId() ?? 0, -1, -1);
+      d = new EdgeData(this.graph?.freshEdgeId() ?? 0);
       this.d = d;
     });
 
@@ -422,10 +422,13 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       const d = this.d as EdgeData;
-      if (this.graph !== undefined) {
+      if (this.graph !== undefined && this.currentPath !== undefined) {
         this.graph.addEdgeWithData(d);
-        this.currentPath?.edges.push(d.id);
-        this.d = new EdgeData(this.graph.freshEdgeId(), d.target, -1);
+        this.currentPath.edges.push(d.id);
+        d.path = this.currentPath.id;
+        const d1 = new EdgeData(this.graph.freshEdgeId());
+        d1.source = d.target;
+        this.d = d1;
       }
     });
   });
@@ -442,9 +445,8 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(Semicolon);
 
     this.ACTION(() => {
-      if (this.currentPath !== undefined && this.currentPath.edges.length > 1) {
+      if (this.currentPath !== undefined) {
         this.graph?.addPathWithData(this.currentPath);
-      } else {
         this.currentPath = undefined;
       }
     });

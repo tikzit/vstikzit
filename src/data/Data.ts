@@ -53,17 +53,12 @@ class NodeData extends Data {
 }
 
 class EdgeData extends Data {
-  public source: number;
-  public target: number;
+  public source: number = -1;
+  public target: number = -1;
+  public path: number = -1;
   public sourceAnchor?: string;
   public targetAnchor?: string;
   public edgeNode?: NodeData;
-
-  constructor(id: number, source: number, target: number) {
-    super(id);
-    this.source = source;
-    this.target = target;
-  }
 }
 
 class PathData {

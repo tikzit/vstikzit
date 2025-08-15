@@ -2,19 +2,17 @@ import { NodeData, EdgeData, PathData, Data } from "./Data";
 
 class Graph {
   public nodes: number[];
-  public edges: number[];
   public paths: number[];
   public graphData: Data = new Data(0);
   public nodeData: Map<number, NodeData>;
-  public edgeData: Map<number, EdgeData>;
   public pathData: Map<number, PathData>;
+  public edgeData: Map<number, EdgeData>;
   private maxNodeId = -1;
   private maxEdgeId = -1;
   private maxPathId = -1;
 
   constructor() {
     this.nodes = [];
-    this.edges = [];
     this.paths = [];
     this.nodeData = new Map<number, NodeData>();
     this.edgeData = new Map<number, EdgeData>();
@@ -30,7 +28,6 @@ class Graph {
   }
 
   public addEdgeWithData(d: EdgeData): void {
-    this.edges.push(d.id);
     this.edgeData.set(d.id, d);
     if (d.id > this.maxEdgeId) {
       this.maxEdgeId = d.id;
