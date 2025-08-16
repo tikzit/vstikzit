@@ -1,4 +1,8 @@
+import { useEffect } from "react";
 import Graph from "../data/Graph";
+import { drawGrid } from "./grid";
+import SceneCoords from "./SceneCoords";
+import Node from "./Node";
 
 interface GraphEditorProps {
   graph: Graph;
@@ -6,19 +10,41 @@ interface GraphEditorProps {
 }
 
 const GraphEditor = ({ graph, onGraphChange }: GraphEditorProps) => {
-  return (
-    <div style={{ height: "100%", padding: "10px", overflow: "auto", tabSize: 4 }}>
-      <h3>Graph</h3>
+  const sceneCoords = new SceneCoords(5000, 5000);
 
-      <pre
+  useEffect(() => {
+    const graphEditor = document.getElementById("graph-editor-viewport")!;
+    graphEditor.scrollLeft = Math.max(0, (sceneCoords.width - graphEditor.clientWidth) / 2);
+    graphEditor.scrollTop = Math.max(0, (sceneCoords.height - graphEditor.clientHeight) / 2);
+  }, []);
+
+  useEffect(() => {
+    const svg = document.getElementById("graph-editor");
+    if (svg !== null) {
+      drawGrid(svg, sceneCoords);
+    }
+  }, []);
+
+  return (
+    <div
+      id="graph-editor-viewport"
+      style={{ height: "100%", padding: "10px", overflow: "auto", tabSize: 4 }}
+    >
+      <svg
+        id="graph-editor"
         style={{
-          padding: "10px",
-          fontSize: "12px",
-          fontFamily: "monospace",
+          height: `${sceneCoords.height}px`,
+          width: `${sceneCoords.width}px`,
+          backgroundColor: "white",
         }}
       >
-        {graph.tikz()}
-      </pre>
+        <g id="grid"></g>
+        <g id="nodes">
+          {graph.nodes.map(node => (
+            <Node key={node} data={graph.nodeData.get(node)!} sceneCoords={sceneCoords} />
+          ))}
+        </g>
+      </svg>
     </div>
   );
 };
