@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 import GraphEditor from "./GraphEditor";
 import Graph from "../data/Graph";
-import { parseTikzPicture } from "../data/TikzParser";
-import { Editor } from "@monaco-editor/react";
-import { editorOnMount, editorOptions } from "./editorSetup";
+import { parseTikzPicture, parseTikzStyles } from "../data/TikzParser";
 import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
+import Styles from "../data/Styles";
 
 interface TikZEditorProps {
   initialContent: string;
@@ -21,6 +20,9 @@ const TikzEditor = ({ initialContent, vscode }: TikZEditorProps) => {
 
   // the current graph
   const [graph, setGraph] = useState<Graph>(initialGraph);
+
+  // tikzstyles
+  const [tikzStyles, setTikzStyles] = useState<Styles>(new Styles());
 
   // the content for the editor. Should only set this to externally reset the contents
   // of the component.
@@ -38,6 +40,22 @@ const TikzEditor = ({ initialContent, vscode }: TikZEditorProps) => {
             type: "getFileData",
             content: tikz,
           });
+          break;
+        case "tikzStylesContent":
+          if (message.content) {
+            console.log("parsing\n" + message.content);
+            const parsed = parseTikzStyles(message.content);
+            if (parsed.result !== undefined) {
+              setTikzStyles(parsed.result);
+            } else {
+              console.log(
+                "Failed to parse tikzstyles:\n" +
+                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+              );
+            }
+          } else {
+            console.error("No tikzstyles content received:", message.error);
+          }
           break;
       }
     };
@@ -70,6 +88,10 @@ const TikzEditor = ({ initialContent, vscode }: TikZEditorProps) => {
     setGraph(graph);
   };
 
+  vscode.postMessage({
+    type: "getTikzStyles",
+  });
+
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <Split
@@ -87,7 +109,7 @@ const TikzEditor = ({ initialContent, vscode }: TikZEditorProps) => {
           style={{ display: "flex", flexDirection: "row", height: "100%" }}
         >
           <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
-          <StylePanel vscode={vscode} />
+          <StylePanel tikzStyles={tikzStyles} />
         </Split>
 
         <CodeEditor content={editorContent} onChange={handleEditorChange} />
