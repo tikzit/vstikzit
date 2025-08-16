@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-import { parseTikzPicture } from "../data/TikzParser";
 import Graph from "../data/Graph";
 
 interface GraphEditorProps {

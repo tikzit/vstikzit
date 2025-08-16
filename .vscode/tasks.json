@@ -7,7 +7,7 @@
             "label": "watch",
             "dependsOn": [
                 "npm: watch:tsc",
-                "npm: watch:esbuild"
+                "npm: watch:webpack"
             ],
             "presentation": {
                 "reveal": "never"
@@ -19,14 +19,37 @@
         },
         {
             "type": "npm",
-            "script": "watch:esbuild",
+            "script": "watch:webpack",
             "group": "build",
-            "problemMatcher": "$esbuild-watch",
+            "problemMatcher": [
+                {
+                    "owner": "webpack",
+                    "fileLocation": "absolute",
+                    "pattern": [
+                        {
+                            "regexp": "^ERROR in (.+)$",
+                            "file": 1
+                        },
+                        {
+                            "regexp": "^(.+)\\((\\d+),(\\d+)\\): (.+)$",
+                            "file": 1,
+                            "line": 2,
+                            "column": 3,
+                            "message": 4
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^webpack \\d+\\.\\d+\\.\\d+ compiled",
+                        "endsPattern": "^webpack \\d+\\.\\d+\\.\\d+ compiled"
+                    }
+                }
+            ],
             "isBackground": true,
-            "label": "npm: watch:esbuild",
+            "label": "npm: watch:webpack",
             "presentation": {
                 "group": "watch",
-                "reveal": "never"
+                "reveal": "silent"
             }
         },
 		{

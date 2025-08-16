@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./monacoConfig"; // Configure Monaco to use webpack bundle
 import App from "./App";
 
 console.log("Webview script starting...");

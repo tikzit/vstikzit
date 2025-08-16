@@ -1,5 +1,4 @@
-// @ts-ignore: TSC complains about using an ES module from CommonJS, but esbuild can handle this
-import { createToken, Lexer, EmbeddedActionsParser, defaultParserErrorProvider } from "chevrotain";
+import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
 import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
 
