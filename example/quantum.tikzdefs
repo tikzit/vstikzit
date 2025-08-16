@@ -1,0 +1,143 @@
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{xspace}
+\usepackage{bm}
+
+% used in ZX-diagrams
+\definecolor{zxred}{RGB}{232, 165, 165}
+\definecolor{zxgreen}{RGB}{216, 248, 216}
+\definecolor{zxhad}{RGB}{255, 255, 130}
+\definecolor{zxpaulibox}{RGB}{221, 221, 255}
+
+% bras and kets
+\newcommand{\ket}[1]{\ensuremath{|#1\rangle\xspace}}
+\newcommand{\bra}[1]{\ensuremath{\langle #1|\xspace}}
+\newcommand{\braket}[2]{\ensuremath{\langle #1|#2\rangle\xspace}}
+\newcommand{\ketbra}[2]{\ensuremath{|#1\rangle\!\langle #2|\xspace}}
+
+% some people prefer these for bra-ket notation
+% \def\<{\langle}
+% \def\>{\rangle}
+
+% smaller versions of some scalars, to use in diagrams
+\newcommand\D{\textrm{\footnotesize $D$}\xspace}
+\newcommand\sqrtD{\textrm{\footnotesize $\sqrt{D}$}\xspace}
+\newcommand\sqrttwo{\textrm{\footnotesize $\sqrt{2}$}\xspace}
+\newcommand\oneoverD{\ensuremath{{\textstyle{\frac{1}{D}}}}\xspace}
+\newcommand\oneoverDprime{\ensuremath{{\textstyle{\frac{1}{D'}}}}\xspace}
+\newcommand\oneoversqrtD{\ensuremath{{\textstyle{\frac{1}{\sqrt{D}}}}}\xspace}
+\newcommand\oneoversqrttwo{\ensuremath{{\textstyle{\frac{1}{\sqrt{2}}}}}\xspace}
+\newcommand\oneovertwo{\ensuremath{{\textstyle{\frac{1}{2}}}}\xspace}
+
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{fadings}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{decorations.markings}
+
+
+\newcommand{\scalareq}{\ensuremath{\approx}\xspace}
+
+\newcommand{\emptydiag}{\,\tikz{\node[style=empty diagram] (x) {};}\,}
+
+
+% =======================
+% = PARALLELAGRAM BOXES =
+% =======================
+
+\makeatletter
+\newcommand{\boxshape}[3]{%
+\pgfdeclareshape{#1}{
+\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+\inheritanchorborder[from=rectangle]
+\inheritanchor[from=rectangle]{center}
+\inheritanchor[from=rectangle]{north}
+\inheritanchor[from=rectangle]{south}
+\inheritanchor[from=rectangle]{west}
+\inheritanchor[from=rectangle]{east}
+\backgroundpath{% this is new
+% store lower right in xa/ya and upper right in xb/yb
+\southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+\northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+
+\@tempdima=#2
+\@tempdimb=#3
+
+\pgfpathmoveto{\pgfpoint{\pgf@xa - 5pt + \@tempdima}{\pgf@ya}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 5pt - \@tempdima}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 5pt + \@tempdimb}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 5pt - \@tempdimb}{\pgf@ya}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 5pt + \@tempdima}{\pgf@ya}}
+\pgfpathclose
+}
+}}
+
+\boxshape{NEbox}{0pt}{5pt}
+\boxshape{SEbox}{0pt}{-5pt}
+\boxshape{NWbox}{5pt}{0pt}
+\boxshape{SWbox}{-5pt}{0pt}
+\boxshape{EBox}{-3pt}{3pt}
+\boxshape{WBox}{3pt}{-3pt}
+
+\newcommand{\downtriangleshape}[3]{
+\pgfdeclareshape{#1}{
+\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+\inheritanchorborder[from=rectangle]
+\inheritanchor[from=rectangle]{center}
+\inheritanchor[from=rectangle]{north}
+\inheritanchor[from=rectangle]{south}
+\inheritanchor[from=rectangle]{west}
+\inheritanchor[from=rectangle]{east}
+% ... and possibly more
+\backgroundpath{% this is new
+% store lower right in xa/ya and upper right in xb/yb
+\southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+\northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+
+\pgfmathsetmacro{\pgf@shorten@left}{#2}
+\pgfmathsetmacro{\pgf@shorten@right}{#3}
+
+\pgfpathmoveto{\pgfpoint{0.5 * (\pgf@xa + \pgf@xb)}{\pgf@ya - 5pt}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 8pt + \pgf@shorten@left}{\pgf@yb - 1.5 * \pgf@shorten@left}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 8pt + \pgf@shorten@left}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 8pt - \pgf@shorten@right}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 8pt - \pgf@shorten@right}{\pgf@yb - 1.5 * \pgf@shorten@right}}
+\pgfpathclose
+}
+}}
+
+\newcommand{\uptriangleshape}[3]{
+\pgfdeclareshape{#1}{
+\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+\inheritanchorborder[from=rectangle]
+\inheritanchor[from=rectangle]{center}
+\inheritanchor[from=rectangle]{north}
+\inheritanchor[from=rectangle]{south}
+\inheritanchor[from=rectangle]{west}
+\inheritanchor[from=rectangle]{east}
+\backgroundpath{% this is new
+% store lower right in xa/ya and upper right in xb/yb
+\southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+\northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+
+\pgfmathsetmacro{\pgf@shorten@left}{#2}
+\pgfmathsetmacro{\pgf@shorten@right}{#3}
+
+\pgfpathmoveto{\pgfpoint{0.5 * (\pgf@xa + \pgf@xb)}{\pgf@yb + 5pt}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 8pt + \pgf@shorten@left}{\pgf@ya + 1.5 * \pgf@shorten@left}}
+\pgfpathlineto{\pgfpoint{\pgf@xa - 8pt + \pgf@shorten@left}{\pgf@ya}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 8pt - \pgf@shorten@right}{\pgf@ya}}
+\pgfpathlineto{\pgfpoint{\pgf@xb + 8pt - \pgf@shorten@right}{\pgf@ya + 1.5 * \pgf@shorten@right}}
+\pgfpathclose
+}
+}}
+
+\downtriangleshape{NEtriangle}{5pt}{0pt}
+\downtriangleshape{NWtriangle}{0pt}{5pt}
+\uptriangleshape{SEtriangle}{5pt}{0pt}
+\uptriangleshape{SWtriangle}{0pt}{5pt}
+
+
+\makeatother
+
+
