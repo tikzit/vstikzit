@@ -6,6 +6,7 @@ import { parseTikzPicture } from "../data/TikzParser";
 import { Editor } from "@monaco-editor/react";
 import { editorOnMount, editorOptions } from "./editorSetup";
 import CodeEditor from "./CodeEditor";
+import StylePanel from "./StylePanel";
 
 interface TikZEditorProps {
   initialContent: string;
@@ -78,18 +79,23 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <Split
-        sizes={[70, 30]}
+        sizes={[80, 20]}
         minSize={0}
-        expandToMin={false}
-        gutterSize={10}
-        gutterAlign="center"
-        snapOffset={30}
-        dragInterval={1}
         direction="vertical"
         cursor="row-resize"
         style={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
-        <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
+        <Split
+          sizes={[80, 20]}
+          minSize={0}
+          direction="horizontal"
+          cursor="col-resize"
+          style={{ display: "flex", flexDirection: "row", height: "100%" }}
+        >
+          <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
+          <StylePanel />
+        </Split>
+
         <CodeEditor content={editorContent} onChange={handleEditorChange} />
       </Split>
     </div>

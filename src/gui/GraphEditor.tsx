@@ -3,6 +3,7 @@ import Graph from "../data/Graph";
 import { drawGrid } from "./grid";
 import SceneCoords from "./SceneCoords";
 import Node from "./Node";
+import Edge from "./Edge";
 
 interface GraphEditorProps {
   graph: Graph;
@@ -39,6 +40,22 @@ const GraphEditor = ({ graph, onGraphChange }: GraphEditorProps) => {
         }}
       >
         <g id="grid"></g>
+        <g id="edges">
+          {graph.paths.map(path =>
+            graph.pathData.get(path)?.edges.map(edge => {
+              const d = graph.edgeData.get(edge)!;
+              return (
+                <Edge
+                  key={edge}
+                  data={d}
+                  sourceData={graph.nodeData.get(d.source)!}
+                  targetData={graph.nodeData.get(d.target)!}
+                  sceneCoords={sceneCoords}
+                />
+              );
+            })
+          )}
+        </g>
         <g id="nodes">
           {graph.nodes.map(node => (
             <Node key={node} data={graph.nodeData.get(node)!} sceneCoords={sceneCoords} />
