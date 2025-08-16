@@ -59,6 +59,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "chevrotain": "^11.0.3",
+    "monaco-editor": "^0.52.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-split": "^2.0.14"

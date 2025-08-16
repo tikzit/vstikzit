@@ -1,6 +1,6 @@
 \begin{tikzpicture}
 	\begin{pgfonlayer}{nodelayer}
-		\node [style=none] (13) at (14, 2.25) {};
+		\node [style=none, foo] (13) at (14, 2.25) {};
 		\node [style=none] (14) at (19, 2.25) {};
 		\node [style=none] (15) at (14, 1.25) {};
 		\node [style=none] (16) at (19, 1.25) {};

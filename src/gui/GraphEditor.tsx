@@ -9,7 +9,7 @@ interface GraphEditorProps {
 
 const GraphEditor = ({ graph, onGraphChange }: GraphEditorProps) => {
   return (
-    <div style={{ height: "100%", padding: "10px", overflow: "auto" }}>
+    <div style={{ height: "100%", padding: "10px", overflow: "auto", tabSize: 4 }}>
       <h3>Graph</h3>
 
       <pre

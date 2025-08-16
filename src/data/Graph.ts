@@ -64,6 +64,21 @@ class Graph {
       }
     }
     result += "\t\\end{pgfonlayer}\n";
+    result += "\t\\begin{pgfonlayer}{edgelayer}\n";
+    for (const p of this.paths) {
+      const pathData = this.pathData.get(p)!;
+      let d = this.edgeData.get(pathData.edges[0])!;
+      let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
+      result += `\t\t\\draw${d.tikz()} ${d.sourceRef()} to${edgeNode} ${d.targetRef()}`;
+
+      for (const edgeId of pathData.edges.slice(1)) {
+        d = this.edgeData.get(edgeId)!;
+        edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
+        result += ` to${d.tikz()}${edgeNode} ${d.targetRef()}`;
+      }
+      result += ";\n";
+    }
+    result += "\t\\end{pgfonlayer}\n";
     result += "\\end{tikzpicture}\n";
     return result;
   }

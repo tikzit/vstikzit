@@ -74,11 +74,15 @@ const At = createToken({ name: "At", pattern: /at/ });
 const To = createToken({ name: "To", pattern: /to/ });
 const Cycle = createToken({ name: "Cycle", pattern: /cycle/ });
 
-const DelimString = createToken({ name: "DelimString", pattern: matchDelimString });
-const ArrowDef = createToken({ name: "ArrowDef", pattern: /[a-zA-Z<>|]*-[a-zA-Z<>|]*/ });
-const Identifier = createToken({ name: "Identifier", pattern: /[a-zA-Z_][a-zA-Z0-9_]*/ });
+const DelimString = createToken({
+  name: "DelimString",
+  pattern: matchDelimString,
+  line_breaks: true,
+});
+// const ArrowDef = createToken({ name: "ArrowDef", pattern: /[a-zA-Z<>|]*-[a-zA-Z<>|]*/ });
 const Int = createToken({ name: "Int", pattern: /-?\d+/ });
 const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
+const Identifier = createToken({ name: "Identifier", pattern: /[a-zA-Z0-9_\-<>]+/ });
 
 const allTokens = [
   WhiteSpace,
@@ -104,10 +108,9 @@ const allTokens = [
   To,
   Cycle,
   DelimString,
-  Identifier,
   Float,
   Int,
-  ArrowDef,
+  Identifier,
 ];
 
 class ParseError extends Error {
@@ -233,7 +236,6 @@ class TikzParser extends EmbeddedActionsParser {
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Identifier).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Int).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Float).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(ArrowDef).image) },
       ]);
     });
     return s;

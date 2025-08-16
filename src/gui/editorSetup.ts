@@ -1,0 +1,65 @@
+import type { editor } from "monaco-editor";
+
+const tikzTokensProvider = {
+  tokenizer: {
+    root: [
+      [/%.*$/, "comment"],
+      [/\\(begin|end)\{tikzpicture\}/, "keyword"],
+      [/\\(begin|end)\{pgfonlayer\}/, "keyword"],
+      [/\\(node|draw)/, "keyword"],
+      [/\\[a-zA-Z@]+/, "type"],
+      [/\[/, { token: "delimiter.bracket", next: "@options" }],
+      [/\$/, { token: "string", next: "@math" }],
+      [/[{}]/, "delimiter.curly"],
+      [/\(([^)]*)\)/, "number"],
+      [/-?\d*\.?\d+/, "number"],
+      [/"([^"\\]|\\.)*$/, "string.invalid"],
+      [
+        /"/,
+        {
+          token: "string.quote",
+          bracket: "@open",
+          next: "@string",
+        },
+      ],
+    ],
+    options: [
+      [/[^\]]+/, "attribute.name"],
+      [/\]/, { token: "delimiter.bracket", next: "@pop" }],
+    ],
+    math: [
+      [/[^$]+/, "string"],
+      [/\$/, { token: "string", next: "@pop" }],
+    ],
+    string: [
+      [/[^\\"]+/, "string"],
+      [/\\./, "string.escape.invalid"],
+      [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+    ],
+  },
+};
+
+const editorOnMount = (editor: any, monaco: any) => {
+  // Register TikZ/LaTeX language if not already registered
+  if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
+    monaco.languages.register({ id: "tikz" });
+    monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
+    monaco.editor.setModelLanguage(editor.getModel()!, "tikz");
+  }
+};
+
+const editorOptions: editor.IStandaloneEditorConstructionOptions = {
+  fontSize: 14,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: "on",
+  automaticLayout: true,
+  lineNumbers: "on",
+  folding: true,
+  matchBrackets: "always",
+  autoIndent: "full",
+  formatOnType: true,
+  formatOnPaste: true,
+};
+
+export { editorOnMount, editorOptions };

@@ -60,7 +60,7 @@ class Data {
 
         if (p[1] !== undefined) {
           let val = p[1];
-          if (!isValidPropertyVal(val)) {
+          if (val.includes("\n") || !isValidPropertyVal(val)) {
             val = `{${val}}`;
           }
           s += `${p[0]}=${val}`;
@@ -95,6 +95,14 @@ class EdgeData extends Data {
   public sourceAnchor?: string;
   public targetAnchor?: string;
   public edgeNode?: NodeData;
+
+  public sourceRef(): string {
+    return this.sourceAnchor ? `(${this.source}.${this.sourceAnchor})` : `(${this.source})`;
+  }
+
+  public targetRef(): string {
+    return this.targetAnchor ? `(${this.target}.${this.targetAnchor})` : `(${this.target})`;
+  }
 }
 
 class PathData {

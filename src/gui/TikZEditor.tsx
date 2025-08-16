@@ -1,17 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
-import CodeEditor from "./CodeEditor";
 import GraphEditor from "./GraphEditor";
 import Graph from "../data/Graph";
 import { parseTikzPicture } from "../data/TikzParser";
+import { Editor } from "@monaco-editor/react";
+import { editorOnMount, editorOptions } from "./editorSetup";
+import CodeEditor from "./CodeEditor";
 
 interface TikZEditorProps {
   initialContent: string;
 }
 
 const TikzEditor = ({ initialContent }: TikZEditorProps) => {
-  const [code, setCode] = useState(initialContent);
-  const [graph, setGraph] = useState<Graph>(new Graph());
+  const initialGraph = parseTikzPicture(initialContent).result ?? new Graph();
+
+  // the tikz code for the current file
+  const [tikz, setTikz] = useState(initialContent);
+
+  // the current graph
+  const [graph, setGraph] = useState<Graph>(initialGraph);
+
+  // the content for the editor. Should only set this to externally reset the contents
+  // of the component.
+  const [editorContent, setEditorContent] = useState(initialContent);
+
   const vscode = useRef<any>(null);
 
   // Lazy initialization of VS Code API
@@ -24,18 +36,12 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
       const message = event.data;
       switch (message.type) {
         case "update":
-          setCode(message.content);
-
-          const parsed = parseTikzPicture(message.content);
-          if (parsed.result !== undefined) {
-            setGraph(parsed.result);
-          }
-
+          // TODO: handle updates from outside of this editor?
           break;
         case "getFileData":
           vscode.current.postMessage({
             type: "getFileData",
-            content: code,
+            content: tikz,
           });
           break;
       }
@@ -43,11 +49,19 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [code]);
+  }, [tikz, editorContent]);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      setCode(value);
+      console.log("got editor change");
+      console.log(value.substring(0, 100));
+      setTikz(value);
+
+      const parsed = parseTikzPicture(value);
+      if (parsed.result !== undefined) {
+        console.log("graph parsed");
+        setGraph(parsed.result);
+      }
 
       vscode.current.postMessage({
         type: "edit",
@@ -57,8 +71,8 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   };
 
   const handleGraphChange = (graph: Graph) => {
+    console.log("got graph change");
     setGraph(graph);
-    setCode(graph.tikz());
   };
 
   return (
@@ -76,7 +90,7 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
         style={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
         <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
-        <CodeEditor code={code} onChange={handleEditorChange} />
+        <CodeEditor content={editorContent} onChange={handleEditorChange} />
       </Split>
     </div>
   );
