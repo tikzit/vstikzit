@@ -1,6 +1,7 @@
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
 import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
+import Styles from "./Styles";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
   let endOffset = startOffset;
@@ -42,6 +43,7 @@ function stripBraces(s: string) {
 }
 
 const WhiteSpace = createToken({ name: "WhiteSpace", pattern: /[ \t\n\r]+/, group: Lexer.SKIPPED });
+const Comment = createToken({ name: "Comment", pattern: /%[^\n]*/, group: Lexer.SKIPPED });
 
 const BeginTikzPictureCmd = createToken({
   name: "BeginTikzPictureCmd",
@@ -84,7 +86,9 @@ const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
 const Identifier = createToken({ name: "Identifier", pattern: /[a-zA-Z0-9_\-<>]+/ });
 
 const allTokens = [
+  DelimString,
   WhiteSpace,
+  Comment,
   BeginTikzPictureCmd,
   EndTikzPictureCmd,
   BeginLayerCmd,
@@ -106,7 +110,6 @@ const allTokens = [
   At,
   To,
   Cycle,
-  DelimString,
   Float,
   Int,
   Identifier,
@@ -124,7 +127,7 @@ class ParseError extends Error {
 
 class TikzParser extends EmbeddedActionsParser {
   private graph?: Graph;
-  private styles?: StyleData[];
+  private styles?: Styles;
   private d?: Data;
   private nodeTab?: Map<string, number>;
   private currentPath?: PathData;
@@ -178,7 +181,7 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (this.styles !== undefined) {
-        const d = new StyleData(this.styles.length);
+        const d = new StyleData(this.styles.numStyles());
         d.name = name;
         this.d = d;
       }
@@ -187,7 +190,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.SUBRULE(this.properties);
 
     this.ACTION(() => {
-      this.styles?.push(this.d as StyleData);
+      this.styles?.addStyle(this.d as StyleData);
     });
   });
 
@@ -207,12 +210,16 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   private property = this.RULE("property", () => {
-    const key = this.SUBRULE(this.propertyVal);
+    let key: string;
+    this.OR([
+      { ALT: () => (key = stripBraces(this.CONSUME(DelimString).image)) },
+      { ALT: () => (key = this.SUBRULE(this.propertyVal)) },
+    ]);
     let val: string | undefined;
     this.OPTION(() => {
       this.CONSUME(Equals);
-      this.OR([
-        { ALT: () => (val = stripBraces(this.CONSUME(DelimString).image)) },
+      this.OR1([
+        { ALT: () => (val = stripBraces(this.CONSUME1(DelimString).image)) },
         { ALT: () => (val = this.SUBRULE1(this.propertyVal)) },
       ]);
     });
@@ -235,6 +242,12 @@ class TikzParser extends EmbeddedActionsParser {
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Identifier).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Int).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Float).image) },
+        // since we only have one lexer context, we need to include all the keyword tokens here
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Node).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Rectangle).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(At).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(To).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Cycle).image) },
       ]);
     });
     return s;
@@ -483,7 +496,15 @@ interface ParseTikzPictureResult {
   errors: ParseError[];
 }
 
-function parseTikzPicture(input: string): ParseTikzPictureResult {
+interface ParseTikzStylesResult {
+  result?: Styles;
+  errors: ParseError[];
+}
+
+function parseTikz(
+  input: string,
+  parseStyles: boolean
+): ParseTikzPictureResult | ParseTikzStylesResult {
   const lexResult = lexer.tokenize(input);
   if (lexResult.errors.length > 0) {
     return {
@@ -494,7 +515,7 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
   parser.input = lexResult.tokens;
 
   try {
-    const graph = parser.tikzPicture();
+    const res = parseStyles ? parser.tikzStyles() : parser.tikzPicture();
 
     if (parser.errors.length > 0) {
       return {
@@ -504,10 +525,9 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
       };
     }
 
-    return {
-      result: graph,
-      errors: [],
-    };
+    return parseStyles
+      ? { result: res as Styles, errors: [] }
+      : { result: res as Graph, errors: [] };
   } catch (e) {
     if (e instanceof ParseError) {
       return {
@@ -517,6 +537,14 @@ function parseTikzPicture(input: string): ParseTikzPictureResult {
       throw e;
     }
   }
+}
+
+function parseTikzPicture(input: string): ParseTikzPictureResult {
+  return parseTikz(input, false) as ParseTikzPictureResult;
+}
+
+function parseTikzStyles(input: string): ParseTikzStylesResult {
+  return parseTikz(input, true) as ParseTikzStylesResult;
 }
 
 function isValidPropertyVal(value: string): boolean {
@@ -529,4 +557,10 @@ function isValidPropertyVal(value: string): boolean {
   return parser.errors.length === 0;
 }
 
-export { parseTikzPicture, ParseTikzPictureResult, isValidPropertyVal };
+export {
+  parseTikzPicture,
+  ParseTikzPictureResult,
+  parseTikzStyles,
+  ParseTikzStylesResult,
+  isValidPropertyVal,
+};

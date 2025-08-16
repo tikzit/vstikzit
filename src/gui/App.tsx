@@ -3,9 +3,10 @@ import TikzEditor from "./TikzEditor";
 
 interface AppProps {
   initialContent: string;
+  vscode: any;
 }
 
-const App: React.FC<AppProps> = ({ initialContent }) => {
+const App: React.FC<AppProps> = ({ initialContent, vscode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -17,7 +18,7 @@ const App: React.FC<AppProps> = ({ initialContent }) => {
     return <div style={{ padding: "20px", color: "white" }}>Initializing TikZ Editor...</div>;
   }
 
-  return <TikzEditor initialContent={initialContent} />;
+  return <TikzEditor initialContent={initialContent} vscode={vscode} />;
 };
 
 export default App;

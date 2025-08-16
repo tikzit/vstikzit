@@ -10,9 +10,10 @@ import StylePanel from "./StylePanel";
 
 interface TikZEditorProps {
   initialContent: string;
+  vscode: any;
 }
 
-const TikzEditor = ({ initialContent }: TikZEditorProps) => {
+const TikzEditor = ({ initialContent, vscode }: TikZEditorProps) => {
   const initialGraph = parseTikzPicture(initialContent).result ?? new Graph();
 
   // the tikz code for the current file
@@ -25,13 +26,6 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
   // of the component.
   const [editorContent, setEditorContent] = useState(initialContent);
 
-  const vscode = useRef<any>(null);
-
-  // Lazy initialization of VS Code API
-  if (vscode.current === null) {
-    vscode.current = acquireVsCodeApi();
-  }
-
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
@@ -40,7 +34,7 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
           // TODO: handle updates from outside of this editor?
           break;
         case "getFileData":
-          vscode.current.postMessage({
+          vscode.postMessage({
             type: "getFileData",
             content: tikz,
           });
@@ -64,7 +58,7 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
         setGraph(parsed.result);
       }
 
-      vscode.current.postMessage({
+      vscode.postMessage({
         type: "edit",
         content: value,
       });
@@ -93,7 +87,7 @@ const TikzEditor = ({ initialContent }: TikZEditorProps) => {
           style={{ display: "flex", flexDirection: "row", height: "100%" }}
         >
           <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
-          <StylePanel />
+          <StylePanel vscode={vscode} />
         </Split>
 
         <CodeEditor content={editorContent} onChange={handleEditorChange} />

@@ -2,6 +2,10 @@ import { isValidPropertyVal } from "./TikzParser";
 
 type Coord = [number, number];
 
+function wrapPropertyVal(val: string): string {
+  return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
+}
+
 class Data {
   public id: number;
   private pairs: [string, string | undefined][];
@@ -59,13 +63,9 @@ class Data {
         }
 
         if (p[1] !== undefined) {
-          let val = p[1];
-          if (val.includes("\n") || !isValidPropertyVal(val)) {
-            val = `{${val}}`;
-          }
-          s += `${p[0]}=${val}`;
+          s += `${wrapPropertyVal(p[0])}=${wrapPropertyVal(p[1])}`;
         } else {
-          s += `${p[0]}`;
+          s += `${wrapPropertyVal(p[0])}`;
         }
       }
 

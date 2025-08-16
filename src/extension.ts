@@ -58,6 +58,9 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
             content: document.getText(),
           });
           return;
+        case "getTikzStyles":
+          this.getTikzStylesFile(webviewPanel.webview);
+          return;
       }
     });
 
@@ -115,6 +118,55 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
     return vscode.workspace.applyEdit(edit);
+  }
+
+  private async getTikzStylesFile(webview: vscode.Webview) {
+    try {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders || workspaceFolders.length === 0) {
+        webview.postMessage({
+          type: "tikzStylesContent",
+          content: null,
+          error: "No workspace folder found",
+        });
+        return;
+      }
+
+      // Get files at the root of the first workspace folder
+      const workspaceRoot = workspaceFolders[0].uri;
+      const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
+
+      // Find the first .tikzstyles file
+      const tikzStylesFile = files.find(
+        ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzstyles")
+      );
+
+      if (!tikzStylesFile) {
+        webview.postMessage({
+          type: "tikzStylesContent",
+          content: null,
+          error: "No .tikzstyles file found at workspace root",
+        });
+        return;
+      }
+
+      // Read the file content
+      const fileUri = vscode.Uri.joinPath(workspaceRoot, tikzStylesFile[0]);
+      const fileContent = await vscode.workspace.fs.readFile(fileUri);
+      const content = Buffer.from(fileContent).toString("utf8");
+
+      webview.postMessage({
+        type: "tikzStylesContent",
+        content: content,
+        filename: tikzStylesFile[0],
+      });
+    } catch (error) {
+      webview.postMessage({
+        type: "tikzStylesContent",
+        content: null,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    }
   }
 }
 

@@ -2,7 +2,14 @@ import { createRoot } from "react-dom/client";
 import "./monacoConfig"; // Configure Monaco to use webpack bundle
 import App from "./App";
 
+// VSCode WebView API types (should be available globally in webview context)
+declare const acquireVsCodeApi: () => any;
+
 console.log("Webview script starting...");
+
+// Acquire VS Code API once at the top level
+const vscode = acquireVsCodeApi();
+console.log("VS Code API acquired");
 
 // Get initial content from the script tag data
 const initialContentScript = document.getElementById("initial-content") as HTMLScriptElement;
@@ -23,7 +30,7 @@ if (container) {
   try {
     const root = createRoot(container);
     console.log("React root created, rendering App...");
-    root.render(<App initialContent={initialContent} />);
+    root.render(<App initialContent={initialContent} vscode={vscode} />);
     console.log("App rendered successfully");
   } catch (error) {
     console.error("Error rendering React app:", error);
