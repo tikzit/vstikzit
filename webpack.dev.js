@@ -44,7 +44,7 @@ const webviewConfig = merge(common, {
   plugins: [
     new MonacoWebpackPlugin({
       // Available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
-      languages: [], // We're using custom tikz language, so no built-in languages needed
+      languages: ['json'],
       features: ['!gotoSymbol', '!hover', '!contextmenu', '!quickCommand'], // exclude features to reduce bundle size
     }),
   ],
