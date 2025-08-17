@@ -168,6 +168,8 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   public tikzStyles = this.RULE("tikzStyles", () => {
+    this.styles = new Styles();
+
     this.MANY(() => {
       this.SUBRULE(this.style);
     });
