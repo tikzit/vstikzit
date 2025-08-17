@@ -1,10 +1,10 @@
 {
   "name": "vstikzit",
-  "displayName": "TikZiT",
-  "description": "A custom editor for .tikz files using WebView with React and Monaco",
+  "displayName": "TikZiT for VS Code",
+  "description": "TikZiT-like GUI for editing tikz files in VS Code",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.102.0"
+    "vscode": "^1.103.0"
   },
   "categories": [
     "Other"
@@ -26,53 +26,42 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "compile": "npm run check-types && npm run lint && webpack --config webpack.dev.js",
-    "watch": "npm-run-all -p watch:*",
-    "watch:webpack": "node watch.js",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && webpack --config webpack.prod.js",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "check-types": "tsc --noEmit",
+    "pretest": "npm run compile-tests && npm run compile",
     "lint": "eslint src",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,html,css,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,html,css,md}\"",
-    "test": "vscode-test"
+    "vstest": "vscode-test",
+    "test": "mocha dist/test.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "@types/vscode": "^1.102.0",
-    "@types/webpack": "^5.28.5",
+    "@types/vscode": "^1.103.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^7.1.2",
     "eslint": "^9.32.0",
-    "html-webpack-plugin": "^5.6.4",
-    "instant-mocha": "^1.5.3",
+    "mocha": "^11.7.1",
     "monaco-editor-webpack-plugin": "^7.1.0",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^3.6.2",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.9.2",
-    "webpack": "^5.101.2",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2",
-    "webpack-merge": "^6.0.1"
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "chevrotain": "^11.0.3",
     "monaco-editor": "^0.52.2",
+    "process": "^0.11.10",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
     "react-split": "^2.0.14"
   }
 }
