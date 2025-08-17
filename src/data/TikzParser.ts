@@ -1,3 +1,4 @@
+// @ts-ignore - webpack will handle this
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
 import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
