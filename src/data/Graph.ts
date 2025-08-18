@@ -40,6 +40,18 @@ class Graph {
     return this._pathData;
   }
 
+  public get nodes(): IterableIterator<number> {
+    return this._nodeData.keys();
+  }
+
+  public get paths(): IterableIterator<number> {
+    return this._pathData.keys();
+  }
+
+  public get edges(): IterableIterator<number> {
+    return this._edgeData.keys();
+  }
+
   public addNodeWithData(d: NodeData): Graph {
     const g = this.copy();
     g._nodeData = g._nodeData.set(d.id, d);
@@ -65,6 +77,39 @@ class Graph {
       g.maxPathId = d.id;
     }
     return g;
+  }
+
+  public updateNodeData(id: number, fn: (data: NodeData) => NodeData): Graph {
+    const node = this._nodeData.get(id);
+    if (node) {
+      const g = this.copy();
+      g._nodeData = g._nodeData.set(id, fn(node));
+      return g;
+    } else {
+      return this;
+    }
+  }
+
+  public updateEdgeData(id: number, fn: (data: EdgeData) => EdgeData): Graph {
+    const edge = this._edgeData.get(id);
+    if (edge) {
+      const g = this.copy();
+      g._edgeData = g._edgeData.set(id, fn(edge));
+      return g;
+    } else {
+      return this;
+    }
+  }
+
+  public updatePathData(id: number, fn: (data: PathData) => PathData): Graph {
+    const path = this._pathData.get(id);
+    if (path) {
+      const g = this.copy();
+      g._pathData = g._pathData.set(id, fn(path));
+      return g;
+    } else {
+      return this;
+    }
   }
 
   public get freshNodeId(): number {

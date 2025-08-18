@@ -193,7 +193,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.SUBRULE(this.properties);
 
     this.ACTION(() => {
-      this.styles?.addStyle(this.d as StyleData);
+      this.styles?.setStyle(this.d as StyleData);
     });
   });
 

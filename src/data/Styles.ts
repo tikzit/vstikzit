@@ -1,17 +1,37 @@
+import { OrderedMap } from "immutable";
 import { StyleData } from "./Data";
 
 class Styles {
-  public styles: string[] = [];
-  public styleData: Map<string, StyleData> = new Map();
-  public filename: string = "";
+  private _styleData: OrderedMap<string, StyleData>;
+  private _filename: string = "";
 
-  public addStyle(style: StyleData) {
-    this.styles.push(style.name);
-    this.styleData.set(style.name, style);
+  constructor(styles?: Styles) {
+    this._styleData = styles?._styleData ?? OrderedMap<string, StyleData>();
+    this._filename = styles?._filename ?? "";
+  }
+
+  public get styleData(): OrderedMap<string, StyleData> {
+    return this._styleData;
+  }
+
+  public get filename(): string {
+    return this._filename;
+  }
+
+  public setStyle(style: StyleData) {
+    const s = new Styles(this);
+    s._styleData = s._styleData.set(style.name, style);
+    return s;
+  }
+
+  public setFilename(filename: string) {
+    const s = new Styles(this);
+    s._filename = filename;
+    return s;
   }
 
   public numStyles(): number {
-    return this.styles.length;
+    return this._styleData.size;
   }
 }
 
