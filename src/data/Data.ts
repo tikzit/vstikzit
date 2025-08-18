@@ -94,6 +94,15 @@ class NodeData extends Data<NodeData> {
   private _labelStart?: number;
   private _labelEnd?: number;
 
+  public copy(): NodeData {
+    const d = super.copy();
+    d._coord = this._coord;
+    d._label = this._label;
+    d._labelStart = this._labelStart;
+    d._labelEnd = this._labelEnd;
+    return d;
+  }
+
   public get coord(): Coord {
     return this._coord;
   }
@@ -142,6 +151,17 @@ class EdgeData extends Data<EdgeData> {
   private _sourceAnchor?: string;
   private _targetAnchor?: string;
   private _edgeNode?: NodeData;
+
+  public copy(): EdgeData {
+    const d = super.copy();
+    d._source = this._source;
+    d._target = this._target;
+    d._path = this._path;
+    d._sourceAnchor = this._sourceAnchor;
+    d._targetAnchor = this._targetAnchor;
+    d._edgeNode = this._edgeNode;
+    return d;
+  }
 
   public get source(): number {
     return this._source;
@@ -222,6 +242,13 @@ class PathData {
     this._edges = List();
   }
 
+  public copy(): PathData {
+    const p = new PathData(this._id);
+    p._edges = this._edges;
+    p._isCycle = this._isCycle;
+    return p;
+  }
+
   public get id(): number {
     return this._id;
   }
@@ -232,13 +259,6 @@ class PathData {
 
   public get isCycle(): boolean {
     return this._isCycle;
-  }
-
-  public copy(): PathData {
-    const p = new PathData(this._id);
-    p._edges = this._edges;
-    p._isCycle = this._isCycle;
-    return p;
   }
 
   public setId(id: number): PathData {
