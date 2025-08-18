@@ -1,4 +1,4 @@
-import { OrderedMap, List } from "immutable";
+import { OrderedMap, List, ValueObject } from "immutable";
 
 import { isValidPropertyVal } from "./TikzParser";
 
@@ -19,6 +19,10 @@ class Data<T extends Data<T>> {
 
   public equals(other: T): boolean {
     return this._id === other._id && this._map.equals(other._map);
+  }
+
+  public hashCode(): number {
+    return (this._map.hashCode() * 37 + this._id) | 0;
   }
 
   public get id(): number {
@@ -94,7 +98,7 @@ class GraphData extends Data<GraphData> {
   }
 }
 
-class NodeData extends Data<NodeData> {
+class NodeData extends Data<NodeData> implements ValueObject {
   private _coord: Coord;
   private _label: string;
   private _labelStart?: number;
@@ -159,7 +163,7 @@ class NodeData extends Data<NodeData> {
   }
 }
 
-class EdgeData extends Data<EdgeData> {
+class EdgeData extends Data<EdgeData> implements ValueObject {
   private _source: number;
   private _target: number;
   private _path: number;
@@ -258,7 +262,7 @@ class EdgeData extends Data<EdgeData> {
   }
 }
 
-class PathData {
+class PathData implements ValueObject {
   private _id: number;
   private _edges: List<number>;
   private _isCycle: boolean;
@@ -273,6 +277,10 @@ class PathData {
     return (
       this._id === other._id && this._edges.equals(other._edges) && this._isCycle === other._isCycle
     );
+  }
+
+  public hashCode(): number {
+    return ((this._id * 397) ^ this._edges.hashCode() ^ (this._isCycle ? 1 : 0)) | 0;
   }
 
   public get id(): number {
