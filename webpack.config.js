@@ -7,7 +7,7 @@ const path = require('path');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const baseConfig = {
-	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
+	mode: 'production', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
@@ -41,6 +41,10 @@ const baseConfig = {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.ttf/,
+        type: 'asset/resource',
+      }
     ]
   },
   devtool: 'nosources-source-map',
@@ -77,8 +81,18 @@ const webviewConfig = {
   },
   plugins: [
     new MonacoWebpackPlugin({
-      languages: ['json'],
-      features: ['!gotoSymbol', '!hover', '!contextmenu', '!quickCommand'],
+      languages: [],
+      features: [
+          '!bracketMatching',
+          '!caretOperations',
+          'clipboard',
+          '!codeAction',
+          '!codelens',
+          '!comment',
+          '!contextmenu',
+          '!gotoSymbol',
+          '!hover',
+          '!quickCommand'],
     }),
   new webpack.ProvidePlugin({
       process: 'process/browser',

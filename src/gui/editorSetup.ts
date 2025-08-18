@@ -1,6 +1,7 @@
 import type { editor } from "monaco-editor";
 import { loader } from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
+// import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 // Configure the loader to use the webpack bundled monaco-editor
 // instead of loading from CDN
