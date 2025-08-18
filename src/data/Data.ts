@@ -8,63 +8,35 @@ function wrapPropertyVal(val: string): string {
   return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
 }
 
-class Data<T extends Data<T>> {
-  private _id: number;
-  private map: OrderedMap<string, string | undefined>;
+class Data {
+  protected _id: number;
+  protected _map: OrderedMap<string, string | undefined>;
 
-  constructor(id?: number, map?: OrderedMap<string, string | undefined>) {
-    this._id = id ?? -1;
-    this.map = map ?? OrderedMap<string, string | undefined>();
+  constructor(data?: Data) {
+    this._id = data?._id ?? -1;
+    this._map = data?._map ?? OrderedMap<string, string | undefined>();
   }
 
   public get id(): number {
     return this._id;
   }
 
-  public copy(): T {
-    return new Data(this.id, this.map) as T;
-  }
-
-  public setId(id: number): T {
-    const d = this.copy();
-    d._id = id;
-    return d;
-  }
-
-  public setProperty(key: string, value: string): T {
-    const d = this.copy();
-    d.map = d.map.set(key, value);
-    return d;
-  }
-
-  public setAtom(key: string): T {
-    const d = this.copy();
-    d.map = d.map.set(key, undefined);
-    return d;
-  }
-
-  public unset(key: string): T {
-    const d = this.copy();
-    d.map = d.map.delete(key);
-    return d;
-  }
-
   public property(key: string): string | undefined {
-    return this.map.get(key);
+    return this._map.get(key);
   }
 
   public atom(key: string): boolean {
-    return this.map.has(key);
+    return this._map.has(key);
   }
 
   public toString(): string {
-    if (this.map.isEmpty()) {
+    if (this._map.isEmpty()) {
       return "";
     } else {
       let s = "[";
       let first = true;
 
-      for (const [key, val] of this.map.entries()) {
+      for (const [key, val] of this._map.entries()) {
         if (!first) {
           s += ", ";
         } else {
@@ -88,20 +60,71 @@ class Data<T extends Data<T>> {
   }
 }
 
-class GraphData extends Data<GraphData> {}
+class GraphData extends Data {
+  constructor(data?: GraphData) {
+    super(data);
+  }
 
-class NodeData extends Data<NodeData> {
-  private _coord: Coord = [0, 0];
-  private _label: string = "";
+  public setId(id: number): GraphData {
+    const d = new GraphData(this);
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): GraphData {
+    const d = new GraphData(this);
+    d._map = d._map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): GraphData {
+    const d = new GraphData(this);
+    d._map = d._map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): GraphData {
+    const d = new GraphData(this);
+    d._map = d._map.delete(key);
+    return d;
+  }
+}
+
+class NodeData extends Data {
+  private _coord: Coord;
+  private _label: string;
   private _labelStart?: number;
   private _labelEnd?: number;
 
-  public copy(): NodeData {
-    const d = super.copy();
-    d._coord = this._coord;
-    d._label = this._label;
-    d._labelStart = this._labelStart;
-    d._labelEnd = this._labelEnd;
+  public constructor(data?: NodeData) {
+    super(data);
+    this._coord = data?._coord ?? [0, 0];
+    this._label = data?._label ?? "";
+    this._labelStart = data?._labelStart;
+    this._labelEnd = data?._labelEnd;
+  }
+
+  public setId(id: number): NodeData {
+    const d = new NodeData(this);
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): NodeData {
+    const d = new NodeData(this);
+    d._map = d._map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): NodeData {
+    const d = new NodeData(this);
+    d._map = d._map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): NodeData {
+    const d = new NodeData(this);
+    d._map = d._map.delete(key);
     return d;
   }
 
@@ -122,46 +145,69 @@ class NodeData extends Data<NodeData> {
   }
 
   public setCoord(coord: Coord): NodeData {
-    const d = this.copy();
+    const d = new NodeData(this);
     d._coord = coord;
     return d;
   }
 
   public setLabel(label: string): NodeData {
-    const d = this.copy();
+    const d = new NodeData(this);
     d._label = label;
     return d;
   }
 
   public setLabelStart(labelStart: number | undefined): NodeData {
-    const d = this.copy();
+    const d = new NodeData(this);
     d._labelStart = labelStart;
     return d;
   }
 
   public setLabelEnd(labelEnd: number | undefined): NodeData {
-    const d = this.copy();
+    const d = new NodeData(this);
     d._labelEnd = labelEnd;
     return d;
   }
 }
 
-class EdgeData extends Data<EdgeData> {
-  private _source: number = -1;
-  private _target: number = -1;
-  private _path: number = -1;
+class EdgeData extends Data {
+  private _source: number;
+  private _target: number;
+  private _path: number;
   private _sourceAnchor?: string;
   private _targetAnchor?: string;
   private _edgeNode?: NodeData;
 
-  public copy(): EdgeData {
-    const d = super.copy();
-    d._source = this._source;
-    d._target = this._target;
-    d._path = this._path;
-    d._sourceAnchor = this._sourceAnchor;
-    d._targetAnchor = this._targetAnchor;
-    d._edgeNode = this._edgeNode;
+  constructor(data?: EdgeData) {
+    super(data);
+    this._source = data?._source ?? -1;
+    this._target = data?._target ?? -1;
+    this._path = data?._path ?? -1;
+    this._sourceAnchor = data?._sourceAnchor;
+    this._targetAnchor = data?._targetAnchor;
+    this._edgeNode = data?._edgeNode;
+  }
+
+  public setId(id: number): EdgeData {
+    const d = new EdgeData(this);
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): EdgeData {
+    const d = new EdgeData(this);
+    d._map = d._map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): EdgeData {
+    const d = new EdgeData(this);
+    d._map = d._map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): EdgeData {
+    const d = new EdgeData(this);
+    d._map = d._map.delete(key);
     return d;
   }
 
@@ -190,37 +236,37 @@ class EdgeData extends Data<EdgeData> {
   }
 
   public setSource(source: number): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._source = source;
     return d;
   }
 
   public setTarget(target: number): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._target = target;
     return d;
   }
 
   public setPath(path: number): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._path = path;
     return d;
   }
 
   public setSourceAnchor(sourceAnchor: string | undefined): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._sourceAnchor = sourceAnchor;
     return d;
   }
 
   public setTargetAnchor(targetAnchor: string | undefined): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._targetAnchor = targetAnchor;
     return d;
   }
 
   public setEdgeNode(edgeNode: NodeData | undefined): EdgeData {
-    const d = this.copy();
+    const d = new EdgeData(this);
     d._edgeNode = edgeNode;
     return d;
   }
@@ -237,18 +283,12 @@ class EdgeData extends Data<EdgeData> {
 class PathData {
   private _id: number;
   private _edges: List<number>;
-  private _isCycle: boolean = false;
+  private _isCycle: boolean;
 
-  constructor(id?: number) {
-    this._id = id ?? -1;
-    this._edges = List();
-  }
-
-  public copy(): PathData {
-    const p = new PathData(this._id);
-    p._edges = this._edges;
-    p._isCycle = this._isCycle;
-    return p;
+  constructor(data?: PathData) {
+    this._id = data?._id ?? -1;
+    this._edges = data?._edges ?? List();
+    this._isCycle = data?._isCycle ?? false;
   }
 
   public get id(): number {
@@ -264,45 +304,74 @@ class PathData {
   }
 
   public setId(id: number): PathData {
-    const p = this.copy();
+    const p = new PathData(this);
     p._id = id;
     return p;
   }
 
   public setEdges(edges: List<number>): PathData {
-    const p = this.copy();
+    const p = new PathData(this);
     p._edges = edges;
     return p;
   }
 
   public setIsCycle(isCycle: boolean): PathData {
-    const p = this.copy();
+    const p = new PathData(this);
     p._isCycle = isCycle;
     return p;
   }
 
   public addEdge(edge: number): PathData {
-    const p = this.copy();
+    const p = new PathData(this);
     p._edges = p._edges.push(edge);
     return p;
   }
 
   public removeEdge(index: number): PathData {
-    const p = this.copy();
-    p._edges = this._edges.filter((_, i) => i !== index);
+    const p = new PathData(this);
+    p._edges = p._edges.filter((_, i) => i !== index);
     return p;
   }
 }
 
-class StyleData extends Data<StyleData> {
-  private _name: string = "";
+class StyleData extends Data {
+  private _name: string;
+
+  constructor(data?: StyleData) {
+    super(data);
+    this._name = data?._name ?? "";
+  }
+
+  public setId(id: number): StyleData {
+    const d = new StyleData(this);
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): StyleData {
+    const d = new StyleData(this);
+    d._map = d._map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): StyleData {
+    const d = new StyleData(this);
+    d._map = d._map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): StyleData {
+    const d = new StyleData(this);
+    d._map = d._map.delete(key);
+    return d;
+  }
 
   public get name(): string {
     return this._name;
   }
 
   public setName(name: string): StyleData {
-    const d = this.copy();
+    const d = new StyleData(this);
     d._name = name;
     return d;
   }

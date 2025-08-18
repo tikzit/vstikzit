@@ -185,7 +185,7 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (this.styles !== undefined) {
-        const d = new StyleData(this.styles.numStyles()).setName(name);
+        const d = new StyleData().setId(this.styles.numStyles()).setName(name);
         this.d = d;
       }
     });
@@ -289,7 +289,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       if (d !== undefined && this.graph !== undefined) {
         const parsed = parseInt(name, 10);
-        d = d
+        d = (d as NodeData)
           .setId(isNaN(parsed) ? this.graph.freshNodeId : parsed)
           .setCoord(coord)
           .setLabel(stripBraces(labelToken.image))
@@ -374,7 +374,7 @@ class TikzParser extends EmbeddedActionsParser {
     let d: EdgeData | undefined;
 
     this.ACTION(() => {
-      d = new EdgeData(this.graph?.freshEdgeId ?? 0);
+      d = new EdgeData().setId(this.graph?.freshEdgeId ?? 0);
       this.d = d;
     });
 
@@ -446,7 +446,7 @@ class TikzParser extends EmbeddedActionsParser {
         this.graph = this.graph.addEdgeWithData(d);
         this.currentPath.edges.push(d.id);
         d = d.setPath(this.currentPath.id);
-        const d1 = new EdgeData(this.graph.freshEdgeId).setSource(d.target);
+        const d1 = new EdgeData().setId(this.graph.freshEdgeId).setSource(d.target);
         this.d = d1;
       }
     });
@@ -456,7 +456,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(DrawCmd);
 
     this.ACTION(() => {
-      this.currentPath = new PathData(this.graph?.freshPathId ?? 0);
+      this.currentPath = new PathData().setId(this.graph?.freshPathId ?? 0);
     });
 
     this.SUBRULE(this.edgeSource);
