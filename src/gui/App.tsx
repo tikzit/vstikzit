@@ -34,7 +34,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
             console.log("parsing\n" + message.content);
             const parsed = parseTikzStyles(message.content);
             if (parsed.result !== undefined) {
-              setTikzStyles(parsed.result.setFilename(message.filename));
+              const s = parsed.result.setFilename(message.filename).inheritDataFrom(tikzStyles);
+              setTikzStyles(s);
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
@@ -60,7 +61,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
       const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {
         console.log("graph parsed");
-        setGraph(parsed.result);
+        const g = parsed.result.inheritDataFrom(graph);
+        setGraph(g);
       }
 
       vscode.postMessage({

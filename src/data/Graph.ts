@@ -124,6 +124,31 @@ class Graph {
     return this.maxPathId + 1;
   }
 
+  /** This function inherits any identical data from the provided graph
+   *
+   * This helps reactive components recognise the same data via Object.is() after the graph
+   * has been re-parsed.
+   */
+  public inheritDataFrom(other: Graph): Graph {
+    const g = new Graph();
+    g.maxNodeId = this.maxNodeId;
+    g.maxEdgeId = this.maxEdgeId;
+    g.maxPathId = this.maxPathId;
+    g._nodeData = this._nodeData.map(d => {
+      const d1 = other._nodeData.get(d.id);
+      return d1 !== undefined && d.equals(d1) ? d1 : d;
+    });
+    g._edgeData = this._edgeData.map(d => {
+      const d1 = other._edgeData.get(d.id);
+      return d1 !== undefined && d.equals(d1) ? d1 : d;
+    });
+    g._pathData = this._pathData.map(d => {
+      const d1 = other._pathData.get(d.id);
+      return d1 !== undefined && d.equals(d1) ? d1 : d;
+    });
+    return g;
+  }
+
   public tikz(): string {
     let result = "\\begin{tikzpicture}\n";
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";

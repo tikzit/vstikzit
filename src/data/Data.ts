@@ -8,13 +8,17 @@ function wrapPropertyVal(val: string): string {
   return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
 }
 
-class Data {
+class Data<T extends Data<T>> {
   protected _id: number;
   protected _map: OrderedMap<string, string | undefined>;
 
-  constructor(data?: Data) {
+  constructor(data?: T) {
     this._id = data?._id ?? -1;
     this._map = data?._map ?? OrderedMap<string, string | undefined>();
+  }
+
+  public equals(other: T): boolean {
+    return this._id === other._id && this._map.equals(other._map);
   }
 
   public get id(): number {
@@ -27,6 +31,30 @@ class Data {
 
   public atom(key: string): boolean {
     return this._map.has(key);
+  }
+
+  public setId(id: number): T {
+    const d = new (this.constructor as any)(this);
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): T {
+    const d = new (this.constructor as any)(this);
+    d._map = d._map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): T {
+    const d = new (this.constructor as any)(this);
+    d._map = d._map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): T {
+    const d = new (this.constructor as any)(this);
+    d._map = d._map.delete(key);
+    return d;
   }
 
   public toString(): string {
@@ -60,37 +88,13 @@ class Data {
   }
 }
 
-class GraphData extends Data {
+class GraphData extends Data<GraphData> {
   constructor(data?: GraphData) {
     super(data);
   }
-
-  public setId(id: number): GraphData {
-    const d = new GraphData(this);
-    d._id = id;
-    return d;
-  }
-
-  public setProperty(key: string, value: string): GraphData {
-    const d = new GraphData(this);
-    d._map = d._map.set(key, value);
-    return d;
-  }
-
-  public setAtom(key: string): GraphData {
-    const d = new GraphData(this);
-    d._map = d._map.set(key, undefined);
-    return d;
-  }
-
-  public unset(key: string): GraphData {
-    const d = new GraphData(this);
-    d._map = d._map.delete(key);
-    return d;
-  }
 }
 
-class NodeData extends Data {
+class NodeData extends Data<NodeData> {
   private _coord: Coord;
   private _label: string;
   private _labelStart?: number;
@@ -104,28 +108,14 @@ class NodeData extends Data {
     this._labelEnd = data?._labelEnd;
   }
 
-  public setId(id: number): NodeData {
-    const d = new NodeData(this);
-    d._id = id;
-    return d;
-  }
-
-  public setProperty(key: string, value: string): NodeData {
-    const d = new NodeData(this);
-    d._map = d._map.set(key, value);
-    return d;
-  }
-
-  public setAtom(key: string): NodeData {
-    const d = new NodeData(this);
-    d._map = d._map.set(key, undefined);
-    return d;
-  }
-
-  public unset(key: string): NodeData {
-    const d = new NodeData(this);
-    d._map = d._map.delete(key);
-    return d;
+  public equals(other: NodeData): boolean {
+    return (
+      super.equals(other) &&
+      this._coord === other._coord &&
+      this._label === other._label &&
+      this._labelStart === other._labelStart &&
+      this._labelEnd === other._labelEnd
+    );
   }
 
   public get coord(): Coord {
@@ -169,7 +159,7 @@ class NodeData extends Data {
   }
 }
 
-class EdgeData extends Data {
+class EdgeData extends Data<EdgeData> {
   private _source: number;
   private _target: number;
   private _path: number;
@@ -187,28 +177,16 @@ class EdgeData extends Data {
     this._edgeNode = data?._edgeNode;
   }
 
-  public setId(id: number): EdgeData {
-    const d = new EdgeData(this);
-    d._id = id;
-    return d;
-  }
-
-  public setProperty(key: string, value: string): EdgeData {
-    const d = new EdgeData(this);
-    d._map = d._map.set(key, value);
-    return d;
-  }
-
-  public setAtom(key: string): EdgeData {
-    const d = new EdgeData(this);
-    d._map = d._map.set(key, undefined);
-    return d;
-  }
-
-  public unset(key: string): EdgeData {
-    const d = new EdgeData(this);
-    d._map = d._map.delete(key);
-    return d;
+  public equals(other: EdgeData): boolean {
+    return (
+      super.equals(other) &&
+      this._source === other._source &&
+      this._target === other._target &&
+      this._path === other._path &&
+      this._sourceAnchor === other._sourceAnchor &&
+      this._targetAnchor === other._targetAnchor &&
+      this._edgeNode === other._edgeNode
+    );
   }
 
   public get source(): number {
@@ -291,6 +269,12 @@ class PathData {
     this._isCycle = data?._isCycle ?? false;
   }
 
+  public equals(other: PathData): boolean {
+    return (
+      this._id === other._id && this._edges.equals(other._edges) && this._isCycle === other._isCycle
+    );
+  }
+
   public get id(): number {
     return this._id;
   }
@@ -334,7 +318,7 @@ class PathData {
   }
 }
 
-class StyleData extends Data {
+class StyleData extends Data<StyleData> {
   private _name: string;
 
   constructor(data?: StyleData) {
@@ -342,28 +326,8 @@ class StyleData extends Data {
     this._name = data?._name ?? "";
   }
 
-  public setId(id: number): StyleData {
-    const d = new StyleData(this);
-    d._id = id;
-    return d;
-  }
-
-  public setProperty(key: string, value: string): StyleData {
-    const d = new StyleData(this);
-    d._map = d._map.set(key, value);
-    return d;
-  }
-
-  public setAtom(key: string): StyleData {
-    const d = new StyleData(this);
-    d._map = d._map.set(key, undefined);
-    return d;
-  }
-
-  public unset(key: string): StyleData {
-    const d = new StyleData(this);
-    d._map = d._map.delete(key);
-    return d;
+  public equals(other: StyleData): boolean {
+    return super.equals(other) && this._name === other._name;
   }
 
   public get name(): string {

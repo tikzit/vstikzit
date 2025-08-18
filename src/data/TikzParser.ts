@@ -129,7 +129,7 @@ class ParseError extends Error {
 class TikzParser extends EmbeddedActionsParser {
   private graph?: Graph;
   private styles?: Styles;
-  // field holds the current data for parsing properies. Can be NodeData, EdgeData, StyleData, or GraphData
+  // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
   private d?: any;
   private nodeTab?: Map<string, number>;
   private currentPath?: PathData;
@@ -443,9 +443,9 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       let d = this.d as EdgeData;
       if (this.graph !== undefined && this.currentPath !== undefined) {
-        this.graph = this.graph.addEdgeWithData(d);
-        this.currentPath.edges.push(d.id);
         d = d.setPath(this.currentPath.id);
+        this.currentPath = this.currentPath.addEdge(d.id);
+        this.graph = this.graph.addEdgeWithData(d);
         const d1 = new EdgeData().setId(this.graph.freshEdgeId).setSource(d.target);
         this.d = d1;
       }

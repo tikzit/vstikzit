@@ -33,6 +33,21 @@ class Styles {
   public numStyles(): number {
     return this._styleData.size;
   }
+
+  /** This function inherits any identical data from the provided styles
+   *
+   * This helps reactive components recognise the same data via Object.is() after the graph
+   * has been re-parsed.
+   */
+  public inheritDataFrom(other: Styles): Styles {
+    const s = new Styles();
+    s._filename = this._filename;
+    s._styleData = this._styleData.map(d => {
+      const d1 = other._styleData.get(d.name);
+      return d1 !== undefined && d.equals(d1) ? d1 : d;
+    });
+    return s;
+  }
 }
 
 export default Styles;
