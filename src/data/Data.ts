@@ -115,7 +115,8 @@ class NodeData extends Data<NodeData> implements ValueObject {
   public equals(other: NodeData): boolean {
     return (
       super.equals(other) &&
-      this._coord === other._coord &&
+      this._coord[0] === other._coord[0] &&
+      this._coord[1] === other._coord[1] &&
       this._label === other._label &&
       this._labelStart === other._labelStart &&
       this._labelEnd === other._labelEnd
