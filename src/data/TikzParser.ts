@@ -193,7 +193,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.SUBRULE(this.properties);
 
     this.ACTION(() => {
-      this.styles?.setStyle(this.d as StyleData);
+      this.styles = this.styles?.setStyle(this.d as StyleData);
     });
   });
 
@@ -296,7 +296,7 @@ class TikzParser extends EmbeddedActionsParser {
           .setLabelStart(labelToken.startOffset)
           .setLabelEnd(labelToken.endOffset);
         this.nodeTab?.set(name, d.id);
-        this.graph.addNodeWithData(d);
+        this.graph = this.graph.addNodeWithData(d);
         this.d = d;
       }
     });
@@ -443,7 +443,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       let d = this.d as EdgeData;
       if (this.graph !== undefined && this.currentPath !== undefined) {
-        this.graph.addEdgeWithData(d);
+        this.graph = this.graph.addEdgeWithData(d);
         this.currentPath.edges.push(d.id);
         d = d.setPath(this.currentPath.id);
         const d1 = new EdgeData(this.graph.freshEdgeId).setSource(d.target);
