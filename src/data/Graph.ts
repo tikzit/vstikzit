@@ -1,80 +1,105 @@
-import { NodeData, EdgeData, PathData, Data } from "./Data";
+import { OrderedMap } from "immutable";
+import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
 class Graph {
-  public nodes: number[];
-  public paths: number[];
-  public graphData: Data = new Data(0);
-  public nodeData: Map<number, NodeData>;
-  public pathData: Map<number, PathData>;
-  public edgeData: Map<number, EdgeData>;
-  private maxNodeId = -1;
-  private maxEdgeId = -1;
-  private maxPathId = -1;
+  private _graphData: GraphData = new GraphData();
+  private _nodeData: OrderedMap<number, NodeData>;
+  private _pathData: OrderedMap<number, PathData>;
+  private _edgeData: OrderedMap<number, EdgeData>;
+  private maxNodeId: number;
+  private maxEdgeId: number;
+  private maxPathId: number;
 
-  constructor() {
-    this.nodes = [];
-    this.paths = [];
-    this.nodeData = new Map<number, NodeData>();
-    this.edgeData = new Map<number, EdgeData>();
-    this.pathData = new Map<number, PathData>();
+  constructor(graph?: Graph) {
+    this._graphData = graph?._graphData ?? new GraphData();
+    this._nodeData = graph?._nodeData ?? OrderedMap<number, NodeData>();
+    this._edgeData = graph?._edgeData ?? OrderedMap<number, EdgeData>();
+    this._pathData = graph?._pathData ?? OrderedMap<number, PathData>();
+    this.maxNodeId = graph?.maxNodeId ?? -1;
+    this.maxEdgeId = graph?.maxEdgeId ?? -1;
+    this.maxPathId = graph?.maxPathId ?? -1;
   }
 
-  public addNodeWithData(d: NodeData): void {
-    this.nodes.push(d.id);
-    this.nodeData.set(d.id, d);
-    if (d.id > this.maxNodeId) {
-      this.maxNodeId = d.id;
+  private copy(): Graph {
+    return new Graph(this);
+  }
+
+  public get graphData(): GraphData {
+    return this._graphData;
+  }
+
+  public get nodeData(): OrderedMap<number, NodeData> {
+    return this._nodeData;
+  }
+
+  public get edgeData(): OrderedMap<number, EdgeData> {
+    return this._edgeData;
+  }
+
+  public get pathData(): OrderedMap<number, PathData> {
+    return this._pathData;
+  }
+
+  public addNodeWithData(d: NodeData): Graph {
+    const g = this.copy();
+    g._nodeData = g._nodeData.set(d.id, d);
+    if (d.id > g.maxNodeId) {
+      g.maxNodeId = d.id;
     }
+    return g;
   }
 
-  public addEdgeWithData(d: EdgeData): void {
-    this.edgeData.set(d.id, d);
-    if (d.id > this.maxEdgeId) {
-      this.maxEdgeId = d.id;
+  public addEdgeWithData(d: EdgeData): Graph {
+    const g = this.copy();
+    g._edgeData = g._edgeData.set(d.id, d);
+    if (d.id > g.maxEdgeId) {
+      g.maxEdgeId = d.id;
     }
+    return g;
   }
 
-  public addPathWithData(d: PathData): void {
-    this.paths.push(d.id);
-    this.pathData.set(d.id, d);
-    if (d.id > this.maxPathId) {
-      this.maxPathId = d.id;
+  public addPathWithData(d: PathData): Graph {
+    const g = this.copy();
+    g._pathData = g._pathData.set(d.id, d);
+    if (d.id > g.maxPathId) {
+      g.maxPathId = d.id;
     }
+    return g;
   }
 
-  public freshNodeId(): number {
+  public get freshNodeId(): number {
     return this.maxNodeId + 1;
   }
 
-  public freshEdgeId(): number {
+  public get freshEdgeId(): number {
     return this.maxEdgeId + 1;
   }
 
-  public freshPathId(): number {
+  public get freshPathId(): number {
     return this.maxPathId + 1;
   }
 
   public tikz(): string {
     let result = "\\begin{tikzpicture}\n";
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
-    for (const n of this.nodes) {
-      const d = this.nodeData.get(n);
+    for (const d of this.nodeData.values()) {
       if (d) {
-        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord[0]}, ${d.coord[1]}) {${d.label}};\n`;
+        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord[0]}, ${d.coord[1]}) {${
+          d.label
+        }};\n`;
       }
     }
     result += "\t\\end{pgfonlayer}\n";
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
-    for (const p of this.paths) {
-      const pathData = this.pathData.get(p)!;
-      let d = this.edgeData.get(pathData.edges[0])!;
+    for (const pd of this.pathData.values()) {
+      let d = this.edgeData.get(pd.edges.get(0)!)!;
       let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
-      result += `\t\t\\draw${d.tikz()} ${d.sourceRef()} to${edgeNode} ${d.targetRef()}`;
+      result += `\t\t\\draw${d.tikz()} ${d.sourceRef} to${edgeNode} ${d.targetRef}`;
 
-      for (const edgeId of pathData.edges.slice(1)) {
+      for (const edgeId of pd.edges.slice(1)) {
         d = this.edgeData.get(edgeId)!;
         edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
-        result += ` to${d.tikz()}${edgeNode} ${d.targetRef()}`;
+        result += ` to${d.tikz()}${edgeNode} ${d.targetRef}`;
       }
       result += ";\n";
     }

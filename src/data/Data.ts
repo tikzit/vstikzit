@@ -8,6 +8,16 @@ function wrapPropertyVal(val: string): string {
   return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
 }
 
+interface IData {
+  copy(): this;
+  setProperty(key: string, value: string): this;
+  setAtom(key: string): this;
+  unset(key: string): this;
+  property(key: string): string | undefined;
+  atom(key: string): boolean;
+  tikz(): string;
+}
+
 class Data<T extends Data<T>> {
   private _id: number;
   private map: OrderedMap<string, string | undefined>;
@@ -21,7 +31,7 @@ class Data<T extends Data<T>> {
     return this._id;
   }
 
-  public copy(): T {
+  protected copy(): T {
     return new Data(this.id, this.map) as T;
   }
 
@@ -88,13 +98,15 @@ class Data<T extends Data<T>> {
   }
 }
 
+class GraphData extends Data<GraphData> {}
+
 class NodeData extends Data<NodeData> {
   private _coord: Coord = [0, 0];
   private _label: string = "";
   private _labelStart?: number;
   private _labelEnd?: number;
 
-  public copy(): NodeData {
+  protected copy(): NodeData {
     const d = super.copy();
     d._coord = this._coord;
     d._label = this._label;
@@ -152,7 +164,7 @@ class EdgeData extends Data<EdgeData> {
   private _targetAnchor?: string;
   private _edgeNode?: NodeData;
 
-  public copy(): EdgeData {
+  protected copy(): EdgeData {
     const d = super.copy();
     d._source = this._source;
     d._target = this._target;
@@ -242,7 +254,7 @@ class PathData {
     this._edges = List();
   }
 
-  public copy(): PathData {
+  protected copy(): PathData {
     const p = new PathData(this._id);
     p._edges = this._edges;
     p._isCycle = this._isCycle;
@@ -306,4 +318,4 @@ class StyleData extends Data<StyleData> {
   }
 }
 
-export { Data, NodeData, EdgeData, StyleData, PathData, Coord };
+export { IData, GraphData, NodeData, EdgeData, StyleData, PathData, Coord };
