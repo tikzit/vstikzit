@@ -2,12 +2,11 @@ import { NodeData } from "../data/Data";
 import SceneCoords from "./SceneCoords";
 
 interface NodeProps {
-  key: number;
   data: NodeData;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ key, data, sceneCoords }: NodeProps) => {
+const Node = ({ data, sceneCoords }: NodeProps) => {
   const [x, y] = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 

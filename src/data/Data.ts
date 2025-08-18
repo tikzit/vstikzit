@@ -1,71 +1,80 @@
+import { OrderedMap, List } from "immutable";
+
 import { isValidPropertyVal } from "./TikzParser";
 
-type Coord = [number, number];
+type Coord = readonly [number, number];
 
 function wrapPropertyVal(val: string): string {
   return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
 }
 
-class Data {
-  public id: number;
-  private pairs: [string, string | undefined][];
+class Data<T extends Data<T>> {
+  private _id: number;
+  private map: OrderedMap<string, string | undefined>;
 
-  constructor(id: number) {
-    this.id = id;
-    this.pairs = [];
+  constructor(id?: number, map?: OrderedMap<string, string | undefined>) {
+    this._id = id ?? -1;
+    this.map = map ?? OrderedMap<string, string | undefined>();
   }
 
-  public setProperty(key: string, value: string): void {
-    const i = this.pairs.findIndex(pair => pair[0] === key);
-    if (i !== -1) {
-      this.pairs[i][1] = value;
-    } else {
-      this.pairs.push([key, value]);
-    }
+  public get id(): number {
+    return this._id;
   }
 
-  public setAtom(key: string): void {
-    const i = this.pairs.findIndex(pair => pair[0] === key);
-    if (i === -1) {
-      this.pairs.push([key, undefined]);
-    }
+  public copy(): T {
+    return new Data(this.id, this.map) as T;
   }
 
-  public unsetAtom(key: string): void {
-    const i = this.pairs.findIndex(pair => pair[0] === key);
-    if (i !== -1) {
-      this.pairs.splice(i, 1);
-    }
+  public setId(id: number): T {
+    const d = this.copy();
+    d._id = id;
+    return d;
+  }
+
+  public setProperty(key: string, value: string): T {
+    const d = this.copy();
+    d.map = d.map.set(key, value);
+    return d;
+  }
+
+  public setAtom(key: string): T {
+    const d = this.copy();
+    d.map = d.map.set(key, undefined);
+    return d;
+  }
+
+  public unset(key: string): T {
+    const d = this.copy();
+    d.map = d.map.delete(key);
+    return d;
   }
 
   public property(key: string): string | undefined {
-    const pair = this.pairs.find(pair => pair[0] === key);
-    return pair !== undefined ? pair[1] : undefined;
+    return this.map.get(key);
   }
 
   public atom(key: string): boolean {
-    const i = this.pairs.findIndex(pair => pair[0] === key);
-    return i !== -1;
+    return this.map.has(key);
   }
 
   public toString(): string {
-    if (this.pairs.length === 0) {
+    if (this.map.isEmpty()) {
       return "";
     } else {
       let s = "[";
       let first = true;
 
-      for (const p of this.pairs) {
+      for (const [key, val] of this.map.entries()) {
         if (!first) {
           s += ", ";
         } else {
           first = false;
         }
 
-        if (p[1] !== undefined) {
-          s += `${wrapPropertyVal(p[0])}=${wrapPropertyVal(p[1])}`;
+        if (val !== undefined) {
+          s += `${wrapPropertyVal(key)}=${wrapPropertyVal(val)}`;
         } else {
-          s += `${wrapPropertyVal(p[0])}`;
+          s += `${wrapPropertyVal(key)}`;
         }
       }
 
@@ -79,44 +88,202 @@ class Data {
   }
 }
 
-class NodeData extends Data {
-  public inEdges: string[] = [];
-  public outEdges: string[] = [];
-  public coord: Coord = [0, 0];
-  public label: string = "";
-  public labelStart?: number;
-  public labelEnd?: number;
-}
+class NodeData extends Data<NodeData> {
+  private _coord: Coord = [0, 0];
+  private _label: string = "";
+  private _labelStart?: number;
+  private _labelEnd?: number;
 
-class EdgeData extends Data {
-  public source: number = -1;
-  public target: number = -1;
-  public path: number = -1;
-  public sourceAnchor?: string;
-  public targetAnchor?: string;
-  public edgeNode?: NodeData;
-
-  public sourceRef(): string {
-    return this.sourceAnchor ? `(${this.source}.${this.sourceAnchor})` : `(${this.source})`;
+  public get coord(): Coord {
+    return this._coord;
   }
 
-  public targetRef(): string {
-    return this.targetAnchor ? `(${this.target}.${this.targetAnchor})` : `(${this.target})`;
+  public get label(): string {
+    return this._label;
+  }
+
+  public get labelStart(): number | undefined {
+    return this._labelStart;
+  }
+
+  public get labelEnd(): number | undefined {
+    return this._labelEnd;
+  }
+
+  public setCoord(coord: Coord): NodeData {
+    const d = this.copy();
+    d._coord = coord;
+    return d;
+  }
+
+  public setLabel(label: string): NodeData {
+    const d = this.copy();
+    d._label = label;
+    return d;
+  }
+
+  public setLabelStart(labelStart: number | undefined): NodeData {
+    const d = this.copy();
+    d._labelStart = labelStart;
+    return d;
+  }
+
+  public setLabelEnd(labelEnd: number | undefined): NodeData {
+    const d = this.copy();
+    d._labelEnd = labelEnd;
+    return d;
+  }
+}
+
+class EdgeData extends Data<EdgeData> {
+  private _source: number = -1;
+  private _target: number = -1;
+  private _path: number = -1;
+  private _sourceAnchor?: string;
+  private _targetAnchor?: string;
+  private _edgeNode?: NodeData;
+
+  public get source(): number {
+    return this._source;
+  }
+
+  public get target(): number {
+    return this._target;
+  }
+
+  public get path(): number {
+    return this._path;
+  }
+
+  public get sourceAnchor(): string | undefined {
+    return this._sourceAnchor;
+  }
+
+  public get targetAnchor(): string | undefined {
+    return this._targetAnchor;
+  }
+
+  public get edgeNode(): NodeData | undefined {
+    return this._edgeNode;
+  }
+
+  public setSource(source: number): EdgeData {
+    const d = this.copy();
+    d._source = source;
+    return d;
+  }
+
+  public setTarget(target: number): EdgeData {
+    const d = this.copy();
+    d._target = target;
+    return d;
+  }
+
+  public setPath(path: number): EdgeData {
+    const d = this.copy();
+    d._path = path;
+    return d;
+  }
+
+  public setSourceAnchor(sourceAnchor: string | undefined): EdgeData {
+    const d = this.copy();
+    d._sourceAnchor = sourceAnchor;
+    return d;
+  }
+
+  public setTargetAnchor(targetAnchor: string | undefined): EdgeData {
+    const d = this.copy();
+    d._targetAnchor = targetAnchor;
+    return d;
+  }
+
+  public setEdgeNode(edgeNode: NodeData | undefined): EdgeData {
+    const d = this.copy();
+    d._edgeNode = edgeNode;
+    return d;
+  }
+
+  public get sourceRef(): string {
+    return this._sourceAnchor ? `(${this._source}.${this._sourceAnchor})` : `(${this._source})`;
+  }
+
+  public get targetRef(): string {
+    return this._targetAnchor ? `(${this._target}.${this._targetAnchor})` : `(${this._target})`;
   }
 }
 
 class PathData {
-  public id: number;
-  public edges: number[] = [];
-  public isCycle: boolean = false;
+  private _id: number;
+  private _edges: List<number>;
+  private _isCycle: boolean = false;
 
-  constructor(id: number) {
-    this.id = id;
+  constructor(id?: number) {
+    this._id = id ?? -1;
+    this._edges = List();
+  }
+
+  public get id(): number {
+    return this._id;
+  }
+
+  public get edges(): List<number> {
+    return this._edges;
+  }
+
+  public get isCycle(): boolean {
+    return this._isCycle;
+  }
+
+  public copy(): PathData {
+    const p = new PathData(this._id);
+    p._edges = this._edges;
+    p._isCycle = this._isCycle;
+    return p;
+  }
+
+  public setId(id: number): PathData {
+    const p = this.copy();
+    p._id = id;
+    return p;
+  }
+
+  public setEdges(edges: List<number>): PathData {
+    const p = this.copy();
+    p._edges = edges;
+    return p;
+  }
+
+  public setIsCycle(isCycle: boolean): PathData {
+    const p = this.copy();
+    p._isCycle = isCycle;
+    return p;
+  }
+
+  public addEdge(edge: number): PathData {
+    const p = this.copy();
+    p._edges = p._edges.push(edge);
+    return p;
+  }
+
+  public removeEdge(index: number): PathData {
+    const p = this.copy();
+    p._edges = this._edges.filter((_, i) => i !== index);
+    return p;
   }
 }
 
-class StyleData extends Data {
-  public name: string = "";
+class StyleData extends Data<StyleData> {
+  private _name: string = "";
+
+  public get name(): string {
+    return this._name;
+  }
+
+  public setName(name: string): StyleData {
+    const d = this.copy();
+    d._name = name;
+    return d;
+  }
 }
 
 export { Data, NodeData, EdgeData, StyleData, PathData, Coord };
