@@ -1,7 +1,7 @@
 // @ts-ignore - webpack will handle this
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
-import { Coord, Data, EdgeData, NodeData, PathData, StyleData } from "./Data";
+import { Coord, GraphData, EdgeData, NodeData, PathData, StyleData } from "./Data";
 import Styles from "./Styles";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
@@ -129,7 +129,8 @@ class ParseError extends Error {
 class TikzParser extends EmbeddedActionsParser {
   private graph?: Graph;
   private styles?: Styles;
-  private d?: Data;
+  // field holds the current data for parsing properies. Can be NodeData, EdgeData, StyleData, or GraphData
+  private d?: any;
   private nodeTab?: Map<string, number>;
   private currentPath?: PathData;
 
@@ -184,8 +185,7 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (this.styles !== undefined) {
-        const d = new StyleData(this.styles.numStyles());
-        d.name = name;
+        const d = new StyleData(this.styles.numStyles()).setName(name);
         this.d = d;
       }
     });
@@ -230,7 +230,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       if (this.d !== undefined) {
         if (val !== undefined) {
-          this.d.setProperty(key, val);
+          this.d = this.d.setProperty(key, val);
         } else {
           this.d.setAtom(key);
         }
@@ -272,7 +272,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(NodeCmd);
 
     this.ACTION(() => {
-      d = new NodeData(-1);
+      d = new NodeData();
       this.d = d;
     });
 
@@ -289,13 +289,15 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       if (d !== undefined && this.graph !== undefined) {
         const parsed = parseInt(name, 10);
-        d.id = isNaN(parsed) ? this.graph.freshNodeId() : parsed;
+        d = d
+          .setId(isNaN(parsed) ? this.graph.freshNodeId : parsed)
+          .setCoord(coord)
+          .setLabel(stripBraces(labelToken.image))
+          .setLabelStart(labelToken.startOffset)
+          .setLabelEnd(labelToken.endOffset);
         this.nodeTab?.set(name, d.id);
-        d.coord = coord;
-        d.label = stripBraces(labelToken.image);
-        d.labelStart = labelToken.startOffset;
-        d.labelEnd = labelToken.endOffset;
         this.graph.addNodeWithData(d);
+        this.d = d;
       }
     });
   });
@@ -350,7 +352,7 @@ class TikzParser extends EmbeddedActionsParser {
 
       this.ACTION(() => {
         ed = this.d as EdgeData;
-        d = new NodeData(-1);
+        d = new NodeData();
         this.d = d;
       });
 
@@ -360,8 +362,8 @@ class TikzParser extends EmbeddedActionsParser {
 
       this.ACTION(() => {
         if (d !== undefined && ed !== undefined) {
-          d.label = label;
-          ed.edgeNode = d;
+          d = d.setLabel(label);
+          ed = ed.setEdgeNode(d);
           this.d = ed;
         }
       });
@@ -372,7 +374,7 @@ class TikzParser extends EmbeddedActionsParser {
     let d: EdgeData | undefined;
 
     this.ACTION(() => {
-      d = new EdgeData(this.graph?.freshEdgeId() ?? 0);
+      d = new EdgeData(this.graph?.freshEdgeId ?? 0);
       this.d = d;
     });
 
@@ -381,8 +383,8 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (d !== undefined) {
-        d.source = nodeRef[0];
-        d.sourceAnchor = nodeRef[1];
+        d = d.setSource(nodeRef[0]).setSourceAnchor(nodeRef[1]);
+        this.d = d;
       }
     });
   });
@@ -398,9 +400,9 @@ class TikzParser extends EmbeddedActionsParser {
           const nodeRef = this.SUBRULE(this.nodeRef);
 
           this.ACTION(() => {
-            const d = this.d as EdgeData;
-            d.target = nodeRef[0];
-            d.targetAnchor = nodeRef[1];
+            let d = this.d as EdgeData;
+            d = d.setTarget(nodeRef[0]).setTargetAnchor(nodeRef[1]);
+            this.d = d;
           });
         },
       },
@@ -410,9 +412,9 @@ class TikzParser extends EmbeddedActionsParser {
           this.CONSUME(RParen);
 
           this.ACTION(() => {
-            const d = this.d as EdgeData;
-            d.target = d.source;
-            d.targetAnchor = d.sourceAnchor;
+            let d = this.d as EdgeData;
+            d = d.setTarget(d.source).setTargetAnchor(d.sourceAnchor);
+            this.d = d;
           });
         },
       },
@@ -422,9 +424,10 @@ class TikzParser extends EmbeddedActionsParser {
 
           this.ACTION(() => {
             const d = this.d as EdgeData;
-            if (this.currentPath && this.currentPath.edges.length > 0) {
-              this.currentPath.isCycle = true;
-              d.target = this.graph?.edgeData.get(this.currentPath.edges[0])?.source ?? -1;
+            if (this.currentPath && this.currentPath.edges.size > 0) {
+              this.currentPath = this.currentPath.setIsCycle(true);
+              const firstEdge = this.currentPath.edges.get(0)!;
+              this.d = d.setTarget(this.graph?.edgeData.get(firstEdge)?.source ?? -1);
             } else {
               throw new ParseError(
                 cycleToken.startLine ?? 1,
@@ -438,13 +441,12 @@ class TikzParser extends EmbeddedActionsParser {
     ]);
 
     this.ACTION(() => {
-      const d = this.d as EdgeData;
+      let d = this.d as EdgeData;
       if (this.graph !== undefined && this.currentPath !== undefined) {
         this.graph.addEdgeWithData(d);
         this.currentPath.edges.push(d.id);
-        d.path = this.currentPath.id;
-        const d1 = new EdgeData(this.graph.freshEdgeId());
-        d1.source = d.target;
+        d = d.setPath(this.currentPath.id);
+        const d1 = new EdgeData(this.graph.freshEdgeId).setSource(d.target);
         this.d = d1;
       }
     });
@@ -454,7 +456,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(DrawCmd);
 
     this.ACTION(() => {
-      this.currentPath = new PathData(this.graph?.freshPathId() ?? 0);
+      this.currentPath = new PathData(this.graph?.freshPathId ?? 0);
     });
 
     this.SUBRULE(this.edgeSource);
@@ -463,7 +465,7 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (this.currentPath !== undefined) {
-        this.graph?.addPathWithData(this.currentPath);
+        this.graph = this.graph?.addPathWithData(this.currentPath);
         this.currentPath = undefined;
       }
     });
