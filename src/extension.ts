@@ -49,14 +49,8 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     // Handle messages from the webview
     webviewPanel.webview.onDidReceiveMessage(e => {
       switch (e.type) {
-        case "edit":
+        case "updateTextDocument":
           this.updateTextDocument(document, e.content);
-          return;
-        case "getFileData":
-          webviewPanel.webview.postMessage({
-            type: "init",
-            content: document.getText(),
-          });
           return;
         case "getTikzStyles":
           this.getTikzStylesFile(webviewPanel.webview);
@@ -65,11 +59,6 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     // Clean up subscriptions when webview is disposed
-    webviewPanel.onDidDispose(() => {
-      changeDocumentSubscription.dispose();
-    });
-
-    // Make sure we get rid of the listener when our editor is closed
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
     });
@@ -88,7 +77,11 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
 			<head>
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}' 'unsafe-eval' ${webview.cspSource}; font-src ${webview.cspSource}; worker-src 'self' data: blob:;">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${
+          webview.cspSource
+        }; script-src 'nonce-${nonce}' 'unsafe-eval' ${webview.cspSource}; font-src ${
+      webview.cspSource
+    }; worker-src 'self' data: blob:;">
 				<title>TikZ Editor</title>
 				<style>
 					body {

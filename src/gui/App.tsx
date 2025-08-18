@@ -15,9 +15,6 @@ interface AppProps {
 const App = ({ initialContent, vscode }: AppProps) => {
   const initialGraph = parseTikzPicture(initialContent).result ?? new Graph();
 
-  // the tikz code for the current file
-  const [tikz, setTikz] = useState(initialContent);
-
   // the current graph
   const [graph, setGraph] = useState<Graph>(initialGraph);
 
@@ -32,20 +29,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       switch (message.type) {
-        case "update":
-          // TODO: handle updates from outside of this editor?
-          break;
-        case "getFileData":
-          vscode.postMessage({
-            type: "getFileData",
-            content: tikz,
-          });
-          break;
         case "tikzStylesContent":
           if (message.content) {
             console.log("parsing\n" + message.content);
             const parsed = parseTikzStyles(message.content);
             if (parsed.result !== undefined) {
+              parsed.result.filename = message.filename;
               setTikzStyles(parsed.result);
             } else {
               console.log(
@@ -62,13 +51,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [tikz, editorContent]);
+  }, []);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       console.log("got editor change");
       console.log(value.substring(0, 100));
-      setTikz(value);
 
       const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {
@@ -77,7 +65,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
       }
 
       vscode.postMessage({
-        type: "edit",
+        type: "updateTextDocument",
         content: value,
       });
     }

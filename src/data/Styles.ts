@@ -3,7 +3,7 @@ import { StyleData } from "./Data";
 class Styles {
   public styles: string[] = [];
   public styleData: Map<string, StyleData> = new Map();
-  public fileName: string = "";
+  public filename: string = "";
 
   public addStyle(style: StyleData) {
     this.styles.push(style.name);

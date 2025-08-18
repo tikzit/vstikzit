@@ -17,7 +17,7 @@ const StylePanel = ({ tikzStyles }: StylePanelProps) => {
         overflow: "auto",
       }}
     >
-      <i>[{tikzStyles.fileName !== "" ? tikzStyles.fileName : "no tikzstyles"}]</i>
+      <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
       <pre
         style={{
           margin: 0,
