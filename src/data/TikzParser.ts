@@ -155,6 +155,11 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.CONSUME(BeginTikzPictureCmd);
     this.SUBRULE(this.optProperties);
+
+    this.ACTION(() => {
+      this.graph = this.graph?.setGraphData(this.d as GraphData);
+    });
+
     this.MANY(() => {
       this.OR([
         { ALT: () => this.SUBRULE(this.node) },
@@ -232,7 +237,7 @@ class TikzParser extends EmbeddedActionsParser {
         if (val !== undefined) {
           this.d = this.d.setProperty(key, val);
         } else {
-          this.d.setAtom(key);
+          this.d = this.d.setAtom(key);
         }
       }
     });
@@ -268,12 +273,10 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   private node = this.RULE("node", () => {
-    let d: NodeData | undefined;
     this.CONSUME(NodeCmd);
 
     this.ACTION(() => {
-      d = new NodeData();
-      this.d = d;
+      this.d = new NodeData();
     });
 
     this.SUBRULE(this.optProperties);
@@ -287,9 +290,9 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(Semicolon);
 
     this.ACTION(() => {
-      if (d !== undefined && this.graph !== undefined) {
+      if (this.graph !== undefined) {
         const parsed = parseInt(name, 10);
-        d = (d as NodeData)
+        const d = (this.d as NodeData)
           .setId(isNaN(parsed) ? this.graph.freshNodeId : parsed)
           .setCoord(coord)
           .setLabel(stripBraces(labelToken.image))
@@ -297,7 +300,6 @@ class TikzParser extends EmbeddedActionsParser {
           .setLabelEnd(labelToken.endOffset);
         this.nodeTab?.set(name, d.id);
         this.graph = this.graph.addNodeWithData(d);
-        this.d = d;
       }
     });
   });
@@ -352,8 +354,7 @@ class TikzParser extends EmbeddedActionsParser {
 
       this.ACTION(() => {
         ed = this.d as EdgeData;
-        d = new NodeData();
-        this.d = d;
+        this.d = new NodeData();
       });
 
       this.CONSUME(Node);
@@ -362,7 +363,7 @@ class TikzParser extends EmbeddedActionsParser {
 
       this.ACTION(() => {
         if (d !== undefined && ed !== undefined) {
-          d = d.setLabel(label);
+          const d = (this.d as NodeData).setLabel(label);
           ed = ed.setEdgeNode(d);
           this.d = ed;
         }
@@ -371,21 +372,15 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   private edgeSource = this.RULE("edgeSource", () => {
-    let d: EdgeData | undefined;
-
     this.ACTION(() => {
-      d = new EdgeData().setId(this.graph?.freshEdgeId ?? 0);
-      this.d = d;
+      this.d = new EdgeData().setId(this.graph?.freshEdgeId ?? 0);
     });
 
     this.SUBRULE(this.optProperties);
     const nodeRef = this.SUBRULE(this.nodeRef);
 
     this.ACTION(() => {
-      if (d !== undefined) {
-        d = d.setSource(nodeRef[0]).setSourceAnchor(nodeRef[1]);
-        this.d = d;
-      }
+      this.d = (this.d as EdgeData).setSource(nodeRef[0]).setSourceAnchor(nodeRef[1]);
     });
   });
 
@@ -400,9 +395,7 @@ class TikzParser extends EmbeddedActionsParser {
           const nodeRef = this.SUBRULE(this.nodeRef);
 
           this.ACTION(() => {
-            let d = this.d as EdgeData;
-            d = d.setTarget(nodeRef[0]).setTargetAnchor(nodeRef[1]);
-            this.d = d;
+            this.d = (this.d as EdgeData).setTarget(nodeRef[0]).setTargetAnchor(nodeRef[1]);
           });
         },
       },
@@ -412,9 +405,9 @@ class TikzParser extends EmbeddedActionsParser {
           this.CONSUME(RParen);
 
           this.ACTION(() => {
-            let d = this.d as EdgeData;
-            d = d.setTarget(d.source).setTargetAnchor(d.sourceAnchor);
-            this.d = d;
+            this.d = (this.d as EdgeData)
+              .setTarget(this.d.source)
+              .setTargetAnchor(this.d.sourceAnchor);
           });
         },
       },

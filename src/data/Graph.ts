@@ -52,6 +52,12 @@ class Graph {
     return this._edgeData.keySeq();
   }
 
+  public setGraphData(d: GraphData): Graph {
+    const g = this.copy();
+    g._graphData = d;
+    return g;
+  }
+
   public addNodeWithData(d: NodeData): Graph {
     const g = this.copy();
     g._nodeData = g._nodeData.set(d.id, d);
