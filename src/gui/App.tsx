@@ -34,8 +34,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             console.log("parsing\n" + message.content);
             const parsed = parseTikzStyles(message.content);
             if (parsed.result !== undefined) {
-              parsed.result.filename = message.filename;
-              setTikzStyles(parsed.result);
+              setTikzStyles(parsed.result.setFilename(message.filename));
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +

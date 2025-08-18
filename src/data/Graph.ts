@@ -1,4 +1,4 @@
-import { OrderedMap } from "immutable";
+import { OrderedMap, Seq } from "immutable";
 import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
 class Graph {
@@ -40,16 +40,16 @@ class Graph {
     return this._pathData;
   }
 
-  public get nodes(): IterableIterator<number> {
-    return this._nodeData.keys();
+  public get nodes(): Seq.Indexed<number> {
+    return this._nodeData.keySeq();
   }
 
-  public get paths(): IterableIterator<number> {
-    return this._pathData.keys();
+  public get paths(): Seq.Indexed<number> {
+    return this._pathData.keySeq();
   }
 
-  public get edges(): IterableIterator<number> {
-    return this._edgeData.keys();
+  public get edges(): Seq.Indexed<number> {
+    return this._edgeData.keySeq();
   }
 
   public addNodeWithData(d: NodeData): Graph {
