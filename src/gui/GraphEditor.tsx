@@ -1,17 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Graph from "../data/Graph";
 import { drawGrid } from "./grid";
 import SceneCoords from "./SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
+import Styles from "../data/Styles";
 
 interface GraphEditorProps {
-  graph: Graph;
+  initGraph: Graph;
   onGraphChange: (graph: Graph) => void;
+  tikzStyles: Styles;
 }
 
-const GraphEditor = ({ graph, onGraphChange }: GraphEditorProps) => {
+const GraphEditor = ({ initGraph, onGraphChange, tikzStyles }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
+  const [graph, setGraph] = useState<Graph>(initGraph);
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;

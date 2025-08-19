@@ -7,23 +7,36 @@ import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
 import Styles from "../data/Styles";
 
+interface IContent {
+  document: string;
+  styleFile: string;
+  styles: string;
+}
+
 interface AppProps {
-  initialContent: string;
+  initialContent: IContent;
   vscode: any;
 }
 
 const App = ({ initialContent, vscode }: AppProps) => {
-  const initialGraph = parseTikzPicture(initialContent).result ?? new Graph();
+  // state used to re-initialise the graph
+  const [initGraph, setInitGraph] = useState<Graph>(
+    parseTikzPicture(initialContent.document).result ?? new Graph()
+  );
 
-  // the current graph
-  const [graph, setGraph] = useState<Graph>(initialGraph);
+  // the most recent graph seen
+  let lastGraph: Graph | undefined;
 
   // tikzstyles
-  const [tikzStyles, setTikzStyles] = useState<Styles>(new Styles());
+  const [tikzStyles, setTikzStyles] = useState<Styles>(
+    (parseTikzStyles(initialContent.styles).result ?? new Styles()).setFilename(
+      initialContent.styleFile
+    )
+  );
 
   // the content for the editor. Should only set this to externally reset the contents
   // of the component.
-  const [editorContent, setEditorContent] = useState(initialContent);
+  const [initCode, setInitCode] = useState(initialContent.document);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -50,9 +63,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
     };
 
     window.addEventListener("message", handleMessage);
+
+    // vscode.postMessage({
+    //   type: "getTikzStyles",
+    // });
+
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // a change in the tikz code, triggered by the code editor
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       console.log("got editor change");
@@ -61,8 +80,9 @@ const App = ({ initialContent, vscode }: AppProps) => {
       const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {
         console.log("graph parsed");
-        const g = parsed.result.inheritDataFrom(graph);
-        setGraph(g);
+        const g =
+          lastGraph !== undefined ? parsed.result.inheritDataFrom(lastGraph) : parsed.result;
+        setInitGraph(g);
       }
 
       vscode.postMessage({
@@ -72,14 +92,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
     }
   };
 
+  // a change in the graph, triggered by the graph editor
   const handleGraphChange = (graph: Graph) => {
     console.log("got graph change");
-    setGraph(graph);
+    lastGraph = graph;
+    setInitCode(graph.tikz());
   };
-
-  vscode.postMessage({
-    type: "getTikzStyles",
-  });
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
@@ -97,11 +115,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
           cursor="col-resize"
           style={{ display: "flex", flexDirection: "row", height: "100%" }}
         >
-          <GraphEditor graph={graph} onGraphChange={handleGraphChange} />
+          <GraphEditor
+            initGraph={initGraph}
+            onGraphChange={handleGraphChange}
+            tikzStyles={tikzStyles}
+          />
           <StylePanel tikzStyles={tikzStyles} />
         </Split>
 
-        <CodeEditor content={editorContent} onChange={handleEditorChange} />
+        <CodeEditor content={initCode} onChange={handleEditorChange} />
       </Split>
     </div>
   );

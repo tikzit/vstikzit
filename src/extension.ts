@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
   // Register the custom text editor provider
@@ -28,23 +26,30 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
       enableScripts: true,
     };
 
-    // Set up the initial webview content
-    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document.getText());
-
-    // Update webview when document changes
-    const updateWebview = () => {
-      webviewPanel.webview.postMessage({
-        type: "update",
-        content: document.getText(),
-      });
+    const [styleFile, styles] = await this.getTikzStyles();
+    const content = {
+      styleFile: styleFile,
+      styles: styles,
+      document: document.getText(),
     };
 
-    // Listen for document changes
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-      if (e.document.uri.toString() === document.uri.toString()) {
-        updateWebview();
-      }
-    });
+    // Set up the initial webview content
+    webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview, content);
+
+    // // Update webview when document changes
+    // const updateWebview = () => {
+    //   webviewPanel.webview.postMessage({
+    //     type: "update",
+    //     content: document.getText(),
+    //   });
+    // };
+
+    // // Listen for document changes
+    // const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+    //   if (e.document.uri.toString() === document.uri.toString()) {
+    //     updateWebview();
+    //   }
+    // });
 
     // Handle messages from the webview
     webviewPanel.webview.onDidReceiveMessage(e => {
@@ -52,19 +57,19 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
         case "updateTextDocument":
           this.updateTextDocument(document, e.content);
           return;
-        case "getTikzStyles":
-          this.getTikzStylesFile(webviewPanel.webview);
+        case "refreshTikzStyles":
+          this.refreshTikzStyles(webviewPanel.webview);
           return;
       }
     });
 
     // Clean up subscriptions when webview is disposed
-    webviewPanel.onDidDispose(() => {
-      changeDocumentSubscription.dispose();
-    });
+    // webviewPanel.onDidDispose(() => {
+    //   changeDocumentSubscription.dispose();
+    // });
   }
 
-  private getHtmlForWebview(webview: vscode.Webview, content: string): string {
+  private async getHtmlForWebview(webview: vscode.Webview, content: any): Promise<string> {
     // Get the local path to main script run in the webview
     const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -113,16 +118,11 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     return vscode.workspace.applyEdit(edit);
   }
 
-  private async getTikzStylesFile(webview: vscode.Webview) {
+  private async getTikzStyles(): Promise<[string, string]> {
     try {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders || workspaceFolders.length === 0) {
-        webview.postMessage({
-          type: "tikzStylesContent",
-          content: null,
-          error: "No workspace folder found",
-        });
-        return;
+        return ["", ""];
       }
 
       // Get files at the root of the first workspace folder
@@ -135,12 +135,7 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
       );
 
       if (!tikzStylesFile) {
-        webview.postMessage({
-          type: "tikzStylesContent",
-          content: null,
-          error: "No .tikzstyles file found at workspace root",
-        });
-        return;
+        return ["", ""];
       }
 
       // Read the file content
@@ -148,18 +143,19 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
       const fileContent = await vscode.workspace.fs.readFile(fileUri);
       const content = Buffer.from(fileContent).toString("utf8");
 
-      webview.postMessage({
-        type: "tikzStylesContent",
-        content: content,
-        filename: tikzStylesFile[0],
-      });
-    } catch (error) {
-      webview.postMessage({
-        type: "tikzStylesContent",
-        content: null,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
-      });
+      return [tikzStylesFile[0], content];
+    } catch {
+      return ["", ""];
     }
+  }
+
+  private async refreshTikzStyles(webview: vscode.Webview) {
+    const [styleFile, styles] = await this.getTikzStyles();
+    webview.postMessage({
+      type: "tikzStylesContent",
+      content: styles,
+      filename: styleFile,
+    });
   }
 }
 

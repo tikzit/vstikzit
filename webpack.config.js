@@ -7,7 +7,7 @@ const path = require('path');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const baseConfig = {
-	mode: 'production', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
+	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
