@@ -1,12 +1,13 @@
-import { NodeData } from "../data/Data";
+import { NodeData, StyleData } from "../data/Data";
 import SceneCoords from "./SceneCoords";
 
 interface NodeProps {
   data: NodeData;
+  style: StyleData;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, sceneCoords }: NodeProps) => {
+const Node = ({ data, style, sceneCoords }: NodeProps) => {
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 

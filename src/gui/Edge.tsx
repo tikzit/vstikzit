@@ -1,10 +1,11 @@
-import { EdgeData, NodeData } from "../data/Data";
+import { EdgeData, NodeData, StyleData } from "../data/Data";
 import SceneCoords from "./SceneCoords";
 
 interface EdgeProps {
   data: EdgeData;
   sourceData: NodeData;
   targetData: NodeData;
+  style: StyleData;
   sceneCoords: SceneCoords;
 }
 

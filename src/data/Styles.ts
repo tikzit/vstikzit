@@ -18,6 +18,10 @@ class Styles {
     return this._filename;
   }
 
+  public style(name: string): StyleData {
+    return this._styleData.get(name) ?? new StyleData();
+  }
+
   public setStyle(style: StyleData) {
     const s = new Styles(this);
     s._styleData = s._styleData.set(style.name, style);

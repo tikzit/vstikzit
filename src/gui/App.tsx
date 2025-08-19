@@ -19,24 +19,19 @@ interface AppProps {
 }
 
 const App = ({ initialContent, vscode }: AppProps) => {
-  // state used to re-initialise the graph
-  const [initGraph, setInitGraph] = useState<Graph>(
+  // the current graph being displayed
+  const [graph, setGraph] = useState<Graph>(
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
 
-  // the most recent graph seen
-  let lastGraph: Graph | undefined;
+  // state used to re-initial contents of the code editor
+  const [initCode, setInitCode] = useState(initialContent.document);
 
-  // tikzstyles
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     (parseTikzStyles(initialContent.styles).result ?? new Styles()).setFilename(
       initialContent.styleFile
     )
   );
-
-  // the content for the editor. Should only set this to externally reset the contents
-  // of the component.
-  const [initCode, setInitCode] = useState(initialContent.document);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -80,9 +75,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
       const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {
         console.log("graph parsed");
-        const g =
-          lastGraph !== undefined ? parsed.result.inheritDataFrom(lastGraph) : parsed.result;
-        setInitGraph(g);
+        const g = parsed.result.inheritDataFrom(graph);
+        setGraph(g);
       }
 
       vscode.postMessage({
@@ -95,7 +89,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   // a change in the graph, triggered by the graph editor
   const handleGraphChange = (graph: Graph) => {
     console.log("got graph change");
-    lastGraph = graph;
+    setGraph(graph);
     setInitCode(graph.tikz());
   };
 
@@ -115,11 +109,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           cursor="col-resize"
           style={{ display: "flex", flexDirection: "row", height: "100%" }}
         >
-          <GraphEditor
-            initGraph={initGraph}
-            onGraphChange={handleGraphChange}
-            tikzStyles={tikzStyles}
-          />
+          <GraphEditor graph={graph} onGraphChange={handleGraphChange} tikzStyles={tikzStyles} />
           <StylePanel tikzStyles={tikzStyles} />
         </Split>
 

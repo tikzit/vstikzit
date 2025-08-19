@@ -5,16 +5,16 @@ import SceneCoords from "./SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../data/Styles";
+import { StyleData } from "../data/Data";
 
 interface GraphEditorProps {
-  initGraph: Graph;
+  graph: Graph;
   onGraphChange: (graph: Graph) => void;
   tikzStyles: Styles;
 }
 
-const GraphEditor = ({ initGraph, onGraphChange, tikzStyles }: GraphEditorProps) => {
+const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
-  const [graph, setGraph] = useState<Graph>(initGraph);
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;
@@ -44,25 +44,25 @@ const GraphEditor = ({ initGraph, onGraphChange, tikzStyles }: GraphEditorProps)
       >
         <g id="grid"></g>
         <g id="edges">
-          {graph.paths.map(path =>
-            graph.pathData.get(path)?.edges.map(edge => {
-              const d = graph.edgeData.get(edge)!;
-              return (
-                <Edge
-                  key={edge}
-                  data={d}
-                  sourceData={graph.nodeData.get(d.source)!}
-                  targetData={graph.nodeData.get(d.target)!}
-                  sceneCoords={sceneCoords}
-                />
-              );
-            })
-          )}
+          {graph.edgeData.map(data => {
+            const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
+            return (
+              <Edge
+                key={data.id}
+                data={data}
+                sourceData={graph.nodeData.get(data.source)!}
+                targetData={graph.nodeData.get(data.target)!}
+                style={style}
+                sceneCoords={sceneCoords}
+              />
+            );
+          })}
         </g>
         <g id="nodes">
-          {graph.nodes.map(node => (
-            <Node key={node} data={graph.nodeData.get(node)!} sceneCoords={sceneCoords} />
-          ))}
+          {graph.nodeData.map(data => {
+            const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
+            return <Node key={data.id} data={data} style={style} sceneCoords={sceneCoords} />;
+          })}
         </g>
       </svg>
     </div>
