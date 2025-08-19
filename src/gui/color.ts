@@ -20,7 +20,11 @@ const texColors: Record<string, string> = {
   pink: "#ffbfbf",
 };
 
-export function colorToHex(s: string): string | undefined {
+export function colorToHex(s: string | undefined): string | undefined {
+  if (s === undefined) {
+    return undefined;
+  }
+
   if (s in texColors) {
     return texColors[s];
   }

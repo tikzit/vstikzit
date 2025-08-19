@@ -325,7 +325,11 @@ class StyleData extends Data<StyleData> {
 
   constructor(data?: StyleData) {
     super(data);
-    this._name = data?._name ?? "";
+    this._name = data?._name ?? "none";
+  }
+
+  public get isNone(): boolean {
+    return this._name === "none";
   }
 
   public equals(other: StyleData): boolean {

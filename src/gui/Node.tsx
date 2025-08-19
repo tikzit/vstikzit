@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NodeData, StyleData } from "../data/Data";
 import SceneCoords from "./SceneCoords";
 import { formatLabel } from "./labels";
+import { colorToHex } from "./color";
 
 interface NodeProps {
   data: NodeData;
@@ -16,20 +17,28 @@ const Node = ({ data, style, sceneCoords }: NodeProps) => {
   const labelRef = useRef<SVGTextElement>(null);
   const [labelWidth, setLabelWidth] = useState<number>(0);
 
+  const fillColor = colorToHex(style.property("tikzit fill") ?? style.property("fill")) ?? "white";
+  const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";
   useEffect(() => {
     setLabelWidth(labelRef.current?.getComputedTextLength() ?? 0);
   }, [data, labelRef]);
 
   return (
     <g id={`node-${data.id}`} transform={`translate(${coord.x}, ${coord.y})`}>
-      <circle r={sceneCoords.scale * 0.035} fill="#aaa" />
-      <circle
-        r={r}
-        fill="none"
-        stroke="#aaa"
-        strokeDasharray="4 4"
-        strokeWidth={sceneCoords.scale * 0.035}
-      />
+      {style.isNone ? (
+        <g>
+          <circle r={sceneCoords.scale * 0.035} fill="#aaa" />
+          <circle
+            r={r}
+            fill="none"
+            stroke="#aaa"
+            strokeDasharray="4 4"
+            strokeWidth={sceneCoords.scale * 0.035}
+          />
+        </g>
+      ) : (
+        <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={2} />
+      )}
       {data.label !== "" ? (
         <g>
           <rect

@@ -184,6 +184,11 @@ class TikzParser extends EmbeddedActionsParser {
     this.MANY(() => {
       this.SUBRULE(this.style);
     });
+
+    this.ACTION(() => {
+      // make sure the "none" style is included
+      this.styles = this.styles?.addStyle(new StyleData());
+    });
   });
 
   public style = this.RULE("style", () => {
@@ -201,7 +206,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.SUBRULE(this.properties);
 
     this.ACTION(() => {
-      this.styles = this.styles?.setStyle(this.d as StyleData);
+      this.styles = this.styles?.addStyle(this.d as StyleData);
     });
   });
 

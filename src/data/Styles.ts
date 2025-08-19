@@ -22,7 +22,7 @@ class Styles {
     return this._styleData.get(name) ?? new StyleData();
   }
 
-  public setStyle(style: StyleData) {
+  public addStyle(style: StyleData) {
     const s = new Styles(this);
     s._styleData = s._styleData.set(style.name, style);
     return s;
