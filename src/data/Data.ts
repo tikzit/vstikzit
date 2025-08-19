@@ -101,15 +101,11 @@ class GraphData extends Data<GraphData> {
 class NodeData extends Data<NodeData> implements ValueObject {
   private _coord: Coord;
   private _label: string;
-  private _labelStart?: number;
-  private _labelEnd?: number;
 
   public constructor(data?: NodeData) {
     super(data);
     this._coord = data?._coord ?? [0, 0];
     this._label = data?._label ?? "";
-    this._labelStart = data?._labelStart;
-    this._labelEnd = data?._labelEnd;
   }
 
   public equals(other: NodeData): boolean {
@@ -117,9 +113,7 @@ class NodeData extends Data<NodeData> implements ValueObject {
       super.equals(other) &&
       this._coord[0] === other._coord[0] &&
       this._coord[1] === other._coord[1] &&
-      this._label === other._label &&
-      this._labelStart === other._labelStart &&
-      this._labelEnd === other._labelEnd
+      this._label === other._label
     );
   }
 
@@ -131,14 +125,6 @@ class NodeData extends Data<NodeData> implements ValueObject {
     return this._label;
   }
 
-  public get labelStart(): number | undefined {
-    return this._labelStart;
-  }
-
-  public get labelEnd(): number | undefined {
-    return this._labelEnd;
-  }
-
   public setCoord(coord: Coord): NodeData {
     const d = new NodeData(this);
     d._coord = coord;
@@ -148,18 +134,6 @@ class NodeData extends Data<NodeData> implements ValueObject {
   public setLabel(label: string): NodeData {
     const d = new NodeData(this);
     d._label = label;
-    return d;
-  }
-
-  public setLabelStart(labelStart: number | undefined): NodeData {
-    const d = new NodeData(this);
-    d._labelStart = labelStart;
-    return d;
-  }
-
-  public setLabelEnd(labelEnd: number | undefined): NodeData {
-    const d = new NodeData(this);
-    d._labelEnd = labelEnd;
     return d;
   }
 }

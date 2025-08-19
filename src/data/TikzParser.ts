@@ -129,9 +129,14 @@ class ParseError extends Error {
 class TikzParser extends EmbeddedActionsParser {
   private graph?: Graph;
   private styles?: Styles;
+
   // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
   private d?: any;
-  private nodeTab?: Map<string, number>;
+  // the parser allows arbitrary node names in tikz files, but only stores ids. This field maps names to generated ids
+  private nodeIds?: Map<string, number>;
+  // a mapping from node ids to their positions in the tikz source
+  private nodeTikzPositions?: Map<number, { start: number; end: number }>;
+  // the current path being parsed, used for multi-part edges
   private currentPath?: PathData;
 
   constructor() {
@@ -149,7 +154,8 @@ class TikzParser extends EmbeddedActionsParser {
   public tikzPicture = this.RULE("tikzPicture", () => {
     this.ACTION(() => {
       this.graph = new Graph();
-      this.nodeTab = new Map();
+      this.nodeIds = new Map();
+      this.nodeTikzPositions = new Map();
       this.d = this.graph.graphData;
     });
 
@@ -295,10 +301,12 @@ class TikzParser extends EmbeddedActionsParser {
         const d = (this.d as NodeData)
           .setId(isNaN(parsed) ? this.graph.freshNodeId : parsed)
           .setCoord(coord)
-          .setLabel(stripBraces(labelToken.image))
-          .setLabelStart(labelToken.startOffset)
-          .setLabelEnd(labelToken.endOffset);
-        this.nodeTab?.set(name, d.id);
+          .setLabel(stripBraces(labelToken.image));
+        this.nodeIds?.set(name, d.id);
+        this.nodeTikzPositions?.set(d.id, {
+          start: labelToken.startOffset,
+          end: labelToken.endOffset ?? labelToken.startOffset,
+        });
         this.graph = this.graph.addNodeWithData(d);
       }
     });
@@ -333,8 +341,8 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(RParen);
 
     this.ACTION(() => {
-      if (this.nodeTab?.has(name)) {
-        id = this.nodeTab?.get(name) ?? 0;
+      if (this.nodeIds?.has(name)) {
+        id = this.nodeIds?.get(name) ?? 0;
       } else {
         throw new ParseError(
           nameToken.startLine ?? 1,

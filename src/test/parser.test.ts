@@ -31,7 +31,7 @@ describe("Graph parser", () => {
     const input1 = `
     \\begin{tikzpicture}
     \\node[style=A] (0) at (0, 0) {};
-    \\node[style=B1] (1) at (0, 0) {};
+    \\node[style=B] (1) at (0, 0) {};
     \\node[style=C] (2) at (0, 0) {};
     \\node[style=D] (3) at (0, 0) {};
     \\end{tikzpicture}`;
