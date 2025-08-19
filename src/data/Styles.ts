@@ -38,6 +38,14 @@ class Styles {
     return this._styleData.size;
   }
 
+  public tikz(): string {
+    let s = "";
+    this._styleData.forEach((style, name) => {
+      s += `\\tikzstyle{${name}}=${style.tikz()}\n`;
+    });
+    return s;
+  }
+
   /** This function inherits any identical data from the provided styles
    *
    * This helps reactive components recognise the same data via Object.is() after the graph

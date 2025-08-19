@@ -12,6 +12,7 @@ const baseConfig = {
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'dist'),
+    pathinfo: false,
   },
   externals: {
     vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
@@ -33,7 +34,10 @@ const baseConfig = {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'ts-loader'
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
           }
         ]
       },
@@ -47,7 +51,8 @@ const baseConfig = {
       }
     ]
   },
-  devtool: 'nosources-source-map',
+  // devtool: 'nosources-source-map',
+  devtool: 'eval-cheap-module-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },

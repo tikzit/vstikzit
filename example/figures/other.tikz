@@ -1,5 +1,5 @@
 \begin{tikzpicture}
-\node (0) at (0,0) {};
+\node (0) at (0,0) {$\alpha$};
 \node (1) at (1,0) {};
 \draw (0) to (1);
 \end{tikzpicture}

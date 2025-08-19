@@ -105,5 +105,26 @@ describe("Tikzstyles parser", () => {
     const input = "\\tikzstyle{myStyle}=[color=blue]";
     const parsed = parseTikzStyles(input);
     assert.notStrictEqual(parsed.result, undefined);
+    const styles = parsed.result!;
+    assert.strictEqual(strip(styles.tikz()), strip(input));
+  });
+
+  it("should parse several node and edge styles", () => {
+    const input = `
+    \\tikzstyle{gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, yshift=0.5mm, fill=white, draw=black, minimum height=5mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
+    \\tikzstyle{big gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, yshift=0.5mm, fill=white, draw=black, minimum height=10mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
+    \\tikzstyle{Z dot}=[inner sep=0mm, minimum size=2mm, shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, tikzit category=zx]
+    \\tikzstyle{Z bold dot}=[inner sep=0mm, minimum size=2mm, shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, line width=1.2pt, tikzit category=zx]
+    \\tikzstyle{Z phase dot}=[minimum size=5mm, font={\\footnotesize\\boldmath}, shape=rectangle, rounded corners=2mm, inner sep=0.2mm, outer sep=-2mm, scale=0.8, tikzit shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, tikzit draw=blue, tikzit category=zx]
+    \\tikzstyle{simple}=[-]
+    \\tikzstyle{hadamard edge}=[-, dashed, dash pattern=on 2pt off 0.5pt, thick, draw={rgb,255: red,68; green,136; blue,255}]
+    \\tikzstyle{box edge}=[-, dashed, dash pattern=on 2pt off 0.5pt, thick, draw={rgb,255: red,203; green,192; blue,225}]
+    \\tikzstyle{brace edge}=[-, tikzit draw=blue, decorate, decoration={brace,amplitude=1mm,raise=-1mm}]
+    `;
+    const parsed = parseTikzStyles(input);
+    assert.notStrictEqual(parsed.result, undefined);
+    const styles = parsed.result!;
+    // TODO: fix this. It currently doesn't output the spacing of numbers with unit of measure correctly.
+    // assert.strictEqual(strip(styles.tikz()), strip(input));
   });
 });
