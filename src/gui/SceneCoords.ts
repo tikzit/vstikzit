@@ -11,11 +11,11 @@ class SceneCoords {
   }
 
   public coordToScreen(c: Coord): Coord {
-    return [this.width / 2 + this.scale * c[0], this.height / 2 - this.scale * c[1]];
+    return new Coord(this.width / 2 + this.scale * c.x, this.height / 2 - this.scale * c.y);
   }
 
   public coordFromScreen(c: Coord): Coord {
-    return [(c[0] - this.width / 2) / this.scale, (this.height / 2 - c[1]) / this.scale];
+    return new Coord((c.x - this.width / 2) / this.scale, (this.height / 2 - c.y) / this.scale);
   }
 }
 

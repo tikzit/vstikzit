@@ -1,8 +1,32 @@
-import { OrderedMap, List, ValueObject } from "immutable";
+import { OrderedMap, List, ValueObject, Record } from "immutable";
 
 import { isValidPropertyVal } from "./TikzParser";
 
-type Coord = readonly [number, number];
+class Coord implements ValueObject {
+  private _x: number;
+  private _y: number;
+
+  constructor(x: number, y: number) {
+    this._x = x;
+    this._y = y;
+  }
+
+  public get x(): number {
+    return this._x;
+  }
+
+  public get y(): number {
+    return this._y;
+  }
+
+  public equals(other: Coord): boolean {
+    return this._x === other._x && this._y === other._y;
+  }
+
+  public hashCode(): number {
+    return ((this._x * 397) ^ this._y) | 0;
+  }
+}
 
 function wrapPropertyVal(val: string): string {
   return !val.includes("\n") && isValidPropertyVal(val) ? val : `{${val}}`;
@@ -104,17 +128,12 @@ class NodeData extends Data<NodeData> implements ValueObject {
 
   public constructor(data?: NodeData) {
     super(data);
-    this._coord = data?._coord ?? [0, 0];
+    this._coord = data?._coord ?? new Coord(0, 0);
     this._label = data?._label ?? "";
   }
 
   public equals(other: NodeData): boolean {
-    return (
-      super.equals(other) &&
-      this._coord[0] === other._coord[0] &&
-      this._coord[1] === other._coord[1] &&
-      this._label === other._label
-    );
+    return super.equals(other) && this._coord.equals(other._coord) && this._label === other._label;
   }
 
   public get coord(): Coord {

@@ -172,9 +172,7 @@ class Graph {
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
     for (const d of this.nodeData.values()) {
       if (d) {
-        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord[0]}, ${d.coord[1]}) {${
-          d.label
-        }};\n`;
+        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord.x}, ${d.coord.y}) {${d.label}};\n`;
       }
     }
     result += "\t\\end{pgfonlayer}\n";

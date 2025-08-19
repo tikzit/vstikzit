@@ -293,7 +293,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.CONSUME(Semicolon);
 
     this.ACTION(() => {
-      if (this.graph !== undefined) {
+      if (this.graph !== undefined && coord !== undefined) {
         const parsed = parseInt(name, 10);
         const d = (this.d as NodeData)
           .setId(isNaN(parsed) ? this.graph.freshNodeId : parsed)
@@ -316,7 +316,12 @@ class TikzParser extends EmbeddedActionsParser {
     const y = this.SUBRULE1(this.num);
     this.CONSUME(RParen);
 
-    return [x, y] as Coord;
+    let c: Coord | undefined;
+    this.ACTION(() => {
+      c = new Coord(x, y);
+    });
+
+    return c;
   });
 
   private num = this.RULE("num", () => {
