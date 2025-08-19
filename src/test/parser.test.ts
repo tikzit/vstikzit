@@ -27,6 +27,42 @@ describe("Graph parser", () => {
     assert.strictEqual(strip(g.tikz()), strip(input));
   });
 
+  it("should parse a graph with multiple nodes and edges", () => {
+    const input = `
+    \\begin{tikzpicture}
+    \\begin{pgfonlayer}{nodelayer}
+    \\node[style=A, complex style={{foo} {bar\\\\} {baz=$\\{$}}] (0) at (0, 0) {a};
+    \\node[style=B] (1) at (1, 0) {b};
+    \\node[style=C] (2) at (2, 0) {c};
+    \\node[style=D] (3) at (3, 0) {d};
+    \\end{pgfonlayer}
+    \\begin{pgfonlayer}{edgelayer}
+    \\draw (0) to (1);
+    \\draw (1) to (2) to (3);
+    \\end{pgfonlayer}
+    \\end{tikzpicture}`;
+    const parsed = parseTikzPicture(input);
+    assert.notStrictEqual(parsed.result, undefined);
+    const g = parsed.result!;
+    assert.strictEqual(g.numNodes, 4);
+    assert.strictEqual(g.numEdges, 3);
+    assert.strictEqual(g.numPaths, 2);
+    assert.strictEqual(g.nodeData.get(0)?.property("style"), "A");
+    assert.strictEqual(g.nodeData.get(0)?.property("complex style"), "{foo} {bar\\\\} {baz=$\\{$}");
+    assert.strictEqual(g.nodeData.get(1)?.property("style"), "B");
+    assert.strictEqual(g.nodeData.get(2)?.property("style"), "C");
+    assert.strictEqual(g.nodeData.get(3)?.property("style"), "D");
+    assert.strictEqual(g.edgeData.get(0)?.source, 0);
+    assert.strictEqual(g.edgeData.get(0)?.target, 1);
+    assert.strictEqual(g.edgeData.get(1)?.source, 1);
+    assert.strictEqual(g.edgeData.get(1)?.target, 2);
+    assert.strictEqual(g.edgeData.get(2)?.source, 2);
+    assert.strictEqual(g.edgeData.get(2)?.target, 3);
+    assert.strictEqual(g.pathData.get(0)?.edges.size, 1);
+    assert.strictEqual(g.pathData.get(1)?.edges.size, 2);
+    assert.strictEqual(strip(g.tikz()), strip(input));
+  });
+
   it("should parse a graph twice and preserve unchanged data", () => {
     const input1 = `
     \\begin{tikzpicture}

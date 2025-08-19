@@ -52,6 +52,18 @@ class Graph {
     return this._edgeData.keySeq();
   }
 
+  public get numNodes(): number {
+    return this._nodeData.size;
+  }
+
+  public get numEdges(): number {
+    return this._edgeData.size;
+  }
+
+  public get numPaths(): number {
+    return this._pathData.size;
+  }
+
   public setGraphData(d: GraphData): Graph {
     const g = this.copy();
     g._graphData = d;

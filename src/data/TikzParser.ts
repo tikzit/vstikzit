@@ -127,15 +127,16 @@ class ParseError extends Error {
 }
 
 class TikzParser extends EmbeddedActionsParser {
-  private graph?: Graph;
-  private styles?: Styles;
+  public graph?: Graph;
+  public styles?: Styles;
+
+  // a mapping from node ids to their positions in the tikz source
+  public nodeTikzPositions?: Map<number, { start: number; end: number }>;
 
   // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
   private d?: any;
   // the parser allows arbitrary node names in tikz files, but only stores ids. This field maps names to generated ids
   private nodeIds?: Map<string, number>;
-  // a mapping from node ids to their positions in the tikz source
-  private nodeTikzPositions?: Map<number, { start: number; end: number }>;
   // the current path being parsed, used for multi-part edges
   private currentPath?: PathData;
 
@@ -175,8 +176,6 @@ class TikzParser extends EmbeddedActionsParser {
       ]);
     });
     this.CONSUME(EndTikzPictureCmd);
-
-    return this.graph;
   });
 
   public tikzStyles = this.RULE("tikzStyles", () => {
@@ -185,8 +184,6 @@ class TikzParser extends EmbeddedActionsParser {
     this.MANY(() => {
       this.SUBRULE(this.style);
     });
-
-    return this.styles;
   });
 
   public style = this.RULE("style", () => {
@@ -499,6 +496,7 @@ const parser = new TikzParser();
 
 interface ParseTikzPictureResult {
   result?: Graph;
+  nodeTikzPositions?: Map<number, { start: number; end: number }>;
   errors: ParseError[];
 }
 
@@ -521,7 +519,11 @@ function parseTikz(
   parser.input = lexResult.tokens;
 
   try {
-    const res = parseStyles ? parser.tikzStyles() : parser.tikzPicture();
+    if (parseStyles) {
+      parser.tikzStyles();
+    } else {
+      parser.tikzPicture();
+    }
 
     if (parser.errors.length > 0) {
       return {
@@ -532,8 +534,12 @@ function parseTikz(
     }
 
     return parseStyles
-      ? { result: res as Styles, errors: [] }
-      : { result: res as Graph, errors: [] };
+      ? { result: parser.styles, errors: [] }
+      : {
+          result: parser.graph,
+          nodeTikzPositions: parser.nodeTikzPositions,
+          errors: [],
+        };
   } catch (e) {
     if (e instanceof ParseError) {
       return {
