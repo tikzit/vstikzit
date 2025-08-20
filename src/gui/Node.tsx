@@ -7,10 +7,11 @@ import { colorToHex } from "./color";
 interface NodeProps {
   data: NodeData;
   style: StyleData;
+  selected: boolean;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, style, sceneCoords }: NodeProps) => {
+const Node = ({ data, style, selected, sceneCoords }: NodeProps) => {
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 
@@ -39,7 +40,7 @@ const Node = ({ data, style, sceneCoords }: NodeProps) => {
       ) : (
         <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={2} />
       )}
-      {data.label !== "" ? (
+      {data.label !== "" && (
         <g>
           <rect
             x={-labelWidth / 2 - 2}
@@ -63,7 +64,8 @@ const Node = ({ data, style, sceneCoords }: NodeProps) => {
             {formatLabel(data.label)}
           </text>
         </g>
-      ) : null}
+      )}
+      {selected && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
     </g>
   );
 };

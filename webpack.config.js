@@ -51,8 +51,8 @@ const baseConfig = {
       }
     ]
   },
-  // devtool: 'nosources-source-map',
-  devtool: 'eval-cheap-module-source-map',
+  devtool: 'nosources-source-map',
+  // devtool: 'eval-cheap-module-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },

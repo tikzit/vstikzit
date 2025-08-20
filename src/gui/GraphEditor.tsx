@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { Set } from "immutable";
+
 import Graph from "../data/Graph";
 import { drawGrid } from "./grid";
 import SceneCoords from "./SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../data/Styles";
-import { StyleData } from "../data/Data";
+import { Coord, StyleData } from "../data/Data";
 
 interface GraphEditorProps {
   graph: Graph;
@@ -15,6 +17,11 @@ interface GraphEditorProps {
 
 const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
+  const [dragStart, setDragStart] = useState<Coord | undefined>(undefined);
+  const [selectionRect, setSelectionRect] = useState<
+    { x: number; y: number; width: number; height: number } | undefined
+  >(undefined);
+  const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;
@@ -29,6 +36,64 @@ const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => 
     }
   }, []);
 
+  const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    return new Coord(x, y);
+  };
+
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const p = mousePositionToCoord(event);
+    setSelectionRect({
+      x: p.x,
+      y: p.y,
+      width: 0,
+      height: 0,
+    });
+    setDragStart(p);
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const p = mousePositionToCoord(event);
+    if (dragStart) {
+      setSelectionRect({
+        x: Math.min(dragStart.x, p.x),
+        y: Math.min(dragStart.y, p.y),
+        width: Math.abs(dragStart.x - p.x),
+        height: Math.abs(dragStart.y - p.y),
+      });
+    }
+  };
+
+  const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
+    event.preventDefault();
+
+    if (selectionRect !== undefined) {
+      const sel = Set<number>().withMutations(set => {
+        for (const d of graph.nodeData.values()) {
+          let c = sceneCoords.coordToScreen(d.coord);
+          // if c is in selectionRect
+          if (
+            c.x > selectionRect.x &&
+            c.x < selectionRect.x + selectionRect.width &&
+            c.y > selectionRect.y &&
+            c.y < selectionRect.y + selectionRect.height
+          ) {
+            set.add(d.id);
+          }
+        }
+      });
+
+      setSelectedNodes(sel);
+    }
+
+    setDragStart(undefined);
+    setSelectionRect(undefined);
+  };
+
   return (
     <div
       id="graph-editor-viewport"
@@ -41,14 +106,17 @@ const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => 
           width: `${sceneCoords.width}px`,
           backgroundColor: "white",
         }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
         <g id="grid"></g>
-        <g id="edges">
-          {graph.edgeData.map(data => {
+        <g id="edgeLayer">
+          {graph.edgeData.entrySeq().map(([key, data]) => {
             const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
             return (
               <Edge
-                key={data.id}
+                key={key}
                 data={data}
                 sourceData={graph.nodeData.get(data.source)!}
                 targetData={graph.nodeData.get(data.target)!}
@@ -58,11 +126,29 @@ const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => 
             );
           })}
         </g>
-        <g id="nodes">
-          {graph.nodeData.map(data => {
+        <g id="nodeLayer">
+          {graph.nodeData.entrySeq().map(([key, data]) => {
             const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
-            return <Node key={data.id} data={data} style={style} sceneCoords={sceneCoords} />;
+            return (
+              <Node
+                key={key}
+                data={data}
+                style={style}
+                selected={selectedNodes.has(key)}
+                sceneCoords={sceneCoords}
+              />
+            );
           })}
+        </g>
+        <g id="selectionLayer">
+          {selectionRect && (
+            <rect
+              {...selectionRect}
+              fill="rgba(150, 150, 200, 0.2)"
+              stroke="rgba(150, 150, 200, 1)"
+              strokeDasharray="5,2"
+            />
+          )}
         </g>
       </svg>
     </div>

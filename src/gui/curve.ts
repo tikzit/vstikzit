@@ -120,12 +120,10 @@ export function computeControlPoints(
   }
 
   if ((sourceData.property("style") ?? "none") !== "none") {
-    console.log("got src style: '" + sourceData.property("style") + "'");
     c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
   }
 
   if ((targetData.property("style") ?? "none") !== "none") {
-    console.log("got target style: '" + targetData.property("style") + "'");
     c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
   }
 
