@@ -7,6 +7,7 @@ import { GraphTool } from "./GraphEditor";
 import selectIcon from "../../images/tikzit-tool-select.svg";
 import nodeIcon from "../../images/tikzit-tool-node.svg";
 import edgeIcon from "../../images/tikzit-tool-edge.svg";
+import refreshIcon from "../../images/refresh.svg";
 
 interface StylePanelProps {
   tool: GraphTool;
@@ -30,10 +31,7 @@ const StylePanel = ({ tool, onToolChanged, tikzStyles }: StylePanelProps) => {
     boxShadow: isSelected ? "0 0 4px rgba(0, 122, 204, 0.3)" : "none",
   });
 
-  const iconStyle = {
-    width: "20px",
-    height: "20px",
-  };
+  const iconStyle = { width: "20px", height: "20px" };
 
   return (
     <div
@@ -66,6 +64,9 @@ const StylePanel = ({ tool, onToolChanged, tikzStyles }: StylePanelProps) => {
           title="Edge Tool"
         >
           <img src={edgeIcon} alt="Edge" style={iconStyle} />
+        </button>
+        <button style={toolbarButtonStyle(false)} title="Refresh Styles">
+          <img src={refreshIcon} alt="Refresh" style={iconStyle} />
         </button>
       </div>
       <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>

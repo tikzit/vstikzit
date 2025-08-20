@@ -46,13 +46,9 @@ const baseConfig = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.ttf/,
+        test: /\.ttf$|.svg$/,
         type: 'asset/resource',
       },
-      {
-        test: /\.svg$/,
-        type: 'asset/inline',
-      }
     ]
   },
   devtool: 'nosources-source-map',
