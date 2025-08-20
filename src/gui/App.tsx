@@ -1,6 +1,9 @@
+import { Set } from "immutable";
 import { useState, useEffect } from "react";
 import Split from "react-split";
+
 import GraphEditor from "./GraphEditor";
+import { GraphTool } from "./GraphEditor";
 import Graph from "../data/Graph";
 import { parseTikzPicture, parseTikzStyles } from "../data/TikzParser";
 import CodeEditor from "./CodeEditor";
@@ -19,12 +22,16 @@ interface AppProps {
 }
 
 const App = ({ initialContent, vscode }: AppProps) => {
+  const [tool, setTool] = useState<GraphTool>("select");
   // the current graph being displayed
   const [graph, setGraph] = useState<Graph>(
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
 
-  // state used to re-initial contents of the code editor
+  const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
+  const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
+
+  // state used to re-initialise contents of the code editor
   const [initCode, setInitCode] = useState(initialContent.document);
 
   const [tikzStyles, setTikzStyles] = useState<Styles>(
@@ -93,6 +100,11 @@ const App = ({ initialContent, vscode }: AppProps) => {
     setInitCode(graph.tikz());
   };
 
+  const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
+    setSelectedNodes(selectedNodes);
+    setSelectedEdges(selectedEdges);
+  };
+
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <Split
@@ -109,7 +121,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
           cursor="col-resize"
           style={{ display: "flex", flexDirection: "row", height: "100%" }}
         >
-          <GraphEditor graph={graph} onGraphChange={handleGraphChange} tikzStyles={tikzStyles} />
+          <GraphEditor
+            tool={tool}
+            graph={graph}
+            onGraphChange={handleGraphChange}
+            selectedNodes={selectedNodes}
+            selectedEdges={selectedEdges}
+            onSelectionChanged={handleSelectionChanged}
+            tikzStyles={tikzStyles}
+          />
           <StylePanel tikzStyles={tikzStyles} />
         </Split>
 

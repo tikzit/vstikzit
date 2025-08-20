@@ -9,19 +9,35 @@ import Edge from "./Edge";
 import Styles from "../data/Styles";
 import { Coord, StyleData } from "../data/Data";
 
+export type GraphTool = "select" | "vertex" | "edge";
+
 interface GraphEditorProps {
+  tool: GraphTool;
   graph: Graph;
   onGraphChange: (graph: Graph) => void;
+  selectedNodes: Set<number>;
+  selectedEdges: Set<number>;
+  onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
   tikzStyles: Styles;
 }
 
-const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => {
+const GraphEditor = ({
+  tool,
+  graph,
+  onGraphChange,
+  selectedNodes,
+  selectedEdges,
+  onSelectionChanged,
+  tikzStyles,
+}: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
+
+  // internal editor state
+  // n.b. the graph itself is stored in App, and is updated by this component via onGraphChange
   const [dragStart, setDragStart] = useState<Coord | undefined>(undefined);
   const [selectionRect, setSelectionRect] = useState<
     { x: number; y: number; width: number; height: number } | undefined
   >(undefined);
-  const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;
@@ -87,7 +103,7 @@ const GraphEditor = ({ graph, onGraphChange, tikzStyles }: GraphEditorProps) => 
         }
       });
 
-      setSelectedNodes(sel);
+      onSelectionChanged(sel, Set());
     }
 
     setDragStart(undefined);
