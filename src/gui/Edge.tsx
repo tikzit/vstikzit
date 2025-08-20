@@ -13,10 +13,15 @@ interface EdgeProps {
 }
 
 const Edge = ({ data, sourceData, targetData, style, sceneCoords }: EdgeProps) => {
-  const [c1, c2, cp1, cp2] = useMemo(
-    () => computeControlPoints(sourceData.coord, targetData.coord, data, sceneCoords),
-    [data, sourceData.coord, targetData.coord, sceneCoords]
-  );
+  const [c1, c2, cp1, cp2] = useMemo(() => {
+    const cs = computeControlPoints(sourceData, targetData, data);
+    return [
+      sceneCoords.coordToScreen(cs[0]),
+      sceneCoords.coordToScreen(cs[1]),
+      cs[2] ? sceneCoords.coordToScreen(cs[2]) : undefined,
+      cs[3] ? sceneCoords.coordToScreen(cs[3]) : undefined,
+    ];
+  }, [data, sourceData, targetData]);
 
   const strokeWidth = sceneCoords.scale * 0.05;
   const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";

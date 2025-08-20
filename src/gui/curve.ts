@@ -1,13 +1,12 @@
-import { Coord, EdgeData } from "../data/Data";
-import SceneCoords from "./SceneCoords";
+import { Coord, EdgeData, NodeData } from "../data/Data";
 
 function almostZero(f: number): boolean {
   return f >= -0.000001 && f <= 0.000001;
 }
 
-function almostEqual(f1: number, f2: number): boolean {
-  return almostZero(f1 - f2);
-}
+// function almostEqual(f1: number, f2: number): boolean {
+//   return almostZero(f1 - f2);
+// }
 
 function bezierInterpolate1(dist: number, c0: number, c1: number, c2: number, c3: number): number {
   const distp = 1 - dist;
@@ -59,13 +58,12 @@ export function bezierTangent(
 }
 
 export function computeControlPoints(
-  coord1: Coord,
-  coord2: Coord,
-  edgeData: EdgeData,
-  sceneCoords: SceneCoords
+  sourceData: NodeData,
+  targetData: NodeData,
+  edgeData: EdgeData
 ): [Coord, Coord, Coord | undefined, Coord | undefined] {
-  const c1 = sceneCoords.coordToScreen(coord1);
-  const c2 = sceneCoords.coordToScreen(coord2);
+  let c1 = sourceData.coord;
+  let c2 = targetData.coord;
   const dx = c2.x - c1.x;
   const dy = c2.y - c1.y;
 
@@ -88,28 +86,47 @@ export function computeControlPoints(
     bend = edgeData.propertyInt("bend right") ?? 30;
   }
 
-  let inAngle;
-  let outAngle;
-  // compute control points for bend
+  let bezier = false;
+  let inAngle: number;
+  let outAngle: number;
+
   if (bend !== undefined) {
+    // If bend is given, compute in/out angles relative to straight line
     const bendRadians = bend * (Math.PI / 180);
     const angle = Math.atan2(dy, dx);
-    inAngle = angle + bendRadians;
+    inAngle = Math.PI + angle + bendRadians;
     outAngle = angle - bendRadians;
-  } else {
-    // If no bend is specified, use the in/out angles directly
-    inAngle = edgeData.propertyInt("in");
-    outAngle = edgeData.propertyInt("out");
+    bezier = true;
+  } else if (
+    edgeData.propertyInt("in") !== undefined &&
+    edgeData.propertyInt("out") !== undefined
+  ) {
+    // If in/out angles are given, use those directly
+    inAngle = edgeData.propertyInt("in")! * (Math.PI / 180);
+    outAngle = edgeData.propertyInt("out")! * (Math.PI / 180);
 
-    if (inAngle !== undefined && outAngle !== undefined) {
-      inAngle *= Math.PI / 180;
-      outAngle *= Math.PI / 180;
-    }
+    bezier = true;
+  } else {
+    // Otherwise compute angles as a straight line
+    outAngle = Math.atan2(dy, dx);
+    inAngle = Math.PI + outAngle;
   }
 
-  if (inAngle !== undefined && outAngle !== undefined) {
+  if (bezier) {
     const cpDist =
       almostZero(dx) && almostZero(dy) ? weight : Math.sqrt(dx * dx + dy * dy) * weight;
+    cp1 = c1.shift(cpDist * Math.cos(outAngle), cpDist * Math.sin(outAngle));
+    cp2 = c2.shift(cpDist * Math.cos(inAngle), cpDist * Math.sin(inAngle));
+  }
+
+  if ((sourceData.property("style") ?? "none") !== "none") {
+    console.log("got src style: '" + sourceData.property("style") + "'");
+    c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
+  }
+
+  if ((targetData.property("style") ?? "none") !== "none") {
+    console.log("got target style: '" + targetData.property("style") + "'");
+    c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
   }
 
   return [c1, c2, cp1, cp2];

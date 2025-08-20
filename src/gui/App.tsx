@@ -69,8 +69,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
   // a change in the tikz code, triggered by the code editor
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      console.log("got editor change");
-      console.log(value.substring(0, 100));
+      // console.log("got editor change");
+      // console.log(value.substring(0, 100));
 
       const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {

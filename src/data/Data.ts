@@ -26,6 +26,10 @@ class Coord implements ValueObject {
   public hashCode(): number {
     return ((this._x * 397) ^ this._y) | 0;
   }
+
+  public shift(dx: number, dy: number): Coord {
+    return new Coord(this._x + dx, this._y + dy);
+  }
 }
 
 function wrapPropertyVal(val: string): string {
