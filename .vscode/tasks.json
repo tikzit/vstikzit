@@ -12,10 +12,7 @@
 				"reveal": "never",
 				"group": "watchers"
 			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+			"group": "build"
 		},
 		{
 			"type": "npm",
@@ -39,7 +36,10 @@
 		{
 			"type": "npm",
 			"script": "compile",
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"problemMatcher": [],
 			"label": "npm: compile",
 			"detail": "webpack"
