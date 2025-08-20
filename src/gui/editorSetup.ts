@@ -46,15 +46,6 @@ const tikzTokensProvider = {
   },
 };
 
-const editorOnMount = (editor: any, monaco: any) => {
-  // Register TikZ/LaTeX language if not already registered
-  if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
-    monaco.languages.register({ id: "tikz" });
-    monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
-    monaco.editor.setModelLanguage(editor.getModel()!, "tikz");
-  }
-};
-
 const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   fontSize: 14,
   minimap: { enabled: false },
@@ -69,4 +60,4 @@ const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   formatOnPaste: true,
 };
 
-export { editorOnMount, editorOptions };
+export { tikzTokensProvider, editorOptions };

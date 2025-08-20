@@ -1,12 +1,13 @@
 import Editor from "@monaco-editor/react";
-import { editorOnMount, editorOptions } from "./editorSetup";
+import { editorOptions } from "./editorSetup";
 
 interface CodeEditorProps {
   content: string;
   onChange: (value: string | undefined) => void;
+  onMount: (editor: any, monaco: any) => void;
 }
 
-const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
+const CodeEditor = ({ content, onChange, onMount }: CodeEditorProps) => {
   return (
     <div style={{ height: "100%", overflow: "hidden" }}>
       <Editor
@@ -17,7 +18,7 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
         theme="vs"
         loading="Loading TikZ Editor..."
         options={editorOptions}
-        onMount={editorOnMount}
+        onMount={onMount}
       />
     </div>
   );

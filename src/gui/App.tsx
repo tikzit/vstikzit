@@ -1,5 +1,5 @@
-import { Set } from "immutable";
-import { useState, useEffect } from "react";
+import { Set, List } from "immutable";
+import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
 
 import GraphEditor from "./GraphEditor";
@@ -9,11 +9,19 @@ import { parseTikzPicture, parseTikzStyles } from "../data/TikzParser";
 import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
 import Styles from "../data/Styles";
+import { tikzTokensProvider } from "./editorSetup";
 
 interface IContent {
   document: string;
   styleFile: string;
   styles: string;
+}
+
+interface UndoState {
+  graph?: Graph;
+  tikz?: string;
+  selectedNodes: Set<number>;
+  selectedEdges: Set<number>;
 }
 
 interface AppProps {
@@ -23,10 +31,16 @@ interface AppProps {
 
 const App = ({ initialContent, vscode }: AppProps) => {
   const [tool, setTool] = useState<GraphTool>("select");
+
+  const [undoStack, setUndoStack] = useState<List<UndoState>>(List());
+  const [redoStack, setRedoStack] = useState<List<UndoState>>(List());
+
   // the current graph being displayed
   const [graph, setGraph] = useState<Graph>(
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
+
+  const editorRef = useRef(null);
 
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
@@ -72,6 +86,17 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     return () => window.removeEventListener("message", handleMessage);
   }, []);
+
+  const handleEditorMount = (editor: any, monaco: any) => {
+    // Register TikZ language if not already registered
+    if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
+      monaco.languages.register({ id: "tikz" });
+      monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
+      monaco.editor.setModelLanguage(editor.getModel()!, "tikz");
+    }
+
+    editorRef.current = editor;
+  };
 
   // a change in the tikz code, triggered by the code editor
   const handleEditorChange = (value: string | undefined) => {
@@ -139,7 +164,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           />
         </Split>
 
-        <CodeEditor content={initCode} onChange={handleEditorChange} />
+        <CodeEditor content={initCode} onChange={handleEditorChange} onMount={handleEditorMount} />
       </Split>
     </div>
   );
