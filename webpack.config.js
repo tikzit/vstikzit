@@ -48,6 +48,10 @@ const baseConfig = {
       {
         test: /\.ttf/,
         type: 'asset/resource',
+      },
+      {
+        test: /\.svg$/,
+        type: 'asset/inline',
       }
     ]
   },

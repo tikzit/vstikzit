@@ -130,7 +130,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             onSelectionChanged={handleSelectionChanged}
             tikzStyles={tikzStyles}
           />
-          <StylePanel tikzStyles={tikzStyles} />
+          <StylePanel tool={tool} onToolChanged={setTool} tikzStyles={tikzStyles} />
         </Split>
 
         <CodeEditor content={initCode} onChange={handleEditorChange} />
