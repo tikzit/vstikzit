@@ -57,7 +57,17 @@ class Data<T extends Data<T>> {
     return this._map.get(key);
   }
 
-  public atom(key: string): boolean {
+  public propertyInt(key: string): number | undefined {
+    const val = this.property(key);
+    return val !== undefined ? parseInt(val, 10) : undefined;
+  }
+
+  public propertyFloat(key: string): number | undefined {
+    const val = this.property(key);
+    return val !== undefined ? parseFloat(val) : undefined;
+  }
+
+  public hasKey(key: string): boolean {
     return this._map.has(key);
   }
 
@@ -195,6 +205,10 @@ class EdgeData extends Data<EdgeData> implements ValueObject {
     return this._target;
   }
 
+  public get isSelfLoop(): boolean {
+    return this._source === this._target;
+  }
+
   public get path(): number {
     return this._path;
   }
@@ -253,6 +267,10 @@ class EdgeData extends Data<EdgeData> implements ValueObject {
 
   public get targetRef(): string {
     return this._targetAnchor ? `(${this._target}.${this._targetAnchor})` : `(${this._target})`;
+  }
+
+  public get basicBendMode(): boolean {
+    return this.property("in") === undefined || this.property("out") === undefined;
   }
 }
 

@@ -66,5 +66,51 @@ export function computeControlPoints(
 ): [Coord, Coord, Coord | undefined, Coord | undefined] {
   const c1 = sceneCoords.coordToScreen(coord1);
   const c2 = sceneCoords.coordToScreen(coord2);
-  return [c1, c2, undefined, undefined];
+  const dx = c2.x - c1.x;
+  const dy = c2.y - c1.y;
+
+  let cp1: Coord | undefined;
+  let cp2: Coord | undefined;
+
+  let weight: number;
+  const looseness = edgeData.propertyFloat("looseness");
+  if (looseness !== undefined) {
+    weight = looseness / 2.5;
+  } else {
+    weight = edgeData.isSelfLoop ? 1.0 : 0.4;
+  }
+
+  // extract bend value from properties
+  let bend: number | undefined;
+  if (edgeData.hasKey("bend left")) {
+    bend = -(edgeData.propertyInt("bend left") ?? 30);
+  } else if (edgeData.hasKey("bend right")) {
+    bend = edgeData.propertyInt("bend right") ?? 30;
+  }
+
+  let inAngle;
+  let outAngle;
+  // compute control points for bend
+  if (bend !== undefined) {
+    const bendRadians = bend * (Math.PI / 180);
+    const angle = Math.atan2(dy, dx);
+    inAngle = angle + bendRadians;
+    outAngle = angle - bendRadians;
+  } else {
+    // If no bend is specified, use the in/out angles directly
+    inAngle = edgeData.propertyInt("in");
+    outAngle = edgeData.propertyInt("out");
+
+    if (inAngle !== undefined && outAngle !== undefined) {
+      inAngle *= Math.PI / 180;
+      outAngle *= Math.PI / 180;
+    }
+  }
+
+  if (inAngle !== undefined && outAngle !== undefined) {
+    const cpDist =
+      almostZero(dx) && almostZero(dy) ? weight : Math.sqrt(dx * dx + dy * dy) * weight;
+  }
+
+  return [c1, c2, cp1, cp2];
 }
