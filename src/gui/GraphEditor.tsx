@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Set } from "immutable";
 
 import Graph from "../data/Graph";
@@ -29,7 +29,7 @@ const GraphEditor = ({
   onGraphChange,
   selectedNodes,
   selectedEdges,
-  onSelectionChanged,
+  onSelectionChanged: changeSelection,
   tikzStyles,
 }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
@@ -37,13 +37,18 @@ const GraphEditor = ({
   // internal editor state
   // n.b. the graph itself is stored in App, and is updated by this component via onGraphChange
   const [mouseDownPos, setMouseDownPos] = useState<Coord | undefined>(undefined);
+  const [mouseDragPos, setMouseDragPos] = useState<Coord | undefined>(undefined);
   const [selectionRect, setSelectionRect] = useState<
     { x: number; y: number; width: number; height: number } | undefined
   >(undefined);
   const [draggingNodes, setDraggingNodes] = useState(false);
   const [clickedNode, setClickedNode] = useState<number | undefined>(undefined);
   const [clickedEdge, setClickedEdge] = useState<number | undefined>(undefined);
-  const [clickedControlPoint, setClickedControlPoint] = useState<number | undefined>(undefined);
+  const [clickedControlPoint, setClickedControlPoint] = useState<[number, 1 | 2] | undefined>(
+    undefined
+  );
+  const [edgeStartNode, setEdgeStartNode] = useState<number | undefined>(undefined);
+  const [edgeEndNode, setEdgeEndNode] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;
@@ -57,6 +62,23 @@ const GraphEditor = ({
       drawGrid(svg, sceneCoords);
     }
   }, []);
+
+  const addEdgeLineStart = useMemo(() => {
+    if (edgeStartNode) {
+      return sceneCoords.coordToScreen(graph.nodeData.get(edgeStartNode)!.coord);
+    }
+    return undefined;
+  }, [graph, sceneCoords, edgeStartNode]);
+
+  const addEdgeLineEnd = useMemo(() => {
+    if (edgeEndNode) {
+      return sceneCoords.coordToScreen(graph.nodeData.get(edgeEndNode)!.coord);
+    } else if (mouseDragPos) {
+      return sceneCoords.coordToScreen(mouseDragPos);
+    } else {
+      return undefined;
+    }
+  }, [graph, edgeEndNode]);
 
   const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -74,9 +96,6 @@ const GraphEditor = ({
     setMouseDownPos(p);
     setDraggingNodes(false);
 
-    const cpRadius = 0.1 * sceneCoords.scale; // control point radius in scene coordinates
-    const cpRadius2 = cpRadius * cpRadius;
-
     // if (event->button() == Qt::RightButton &&
     //     _tools->currentTool() == ToolPalette::SELECT &&
     //     settings.value("smart-tool-enabled", true).toBool())
@@ -93,102 +112,67 @@ const GraphEditor = ({
 
     switch (tool) {
       case "select":
-      //     // check if we grabbed a control point of an edge
-      //     foreach (QGraphicsItem *gi, selectedItems()) {
-      //         if (EdgeItem *ei = dynamic_cast<EdgeItem*>(gi)) {
-      //             qreal dx, dy;
+        if (clickedControlPoint) {
+          // dragging a control point
+          // Save current state of the edge
+          // _oldBend = e->bend();
+          // _oldInAngle = e->inAngle();
+          // _oldOutAngle = e->outAngle();
+          // _oldWeight = e->weight();
+        } else {
+          // not dragging a control point, handle click as usual
+          if (clickedNode !== undefined) {
+            // select a node single node and/or prepare to drag nodes
+            if (selectedNodes.contains(clickedNode)) {
+              setDraggingNodes(true);
+            } else {
+              if (event.shiftKey) {
+                changeSelection(selectedNodes.add(clickedNode), selectedEdges);
+              } else {
+                changeSelection(Set([clickedNode]), Set());
+              }
+            }
+          } else if (clickedEdge !== undefined) {
+            // select a single edge
+            if (event.shiftKey) {
+              changeSelection(selectedNodes, selectedEdges.add(clickedEdge));
+            } else {
+              changeSelection(Set(), Set([clickedEdge]));
+            }
+          } else {
+            if (!event.shiftKey) {
+              changeSelection(Set(), Set());
+            }
 
-      //             dx = ei->cp1Item()->pos().x() - _mouseDownPos.x();
-      //             dy = ei->cp1Item()->pos().y() - _mouseDownPos.y();
+            // start rubber band selection
+            setSelectionRect({
+              x: p.x,
+              y: p.y,
+              width: 0,
+              height: 0,
+            });
+          }
+        }
 
-      //             if (dx*dx + dy*dy <= cpR2) {
-      //                 _modifyEdgeItem = ei;
-      //                 _firstControlPoint = true;
-      //                 break;
-      //             }
-
-      //             dx = ei->cp2Item()->pos().x() - _mouseDownPos.x();
-      //             dy = ei->cp2Item()->pos().y() - _mouseDownPos.y();
-
-      //             if (dx*dx + dy*dy <= cpR2) {
-      //                 _modifyEdgeItem = ei;
-      //                 _firstControlPoint = false;
-      //                 break;
-      //             }
-      //         }
-      //     }
-
-      //     if (_modifyEdgeItem != nullptr) {
-      //         // store for undo purposes
-      //         Edge *e = _modifyEdgeItem->edge();
-      //         _oldBend = e->bend();
-      //         _oldInAngle = e->inAngle();
-      //         _oldOutAngle = e->outAngle();
-      //         _oldWeight = e->weight();
-      //     } else {
-      //         // since we are not dragging a control point, process the click normally
-      //         //views()[0]->setDragMode(QGraphicsView::RubberBandDrag);
-      //         QGraphicsScene::mousePressEvent(event);
-
-      //         if (items(_mouseDownPos).isEmpty()) {
-      //             _rubberBandItem->setRect(QRectF(_mouseDownPos,_mouseDownPos));
-      //             _rubberBandItem->setVisible(true);
-      //             //qDebug() << "starting rubber band drag";
-      //         }
-
-      //         // save current node positions for undo support
-      //         _oldNodePositions.clear();
-      //         foreach (QGraphicsItem *gi, selectedItems()) {
-      //             if (NodeItem *ni = dynamic_cast<NodeItem*>(gi)) {
-      //                 _oldNodePositions.insert(ni->node(), ni->node()->point());
-      //             }
-      //         }
-
-      //         QList<QGraphicsItem*> its = items(_mouseDownPos);
-      //         if (!its.isEmpty()) {
-      //             if (dynamic_cast<NodeItem*>(its[0])) {
-      //                 _draggingNodes = true;
-      //             } else {
-      //                 foreach (QGraphicsItem *gi, its) {
-      //                     if (EdgeItem *ei = dynamic_cast<EdgeItem*>(gi)) {
-      //                         _selectingEdge = ei->edge();
-      //                         break;
-      //                     }
-      //                 }
-      //             }
-      //         }
-      //     }
-
-      //     break;
-      // case ToolPalette::VERTEX:
-      //     break;
-      // case ToolPalette::EDGE:
-      //     foreach (QGraphicsItem *gi, items(_mouseDownPos)) {
-      //         if (NodeItem *ni = dynamic_cast<NodeItem*>(gi)){
-      //             _edgeStartNodeItem = ni;
-      //             _edgeEndNodeItem = ni;
-      //             QLineF line(toScreen(ni->node()->point()), _mouseDownPos);
-      //             _drawEdgeItem->setLine(line);
-      //             _drawEdgeItem->setVisible(true);
-      //             break;
-      //         }
-      //     }
-      //     break;
+        break;
+      case "vertex":
+        // nothing to do
+        break;
+      case "edge":
+        setEdgeStartNode(clickedNode);
+        setEdgeEndNode(clickedNode);
+        break;
     }
 
-    setSelectionRect({
-      x: p.x,
-      y: p.y,
-      width: 0,
-      height: 0,
-    });
     setMouseDownPos(p);
   };
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
+    if (mouseDownPos === undefined || !enabled) return;
     const p = mousePositionToCoord(event);
-    if (mouseDownPos) {
+
+    if (selectionRect !== undefined) {
       setSelectionRect({
         x: Math.min(mouseDownPos.x, p.x),
         y: Math.min(mouseDownPos.y, p.y),
@@ -196,13 +180,16 @@ const GraphEditor = ({
         height: Math.abs(mouseDownPos.y - p.y),
       });
     }
+
+    setMouseDragPos(p);
   };
 
   const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
+    if (mouseDownPos === undefined || !enabled) return;
 
     if (selectionRect !== undefined) {
-      const sel = Set<number>().withMutations(set => {
+      const sel = selectedNodes.withMutations(set => {
         for (const d of graph.nodeData.values()) {
           let c = sceneCoords.coordToScreen(d.coord);
           // if c is in selectionRect
@@ -217,7 +204,7 @@ const GraphEditor = ({
         }
       });
 
-      onSelectionChanged(sel, Set());
+      changeSelection(sel, selectedEdges);
     }
 
     setMouseDownPos(undefined);
@@ -251,10 +238,25 @@ const GraphEditor = ({
                 sourceData={graph.nodeData.get(data.source)!}
                 targetData={graph.nodeData.get(data.target)!}
                 style={style}
+                selected={selectedEdges.has(key)}
+                onMouseDown={() => setClickedEdge(key)}
+                onControlPointMouseDown={setClickedControlPoint}
                 sceneCoords={sceneCoords}
               />
             );
           })}
+        </g>
+        <g id="control-layer">
+          {addEdgeLineStart !== undefined && addEdgeLineEnd !== undefined && (
+            <line
+              x1={addEdgeLineStart.x}
+              y1={addEdgeLineStart.y}
+              x2={addEdgeLineEnd.x}
+              y2={addEdgeLineEnd.y}
+              stroke="rgb(100, 0, 200)"
+              strokeWidth={2}
+            />
+          )}
         </g>
         <g id="nodeLayer">
           {graph.nodeData.entrySeq().map(([key, data]) => {
@@ -265,7 +267,8 @@ const GraphEditor = ({
                 data={data}
                 style={style}
                 selected={selectedNodes.has(key)}
-                onMouseDown={id => setClickedNode(id)}
+                highlight={edgeStartNode === key || edgeEndNode === key}
+                onMouseDown={setClickedNode}
                 sceneCoords={sceneCoords}
               />
             );

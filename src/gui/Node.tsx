@@ -8,6 +8,7 @@ interface NodeProps {
   data: NodeData;
   style: StyleData;
   selected: boolean;
+  highlight: boolean;
   onMouseDown: (id: number) => void;
   sceneCoords: SceneCoords;
 }
@@ -71,6 +72,7 @@ const Node = ({ data, style, selected, onMouseDown, sceneCoords }: NodeProps) =>
         </g>
       )}
       {selected && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
+      {selected && <circle r={r} stroke="rgb(100, 0, 200)" strokeWidth={4} />}
     </g>
   );
 };

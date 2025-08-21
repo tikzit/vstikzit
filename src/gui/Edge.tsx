@@ -9,10 +9,22 @@ interface EdgeProps {
   sourceData: NodeData;
   targetData: NodeData;
   style: StyleData;
+  selected: boolean;
+  onMouseDown: (id: number) => void;
+  onControlPointMouseDown: (cp: [number, 1 | 2]) => void;
   sceneCoords: SceneCoords;
 }
 
-const Edge = ({ data, sourceData, targetData, style, sceneCoords }: EdgeProps) => {
+const Edge = ({
+  data,
+  sourceData,
+  targetData,
+  style,
+  selected,
+  onMouseDown,
+  onControlPointMouseDown,
+  sceneCoords,
+}: EdgeProps) => {
   const [c1, c2, cp1, cp2] = useMemo(() => {
     const cs = computeControlPoints(sourceData, targetData, data);
     return [
@@ -33,6 +45,7 @@ const Edge = ({ data, sourceData, targetData, style, sceneCoords }: EdgeProps) =
         stroke={drawColor}
         strokeWidth={strokeWidth}
         fill="none"
+        onMouseDown={() => onMouseDown(data.id)}
       />
     );
   } else {
