@@ -8,6 +8,7 @@ import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../lib/Styles";
 import { Coord, StyleData } from "../lib/Data";
+import { shortenLine } from "../lib/curve";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -48,6 +49,7 @@ const GraphEditor = ({
 
   // refs used to pass data from node/edge components to the graph editor
   const clickedNode = useRef<number | undefined>(undefined);
+  const hoveredNode = useRef<number | undefined>(undefined);
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
@@ -64,22 +66,8 @@ const GraphEditor = ({
     }
   }, []);
 
-  const addEdgeLineStart = useMemo(() => {
-    if (edgeStartNode) {
-      return sceneCoords.coordToScreen(graph.nodeData.get(edgeStartNode)!.coord);
-    }
-    return undefined;
-  }, [graph, sceneCoords, edgeStartNode]);
-
-  const addEdgeLineEnd = useMemo(() => {
-    if (edgeEndNode) {
-      return sceneCoords.coordToScreen(graph.nodeData.get(edgeEndNode)!.coord);
-    } else if (mouseDragPos) {
-      return sceneCoords.coordToScreen(mouseDragPos);
-    } else {
-      return undefined;
-    }
-  }, [graph, edgeEndNode]);
+  const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
+  const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
 
   const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -198,6 +186,29 @@ const GraphEditor = ({
       );
     }
 
+    if (edgeStartNode !== undefined) {
+      setEdgeEndNode(hoveredNode.current);
+      let c1: Coord;
+      let c2: Coord;
+      if (edgeEndNode !== undefined) {
+        [c1, c2] = shortenLine(
+          graph.nodeData.get(edgeStartNode)!.coord,
+          graph.nodeData.get(edgeEndNode)!.coord,
+          0.2,
+          0.2
+        );
+      } else {
+        [c1, c2] = shortenLine(
+          graph.nodeData.get(edgeStartNode)!.coord,
+          sceneCoords.coordFromScreen(p),
+          0.2,
+          0
+        );
+      }
+      setAddEdgeLineStart(sceneCoords.coordToScreen(c1));
+      setAddEdgeLineEnd(sceneCoords.coordToScreen(c2));
+    }
+
     setMouseDragPos(p);
   };
 
@@ -229,6 +240,8 @@ const GraphEditor = ({
     setSelectionRect(undefined);
     setEdgeStartNode(undefined);
     setEdgeEndNode(undefined);
+    setAddEdgeLineStart(undefined);
+    setAddEdgeLineEnd(undefined);
     setDraggingNodes(false);
   };
 
@@ -267,18 +280,6 @@ const GraphEditor = ({
             );
           })}
         </g>
-        <g id="control-layer">
-          {addEdgeLineStart !== undefined && addEdgeLineEnd !== undefined && (
-            <line
-              x1={addEdgeLineStart.x}
-              y1={addEdgeLineStart.y}
-              x2={addEdgeLineEnd.x}
-              y2={addEdgeLineEnd.y}
-              stroke="rgb(100, 0, 200)"
-              strokeWidth={2}
-            />
-          )}
-        </g>
         <g id="nodeLayer">
           {graph.nodeData.entrySeq().map(([key, data]) => {
             const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
@@ -290,6 +291,8 @@ const GraphEditor = ({
                 selected={selectedNodes.has(key)}
                 highlight={edgeStartNode === key || edgeEndNode === key}
                 onMouseDown={() => (clickedNode.current = key)}
+                onMouseOver={() => (hoveredNode.current = key)}
+                onMouseOut={() => (hoveredNode.current = undefined)}
                 sceneCoords={sceneCoords}
               />
             );
@@ -302,6 +305,18 @@ const GraphEditor = ({
               fill="rgba(150, 150, 200, 0.2)"
               stroke="rgba(150, 150, 200, 1)"
               strokeDasharray="5,2"
+            />
+          )}
+        </g>
+        <g id="control-layer">
+          {addEdgeLineStart !== undefined && addEdgeLineEnd !== undefined && (
+            <line
+              x1={addEdgeLineStart.x}
+              y1={addEdgeLineStart.y}
+              x2={addEdgeLineEnd.x}
+              y2={addEdgeLineEnd.y}
+              stroke="rgb(100, 0, 200)"
+              strokeWidth={4}
             />
           )}
         </g>

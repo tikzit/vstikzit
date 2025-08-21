@@ -8,6 +8,27 @@ function almostZero(f: number): boolean {
 //   return almostZero(f1 - f2);
 // }
 
+// return a new pair of coordinates along the same line, with the head and tail shortened by the given amounts
+export function shortenLine(
+  c1: Coord,
+  c2: Coord,
+  shortenHead: number,
+  shortenTail: number
+): [Coord, Coord] {
+  const dx = c2.x - c1.x;
+  const dy = c2.y - c1.y;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len === 0) {
+    return [c1, c2];
+  }
+  const unitX = dx / len;
+  const unitY = dy / len;
+  return [
+    c1.shift(unitX * shortenHead, unitY * shortenHead),
+    c2.shift(-unitX * shortenTail, -unitY * shortenTail),
+  ];
+}
+
 function bezierInterpolate1(dist: number, c0: number, c1: number, c2: number, c3: number): number {
   const distp = 1 - dist;
   return (
