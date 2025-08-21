@@ -127,7 +127,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const handleGraphChange = (graph: Graph) => {
     console.log("got graph change");
     setGraph(graph);
-    setInitCode(graph.tikz());
+    const tikz = graph.tikz();
+    setInitCode(tikz);
+    vscode.postMessage({
+      type: "updateTextDocument",
+      content: tikz,
+    });
   };
 
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
