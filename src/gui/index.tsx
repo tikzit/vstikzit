@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import "./editorSetup";
+import "../lib/editorSetup";
 import App from "./App";
 
 // VSCode WebView API types (should be available globally in webview context)

@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { parseTikzPicture, parseTikzStyles } from "../data/TikzParser";
+import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 
 function strip(input: string): string {
   return input

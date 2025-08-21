@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { EdgeData, NodeData, StyleData } from "../data/Data";
-import SceneCoords from "./SceneCoords";
-import { colorToHex } from "./color";
-import { computeControlPoints } from "./curve";
+import { EdgeData, NodeData, StyleData } from "../lib/Data";
+import SceneCoords from "../lib/SceneCoords";
+import { colorToHex } from "../lib/color";
+import { computeControlPoints } from "../lib/curve";
 
 interface EdgeProps {
   data: EdgeData;

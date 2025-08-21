@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { NodeData, StyleData } from "../data/Data";
-import SceneCoords from "./SceneCoords";
-import { formatLabel } from "./labels";
-import { colorToHex } from "./color";
+import { NodeData, StyleData } from "../lib/Data";
+import SceneCoords from "../lib/SceneCoords";
+import { formatLabel } from "../lib/labels";
+import { colorToHex } from "../lib/color";
 
 interface NodeProps {
   data: NodeData;

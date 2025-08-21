@@ -1,4 +1,4 @@
-import { Coord } from "../data/Data";
+import { Coord } from "./Data";
 
 class SceneCoords {
   public width: number;

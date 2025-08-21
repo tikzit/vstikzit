@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { colorToHex } from "../gui/color";
+import { colorToHex } from "../lib/color";
 
 describe("colorToHex", () => {
   describe("named colors", () => {

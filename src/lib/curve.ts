@@ -1,4 +1,4 @@
-import { Coord, EdgeData, NodeData } from "../data/Data";
+import { Coord, EdgeData, NodeData } from "./Data";
 
 function almostZero(f: number): boolean {
   return f >= -0.000001 && f <= 0.000001;

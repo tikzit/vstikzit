@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { set, Set } from "immutable";
 
-import Graph from "../data/Graph";
-import { drawGrid } from "./grid";
-import SceneCoords from "./SceneCoords";
+import Graph from "../lib/Graph";
+import { drawGrid } from "../lib/grid";
+import SceneCoords from "../lib/SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
-import Styles from "../data/Styles";
-import { Coord, StyleData } from "../data/Data";
+import Styles from "../lib/Styles";
+import { Coord, StyleData } from "../lib/Data";
 
 export type GraphTool = "select" | "vertex" | "edge";
 

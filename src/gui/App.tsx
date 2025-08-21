@@ -4,12 +4,12 @@ import Split from "react-split";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
-import Graph from "../data/Graph";
-import { parseTikzPicture, parseTikzStyles } from "../data/TikzParser";
+import Graph from "../lib/Graph";
+import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
-import Styles from "../data/Styles";
-import { tikzTokensProvider } from "./editorSetup";
+import Styles from "../lib/Styles";
+import { tikzTokensProvider } from "../lib/editorSetup";
 
 interface IContent {
   document: string;

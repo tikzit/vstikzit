@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { editorOptions } from "./editorSetup";
+import { editorOptions } from "../lib/editorSetup";
 
 interface CodeEditorProps {
   content: string;

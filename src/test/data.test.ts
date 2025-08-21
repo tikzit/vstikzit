@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { NodeData, Coord } from "../data/Data";
+import { NodeData, Coord } from "../lib/Data";
 import { OrderedMap } from "immutable";
 
 describe("NodeData", () => {

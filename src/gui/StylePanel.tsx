@@ -1,4 +1,4 @@
-import Styles from "../data/Styles";
+import Styles from "../lib/Styles";
 import { GraphTool } from "./GraphEditor";
 import Toolbar from "./Toolbar";
 
