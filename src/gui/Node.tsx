@@ -37,7 +37,7 @@ const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: No
           <circle r={sceneCoords.scale * 0.035} fill="#aaa" />
           <circle
             r={r}
-            fill="none"
+            fill="rgba(0,0,0,0)"
             stroke="#aaa"
             strokeDasharray="4 4"
             strokeWidth={sceneCoords.scale * 0.035}

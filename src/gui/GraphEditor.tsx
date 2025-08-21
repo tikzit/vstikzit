@@ -123,13 +123,16 @@ const GraphEditor = ({
           // not dragging a control point, handle click as usual
           if (clickedNode.current !== undefined) {
             // select a node single node and/or prepare to drag nodes
-            if (selectedNodes.contains(clickedNode.current)) {
+            if (event.shiftKey) {
+              if (selectedNodes.contains(clickedNode.current)) {
+                updateSelection(selectedNodes.remove(clickedNode.current), selectedEdges);
+              } else {
+                updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
+              }
+            } else {
               setDraggingNodes(true);
               setPrevGraph(graph);
-            } else {
-              if (event.shiftKey) {
-                updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
-              } else {
+              if (!selectedNodes.contains(clickedNode.current)) {
                 updateSelection(Set([clickedNode.current]), Set());
               }
             }
