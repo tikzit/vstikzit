@@ -108,6 +108,12 @@ class Graph {
     }
   }
 
+  public mapNodeData(fn: (data: NodeData) => NodeData): Graph {
+    const g = this.copy();
+    g._nodeData = g._nodeData.map(fn);
+    return g;
+  }
+
   public updateEdgeData(id: number, fn: (data: EdgeData) => EdgeData): Graph {
     const edge = this._edgeData.get(id);
     if (edge) {

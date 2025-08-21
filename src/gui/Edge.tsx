@@ -10,8 +10,8 @@ interface EdgeProps {
   targetData: NodeData;
   style: StyleData;
   selected: boolean;
-  onMouseDown: (id: number) => void;
-  onControlPointMouseDown: (cp: [number, 1 | 2]) => void;
+  onMouseDown: () => void;
+  onControlPointMouseDown: (cp: 1 | 2) => void;
   sceneCoords: SceneCoords;
 }
 
@@ -45,7 +45,7 @@ const Edge = ({
         stroke={drawColor}
         strokeWidth={strokeWidth}
         fill="none"
-        onMouseDown={() => onMouseDown(data.id)}
+        onMouseDown={onMouseDown}
       />
     );
   } else {

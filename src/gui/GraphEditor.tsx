@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Set } from "immutable";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { set, Set } from "immutable";
 
 import Graph from "../data/Graph";
 import { drawGrid } from "./grid";
@@ -26,29 +26,30 @@ const GraphEditor = ({
   tool,
   enabled,
   graph,
-  onGraphChange,
+  onGraphChange: updateGraph,
   selectedNodes,
   selectedEdges,
-  onSelectionChanged: changeSelection,
+  onSelectionChanged: updateSelection,
   tikzStyles,
 }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
 
   // internal editor state
-  // n.b. the graph itself is stored in App, and is updated by this component via onGraphChange
+  // n.b. the graph itself is stored in App, and is updated by this component via updateGraph
+  const [prevGraph, setPrevGraph] = useState<Graph | undefined>(undefined);
   const [mouseDownPos, setMouseDownPos] = useState<Coord | undefined>(undefined);
   const [mouseDragPos, setMouseDragPos] = useState<Coord | undefined>(undefined);
   const [selectionRect, setSelectionRect] = useState<
     { x: number; y: number; width: number; height: number } | undefined
   >(undefined);
   const [draggingNodes, setDraggingNodes] = useState(false);
-  const [clickedNode, setClickedNode] = useState<number | undefined>(undefined);
-  const [clickedEdge, setClickedEdge] = useState<number | undefined>(undefined);
-  const [clickedControlPoint, setClickedControlPoint] = useState<[number, 1 | 2] | undefined>(
-    undefined
-  );
   const [edgeStartNode, setEdgeStartNode] = useState<number | undefined>(undefined);
   const [edgeEndNode, setEdgeEndNode] = useState<number | undefined>(undefined);
+
+  // refs used to pass data from node/edge components to the graph editor
+  const clickedNode = useRef<number | undefined>(undefined);
+  const clickedEdge = useRef<number | undefined>(undefined);
+  const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
   useEffect(() => {
     const graphEditor = document.getElementById("graph-editor-viewport")!;
@@ -88,7 +89,6 @@ const GraphEditor = ({
   };
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
-    console.log("GraphEditor mouse down");
     event.preventDefault();
     if (!enabled) return;
 
@@ -112,7 +112,7 @@ const GraphEditor = ({
 
     switch (tool) {
       case "select":
-        if (clickedControlPoint) {
+        if (clickedControlPoint.current !== undefined) {
           // dragging a control point
           // Save current state of the edge
           // _oldBend = e->bend();
@@ -121,27 +121,28 @@ const GraphEditor = ({
           // _oldWeight = e->weight();
         } else {
           // not dragging a control point, handle click as usual
-          if (clickedNode !== undefined) {
+          if (clickedNode.current !== undefined) {
             // select a node single node and/or prepare to drag nodes
-            if (selectedNodes.contains(clickedNode)) {
+            if (selectedNodes.contains(clickedNode.current)) {
               setDraggingNodes(true);
+              setPrevGraph(graph);
             } else {
               if (event.shiftKey) {
-                changeSelection(selectedNodes.add(clickedNode), selectedEdges);
+                updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
               } else {
-                changeSelection(Set([clickedNode]), Set());
+                updateSelection(Set([clickedNode.current]), Set());
               }
             }
-          } else if (clickedEdge !== undefined) {
+          } else if (clickedEdge.current !== undefined) {
             // select a single edge
             if (event.shiftKey) {
-              changeSelection(selectedNodes, selectedEdges.add(clickedEdge));
+              updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
             } else {
-              changeSelection(Set(), Set([clickedEdge]));
+              updateSelection(Set(), Set([clickedEdge.current]));
             }
           } else {
             if (!event.shiftKey) {
-              changeSelection(Set(), Set());
+              updateSelection(Set(), Set());
             }
 
             // start rubber band selection
@@ -159,12 +160,15 @@ const GraphEditor = ({
         // nothing to do
         break;
       case "edge":
-        setEdgeStartNode(clickedNode);
-        setEdgeEndNode(clickedNode);
+        setEdgeStartNode(clickedNode.current);
+        setEdgeEndNode(clickedNode.current);
         break;
     }
 
     setMouseDownPos(p);
+    clickedNode.current = undefined;
+    clickedEdge.current = undefined;
+    clickedControlPoint.current = undefined;
   };
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -179,6 +183,16 @@ const GraphEditor = ({
         width: Math.abs(mouseDownPos.x - p.x),
         height: Math.abs(mouseDownPos.y - p.y),
       });
+    } else if (draggingNodes && prevGraph !== undefined) {
+      const c1 = sceneCoords.coordFromScreen(mouseDownPos);
+      const c2 = sceneCoords.coordFromScreen(p);
+      const dx = Math.round((c2.x - c1.x) * 4) / 4;
+      const dy = Math.round((c2.y - c1.y) * 4) / 4;
+      updateGraph(
+        prevGraph.mapNodeData(d =>
+          selectedNodes.contains(d.id) ? d.setCoord(d.coord.shift(dx, dy)) : d
+        )
+      );
     }
 
     setMouseDragPos(p);
@@ -204,11 +218,15 @@ const GraphEditor = ({
         }
       });
 
-      changeSelection(sel, selectedEdges);
+      updateSelection(sel, selectedEdges);
     }
 
+    setPrevGraph(undefined);
     setMouseDownPos(undefined);
     setSelectionRect(undefined);
+    setEdgeStartNode(undefined);
+    setEdgeEndNode(undefined);
+    setDraggingNodes(false);
   };
 
   return (
@@ -239,8 +257,8 @@ const GraphEditor = ({
                 targetData={graph.nodeData.get(data.target)!}
                 style={style}
                 selected={selectedEdges.has(key)}
-                onMouseDown={() => setClickedEdge(key)}
-                onControlPointMouseDown={setClickedControlPoint}
+                onMouseDown={() => (clickedEdge.current = key)}
+                onControlPointMouseDown={i => (clickedControlPoint.current = [key, i])}
                 sceneCoords={sceneCoords}
               />
             );
@@ -268,7 +286,7 @@ const GraphEditor = ({
                 style={style}
                 selected={selectedNodes.has(key)}
                 highlight={edgeStartNode === key || edgeEndNode === key}
-                onMouseDown={setClickedNode}
+                onMouseDown={() => (clickedNode.current = key)}
                 sceneCoords={sceneCoords}
               />
             );

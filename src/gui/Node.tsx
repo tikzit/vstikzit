@@ -9,11 +9,11 @@ interface NodeProps {
   style: StyleData;
   selected: boolean;
   highlight: boolean;
-  onMouseDown: (id: number) => void;
+  onMouseDown: () => void;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, style, selected, onMouseDown, sceneCoords }: NodeProps) => {
+const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: NodeProps) => {
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 
@@ -30,7 +30,7 @@ const Node = ({ data, style, selected, onMouseDown, sceneCoords }: NodeProps) =>
     <g
       id={`node-${data.id}`}
       transform={`translate(${coord.x}, ${coord.y})`}
-      onMouseDown={() => onMouseDown(data.id)}
+      onMouseDown={onMouseDown}
     >
       {style.isNone ? (
         <g>
@@ -72,7 +72,7 @@ const Node = ({ data, style, selected, onMouseDown, sceneCoords }: NodeProps) =>
         </g>
       )}
       {selected && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
-      {selected && <circle r={r} stroke="rgb(100, 0, 200)" strokeWidth={4} />}
+      {highlight && <circle r={r} stroke="rgb(100, 0, 200)" fill="none" strokeWidth={4} />}
     </g>
   );
 };
