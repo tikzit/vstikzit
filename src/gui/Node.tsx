@@ -8,10 +8,11 @@ interface NodeProps {
   data: NodeData;
   style: StyleData;
   selected: boolean;
+  onMouseDown: (id: number) => void;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, style, selected, sceneCoords }: NodeProps) => {
+const Node = ({ data, style, selected, onMouseDown, sceneCoords }: NodeProps) => {
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 
@@ -25,7 +26,11 @@ const Node = ({ data, style, selected, sceneCoords }: NodeProps) => {
   }, [data, labelRef]);
 
   return (
-    <g id={`node-${data.id}`} transform={`translate(${coord.x}, ${coord.y})`}>
+    <g
+      id={`node-${data.id}`}
+      transform={`translate(${coord.x}, ${coord.y})`}
+      onMouseDown={() => onMouseDown(data.id)}
+    >
       {style.isNone ? (
         <g>
           <circle r={sceneCoords.scale * 0.035} fill="#aaa" />

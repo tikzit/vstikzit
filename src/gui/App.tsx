@@ -17,11 +17,16 @@ interface IContent {
   styles: string;
 }
 
+// merge undo items where merge=true in 5-second chunks
+const mergeResolution = 5000;
+
 interface UndoState {
   graph?: Graph;
   tikz?: string;
   selectedNodes: Set<number>;
   selectedEdges: Set<number>;
+  timestamp: number;
+  merge: boolean;
 }
 
 interface AppProps {
@@ -148,6 +153,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
         >
           <GraphEditor
             tool={tool}
+            enabled={true}
             graph={graph}
             onGraphChange={handleGraphChange}
             selectedNodes={selectedNodes}
