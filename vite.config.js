@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import monacoEditorPlugin from 'vite-plugin-monaco-editor';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [react(), nodePolyfills(), monacoEditorPlugin({languageWorkers:[]})],
+  plugins: [
+    react(), 
+    nodePolyfills()
+  ],
   assetsInclude: ['**/*.svg'],
   build: {
     lib: {
@@ -13,5 +15,16 @@ export default defineConfig({
       fileName: "webview",
       formats: ['es'],
     },
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      }
+    }
   },
+  worker: {
+    format: 'es'
+  },
+  optimizeDeps: {
+    include: ['monaco-editor/esm/vs/editor/editor.api']
+  }
 });
