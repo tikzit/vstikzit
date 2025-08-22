@@ -1,6 +1,7 @@
-import * as vscode from "vscode";
+// import * as vscode from "vscode";
+const vscode = require("vscode");
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context) {
   // Register the custom text editor provider
   const provider = new TikZEditorProvider(context);
   const registration = vscode.window.registerCustomEditorProvider("vstikzit.tikzEditor", provider, {
@@ -13,14 +14,12 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(registration);
 }
 
-class TikZEditorProvider implements vscode.CustomTextEditorProvider {
-  constructor(private readonly context: vscode.ExtensionContext) {}
+class TikZEditorProvider {
+  constructor(context) {
+    this.context = context;
+  }
 
-  public async resolveCustomTextEditor(
-    document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-    _token: vscode.CancellationToken
-  ): Promise<void> {
+  async resolveCustomTextEditor(document, webviewPanel, _token) {
     // Setup webview options
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -69,7 +68,7 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     // });
   }
 
-  private async getHtmlForWebview(webview: vscode.Webview, content: any): Promise<string> {
+  async getHtmlForWebview(webview, content) {
     // Get the local path to main script run in the webview
     const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -113,13 +112,13 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
   }
 
-  private updateTextDocument(document: vscode.TextDocument, content: string) {
+  updateTextDocument(document, content) {
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
     return vscode.workspace.applyEdit(edit);
   }
 
-  private async getTikzStyles(): Promise<[string, string]> {
+  async getTikzStyles() {
     try {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -150,7 +149,7 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     }
   }
 
-  private async refreshTikzStyles(webview: vscode.Webview) {
+  async refreshTikzStyles(webview) {
     const [styleFile, styles] = await this.getTikzStyles();
     webview.postMessage({
       type: "tikzStylesContent",
@@ -169,4 +168,9 @@ function getNonce() {
   return text;
 }
 
-export function deactivate() {}
+function deactivate() {}
+
+module.exports = {
+  activate,
+  deactivate
+};

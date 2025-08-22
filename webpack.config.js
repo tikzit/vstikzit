@@ -1,7 +1,6 @@
-//@ts-check
-
-'use strict';
-
+// import * as webpack from "webpack";
+// import * as path from "path";
+// import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 const webpack = require('webpack');
 const path = require('path');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
@@ -11,7 +10,7 @@ const baseConfig = {
 
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve('dist'),
     pathinfo: false,
   },
   externals: {
@@ -55,17 +54,6 @@ const baseConfig = {
   // devtool: 'eval-cheap-module-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
-  },
-};
-
-const extensionConfig = {
-  ...baseConfig,
-  target: 'node',
-  entry: './src/extension.ts',
-  output: {
-    ...baseConfig.output,
-    filename: 'extension.js',
-    libraryTarget: 'commonjs2',
   },
 };
 
@@ -116,4 +104,6 @@ const testConfig = {
   },
 };
 
-module.exports = [ extensionConfig, webviewConfig, testConfig ];
+module.exports = [ webviewConfig, testConfig ];
+
+// export default [ webviewConfig, testConfig ];

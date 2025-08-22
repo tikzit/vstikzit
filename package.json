@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./dist/extension.js",
+  "main": "./src/extension.js",
   "contributes": {
     "customEditors": [
       {
