@@ -29,7 +29,11 @@ export function shortenLine(
   ];
 }
 
-function bezierInterpolate1(dist: number, c0: number, c1: number, c2: number, c3: number): number {
+function linearInterpolate(dist: number, c0: number, c1: number): number {
+  return (1 - dist) * c0 + dist * c1;
+}
+
+function cubicInterpolate(dist: number, c0: number, c1: number, c2: number, c3: number): number {
   const distp = 1 - dist;
   return (
     distp * distp * distp * c0 +
@@ -47,25 +51,30 @@ export function bezierInterpolate(
   cp2: Coord
 ): Coord {
   return new Coord(
-    bezierInterpolate1(dist, c1.x, cp1.x, cp2.x, c2.x),
-    bezierInterpolate1(dist, c1.y, cp1.y, cp2.y, c2.y)
+    cubicInterpolate(dist, c1.x, cp1.x, cp2.x, c2.x),
+    cubicInterpolate(dist, c1.y, cp1.y, cp2.y, c2.y)
   );
 }
 
-export function bezierTangent(
-  c1: Coord,
-  c2: Coord,
-  cp1: Coord,
-  cp2: Coord,
+export function tangent(
+  [c1, c2, cp1, cp2]: [Coord, Coord, Coord | undefined, Coord | undefined],
   start: number,
   end: number
 ): Coord {
-  const dx =
-    bezierInterpolate1(end, c1.x, cp1.x, cp2.x, c2.x) -
-    bezierInterpolate1(start, c1.x, cp1.x, cp2.x, c2.x);
-  const dy =
-    bezierInterpolate1(end, c1.y, cp1.y, cp2.y, c2.y) -
-    bezierInterpolate1(start, c1.y, cp1.y, cp2.y, c2.y);
+  let dx: number;
+  let dy: number;
+
+  if (cp1 !== undefined && cp2 !== undefined) {
+    dx =
+      cubicInterpolate(end, c1.x, cp1.x, cp2.x, c2.x) -
+      cubicInterpolate(start, c1.x, cp1.x, cp2.x, c2.x);
+    dy =
+      cubicInterpolate(end, c1.y, cp1.y, cp2.y, c2.y) -
+      cubicInterpolate(start, c1.y, cp1.y, cp2.y, c2.y);
+  } else {
+    dx = linearInterpolate(end, c1.x, c2.x) - linearInterpolate(start, c1.x, c2.x);
+    dy = linearInterpolate(end, c1.y, c2.y) - linearInterpolate(start, c1.y, c2.y);
+  }
 
   // normalise
   const len = Math.sqrt(dx * dx + dy * dy);

@@ -1,68 +1,5 @@
 import { OrderedMap } from "immutable";
-import Data from "./Data";
-
-type ArrowTipStyle = "pointer" | "flat" | "none";
-
-class StyleData extends Data<StyleData> {
-  private _name: string;
-
-  constructor(data?: StyleData) {
-    super(data);
-    this._name = data?._name ?? "none";
-  }
-
-  public get isNone(): boolean {
-    return this._name === "none";
-  }
-
-  public get isEdgeStyle(): boolean {
-    return (
-      this.hasKey("-") ||
-      this.hasKey("->") ||
-      this.hasKey("-|") ||
-      this.hasKey("<-") ||
-      this.hasKey("<->") ||
-      this.hasKey("<-|") ||
-      this.hasKey("|-") ||
-      this.hasKey("|->") ||
-      this.hasKey("|-|")
-    );
-  }
-
-  public get arrowHead(): ArrowTipStyle {
-    if (this.hasKey("->") || this.hasKey("<->") || this.hasKey("|->")) {
-      return "pointer";
-    } else if (this.hasKey("-|") || this.hasKey("<-|") || this.hasKey("|-|")) {
-      return "flat";
-    } else {
-      return "none";
-    }
-  }
-
-  public get arrowTail(): ArrowTipStyle {
-    if (this.hasKey("<-") || this.hasKey("<->") || this.hasKey("<-|")) {
-      return "pointer";
-    } else if (this.hasKey("|-") || this.hasKey("|->") || this.hasKey("|-|")) {
-      return "flat";
-    } else {
-      return "none";
-    }
-  }
-
-  public equals(other: StyleData): boolean {
-    return super.equals(other) && this._name === other._name;
-  }
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public setName(name: string): StyleData {
-    const d = new StyleData(this);
-    d._name = name;
-    return d;
-  }
-}
+import { StyleData } from "./Data";
 
 class Styles {
   private _styleData: OrderedMap<string, StyleData>;
@@ -127,5 +64,4 @@ class Styles {
   }
 }
 
-export { StyleData };
 export default Styles;

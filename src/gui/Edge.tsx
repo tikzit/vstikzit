@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { EdgeData, NodeData } from "../lib/Data";
-import { StyleData } from "../lib/Styles";
+import { StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
-import { computeControlPoints } from "../lib/curve";
+import { computeControlPoints, tangent } from "../lib/curve";
 
 interface EdgeProps {
   data: EdgeData;
@@ -26,13 +26,15 @@ const Edge = ({
   onControlPointMouseDown,
   sceneCoords,
 }: EdgeProps) => {
-  const [c1, c2, cp1, cp2] = useMemo(() => {
+  const [c1, c2, cp1, cp2, headTangent, tailTangent] = useMemo(() => {
     const cs = computeControlPoints(sourceData, targetData, data);
     return [
       sceneCoords.coordToScreen(cs[0]),
       sceneCoords.coordToScreen(cs[1]),
       cs[2] ? sceneCoords.coordToScreen(cs[2]) : undefined,
       cs[3] ? sceneCoords.coordToScreen(cs[3]) : undefined,
+      sceneCoords.coordToScreen(tangent(cs, 0.0, 0.1)),
+      sceneCoords.coordToScreen(tangent(cs, 1.0, 0.9)),
     ];
   }, [data, sourceData, targetData]);
 

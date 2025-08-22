@@ -1,8 +1,7 @@
 // @ts-ignore - webpack will handle this
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
-import { Coord, GraphData, EdgeData, NodeData, PathData } from "./Data";
-import { StyleData } from "./Styles";
+import { Coord, GraphData, EdgeData, NodeData, PathData, StyleData } from "./Data";
 import Styles from "./Styles";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {

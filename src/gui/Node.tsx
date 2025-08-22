@@ -3,7 +3,7 @@ import { NodeData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { formatLabel } from "../lib/labels";
 import { colorToHex } from "../lib/color";
-import { StyleData } from "../lib/Styles";
+import { StyleData } from "../lib/Data";
 
 interface NodeProps {
   data: NodeData;

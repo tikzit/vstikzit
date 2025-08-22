@@ -8,7 +8,7 @@ import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../lib/Styles";
 import { Coord } from "../lib/Data";
-import { StyleData } from "../lib/Styles";
+import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 
 export type GraphTool = "select" | "vertex" | "edge";
