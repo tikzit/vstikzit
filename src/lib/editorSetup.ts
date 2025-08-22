@@ -59,7 +59,7 @@ const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   formatOnType: true,
   formatOnPaste: true,
   language: "tikz",
-  theme: "vs",
+  theme: "vs-dark",
 };
 
 export { tikzTokensProvider, editorOptions };

@@ -28,7 +28,7 @@ const Toolbar = ({ tool, onToolChanged }: ToolbarProps) => {
   const iconStyle = { width: "20px", height: "20px" };
 
   return (
-    <div style={{ display: "flex", gap: "4px", marginBottom: "10px" }}>
+    <div style={{ width: "100%" }}>
       <button
         onClick={() => onToolChanged("select")}
         style={toolbarButtonStyle(tool === "select")}

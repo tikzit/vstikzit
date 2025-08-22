@@ -354,6 +354,20 @@ class StyleData extends Data<StyleData> {
     return this._name === "none";
   }
 
+  public get isEdgeStyle(): boolean {
+    return (
+      this.hasKey("-") ||
+      this.hasKey("->") ||
+      this.hasKey("-|") ||
+      this.hasKey("<-") ||
+      this.hasKey("<->") ||
+      this.hasKey("<-|") ||
+      this.hasKey("|-") ||
+      this.hasKey("|->") ||
+      this.hasKey("|-|")
+    );
+  }
+
   public equals(other: StyleData): boolean {
     return super.equals(other) && this._name === other._name;
   }
