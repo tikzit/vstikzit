@@ -45,13 +45,16 @@ const Edge = ({
       arrowTail = [c1.shift(tt.x - tt.y, tt.x + tt.y), c1, c1.shift(tt.x + tt.y, -tt.x + tt.y)];
     }
 
+    console.log("arrowHead", style.arrowHead, arrowHead);
+    console.log("arrowTail", style.arrowTail, arrowTail);
+
     return [
       sceneCoords.coordToScreen(c1),
       sceneCoords.coordToScreen(c2),
       cp1 ? sceneCoords.coordToScreen(cp1) : undefined,
       cp2 ? sceneCoords.coordToScreen(cp2) : undefined,
-      arrowHead?.map(sceneCoords.coordToScreen),
-      arrowTail?.map(sceneCoords.coordToScreen),
+      arrowHead !== undefined ? arrowHead?.map(sceneCoords.coordToScreen) : undefined,
+      arrowTail !== undefined ? arrowTail?.map(sceneCoords.coordToScreen) : undefined,
     ];
   }, [data, sourceData, targetData]);
 
