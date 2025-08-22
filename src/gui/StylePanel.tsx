@@ -1,7 +1,11 @@
-import { colorToHex } from "../lib/color";
+import { Coord, EdgeData, NodeData } from "../lib/Data";
+import SceneCoords from "../lib/SceneCoords";
 import Styles from "../lib/Styles";
 import { GraphTool } from "./GraphEditor";
 import Toolbar from "./Toolbar";
+import Node from "./Node";
+import { SVGTextElementAttributes } from "react";
+import Edge from "./Edge";
 
 interface StylePanelProps {
   tool: GraphTool;
@@ -18,6 +22,22 @@ const StylePanel = ({
   currentNodeStyle,
   currentEdgeStyle,
 }: StylePanelProps) => {
+  const sceneCoords = new SceneCoords(44, 30);
+  const labelProps: any = {
+    x: 22,
+    y: 38,
+    textAnchor: "middle",
+    alignmentBaseline: "middle",
+    fontSize: "10px",
+    fontStyle: "italic",
+  };
+
+  // dummy node and edge data used for drawing the controls
+  const node = new NodeData();
+  const enode1 = new NodeData().setId(0).setCoord(new Coord(-0.25, 0.0));
+  const enode2 = new NodeData().setId(1).setCoord(new Coord(0.25, 0.0));
+  const edge = new EdgeData().setSource(0).setTarget(1);
+
   return (
     <div
       style={{
@@ -42,57 +62,14 @@ const StylePanel = ({
             marginBottom: "10px",
           }}
         >
-          <a href="#" title="none" onClick={() => false} style={{ outline: "none" }}>
-            <svg width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
-              <g>
-                <circle cx={22} cy={15} r={2.2} fill="#aaa" />
-                <circle
-                  cx={22}
-                  cy={15}
-                  r={12}
-                  fill="rgba(0,0,0,0)"
-                  stroke="#aaa"
-                  strokeDasharray="4 4"
-                  strokeWidth={2.2}
-                />
-              </g>
-              <text
-                x={22}
-                y={38}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                fontSize="10px"
-                fontStyle="italic"
-              >
-                none
-              </text>
-            </svg>
-          </a>
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (style.isEdgeStyle) {
-              return null;
-            }
-            const fill = colorToHex(
-              style.property("tikzit fill") ?? style.property("fill") ?? "white"
-            );
-            const draw = colorToHex(
-              style.property("tikzit draw") ?? style.property("draw") ?? "black"
-            );
+            if (style.isEdgeStyle) return null;
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a href="#" title={name} onClick={() => false} style={{ outline: "none" }}>
                 <svg key={name} width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
-                  <circle cx={22} cy={15} r={12} fill={fill} stroke={draw} strokeWidth={2} />
-                  <text
-                    x={22}
-                    y={38}
-                    textAnchor="middle"
-                    alignmentBaseline="middle"
-                    fontSize="10px"
-                    fontStyle="italic"
-                  >
-                    {shortName}
-                  </text>
+                  <Node data={node} style={style} sceneCoords={sceneCoords} />
+                  <text {...labelProps}>{shortName}</text>
                 </svg>
               </a>
             );
@@ -108,30 +85,19 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (!style.isEdgeStyle) {
-              return null;
-            }
-            const fill = colorToHex(
-              style.property("tikzit fill") ?? style.property("fill") ?? "white"
-            );
-            const draw = colorToHex(
-              style.property("tikzit draw") ?? style.property("draw") ?? "black"
-            );
+            if (name !== "none" && !style.isEdgeStyle) return null;
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a href="#" title={name} onClick={() => false}>
                 <svg key={name} width={44} height={44} style={{ margin: "5px" }}>
-                  <circle cx={22} cy={15} r={12} fill={fill} stroke={draw} strokeWidth={2} />
-                  <text
-                    x={22}
-                    y={38}
-                    textAnchor="middle"
-                    alignmentBaseline="middle"
-                    fontSize="10px"
-                    fontStyle="italic"
-                  >
-                    {shortName}
-                  </text>
+                  <Edge
+                    data={edge}
+                    sourceData={enode1}
+                    targetData={enode2}
+                    style={style}
+                    sceneCoords={sceneCoords}
+                  />
+                  <text {...labelProps}>{shortName}</text>
                 </svg>
               </a>
             );

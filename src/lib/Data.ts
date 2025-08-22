@@ -342,45 +342,5 @@ class PathData implements ValueObject {
   }
 }
 
-class StyleData extends Data<StyleData> {
-  private _name: string;
-
-  constructor(data?: StyleData) {
-    super(data);
-    this._name = data?._name ?? "none";
-  }
-
-  public get isNone(): boolean {
-    return this._name === "none";
-  }
-
-  public get isEdgeStyle(): boolean {
-    return (
-      this.hasKey("-") ||
-      this.hasKey("->") ||
-      this.hasKey("-|") ||
-      this.hasKey("<-") ||
-      this.hasKey("<->") ||
-      this.hasKey("<-|") ||
-      this.hasKey("|-") ||
-      this.hasKey("|->") ||
-      this.hasKey("|-|")
-    );
-  }
-
-  public equals(other: StyleData): boolean {
-    return super.equals(other) && this._name === other._name;
-  }
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public setName(name: string): StyleData {
-    const d = new StyleData(this);
-    d._name = name;
-    return d;
-  }
-}
-
-export { GraphData, NodeData, EdgeData, StyleData, PathData, Coord };
+export default Data;
+export { GraphData, NodeData, EdgeData, PathData, Coord };

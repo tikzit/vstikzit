@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { EdgeData, NodeData, StyleData } from "../lib/Data";
+import { EdgeData, NodeData } from "../lib/Data";
+import { StyleData } from "../lib/Styles";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
 import { computeControlPoints } from "../lib/curve";
@@ -9,9 +10,9 @@ interface EdgeProps {
   sourceData: NodeData;
   targetData: NodeData;
   style: StyleData;
-  selected: boolean;
-  onMouseDown: () => void;
-  onControlPointMouseDown: (cp: 1 | 2) => void;
+  selected?: boolean;
+  onMouseDown?: () => void;
+  onControlPointMouseDown?: (cp: 1 | 2) => void;
   sceneCoords: SceneCoords;
 }
 

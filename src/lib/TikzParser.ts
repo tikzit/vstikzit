@@ -1,7 +1,8 @@
 // @ts-ignore - webpack will handle this
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
-import { Coord, GraphData, EdgeData, NodeData, PathData, StyleData } from "./Data";
+import { Coord, GraphData, EdgeData, NodeData, PathData } from "./Data";
+import { StyleData } from "./Styles";
 import Styles from "./Styles";
 
 function matchDelimString(text: string, startOffset: number): [string] | null {
@@ -179,25 +180,30 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   public tikzStyles = this.RULE("tikzStyles", () => {
-    this.styles = new Styles();
+    this.ACTION(() => {
+      // initialise styles and make sure the "none" style is included
+      this.styles = new Styles().addStyle(new StyleData());
+    });
 
     this.MANY(() => {
       this.SUBRULE(this.style);
     });
-
-    this.ACTION(() => {
-      // make sure the "none" style is included
-      this.styles = this.styles?.addStyle(new StyleData());
-    });
   });
 
   public style = this.RULE("style", () => {
-    this.CONSUME(TikzStyleCmd);
+    const tok = this.CONSUME(TikzStyleCmd);
     const name = stripBraces(this.CONSUME(DelimString).image);
     this.CONSUME(Equals);
 
     this.ACTION(() => {
       if (this.styles !== undefined) {
+        if (this.styles.styleData.has(name)) {
+          throw new ParseError(
+            tok.startLine ?? 1,
+            tok.startColumn ?? 1,
+            `Style '${name}' is already defined`
+          );
+        }
         const d = new StyleData().setId(this.styles.numStyles()).setName(name);
         this.d = d;
       }

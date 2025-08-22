@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { NodeData, StyleData } from "../lib/Data";
+import { NodeData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { formatLabel } from "../lib/labels";
 import { colorToHex } from "../lib/color";
+import { StyleData } from "../lib/Styles";
 
 interface NodeProps {
   data: NodeData;
   style: StyleData;
-  selected: boolean;
-  highlight: boolean;
-  onMouseDown: () => void;
-  onMouseOver: () => void;
-  onMouseOut: () => void;
+  selected?: boolean;
+  highlight?: boolean;
+  onMouseDown?: () => void;
+  onMouseOver?: () => void;
+  onMouseOut?: () => void;
   sceneCoords: SceneCoords;
 }
 
