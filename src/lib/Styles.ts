@@ -1,7 +1,7 @@
 import { OrderedMap } from "immutable";
 import Data from "./Data";
 
-type ArrowTypeStyle = "pointer" | "flat" | "none";
+type ArrowTipStyle = "pointer" | "flat" | "none";
 
 class StyleData extends Data<StyleData> {
   private _name: string;
@@ -29,7 +29,7 @@ class StyleData extends Data<StyleData> {
     );
   }
 
-  public get arrowHead(): ArrowTypeStyle {
+  public get arrowHead(): ArrowTipStyle {
     if (this.hasKey("->") || this.hasKey("<->") || this.hasKey("|->")) {
       return "pointer";
     } else if (this.hasKey("-|") || this.hasKey("<-|") || this.hasKey("|-|")) {
@@ -39,7 +39,7 @@ class StyleData extends Data<StyleData> {
     }
   }
 
-  public get arrowTail(): ArrowTypeStyle {
+  public get arrowTail(): ArrowTipStyle {
     if (this.hasKey("<-") || this.hasKey("<->") || this.hasKey("<-|")) {
       return "pointer";
     } else if (this.hasKey("|-") || this.hasKey("|->") || this.hasKey("|-|")) {
