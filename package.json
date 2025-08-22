@@ -26,9 +26,9 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile": "vite build --mode development",
+    "watch": "vite",
+    "package": "vite build --mode production",
     "lint": "eslint src",
     "vstest": "vscode-test",
     "test": "mocha dist/test.js"
@@ -52,15 +52,16 @@
     "ts-loader": "^9.5.2",
     "typescript": "^5.9.2",
     "vite": "^7.1.3",
+    "vite-plugin-monaco-editor": "^1.1.0",
     "vite-plugin-node-polyfills": "^0.24.0"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
     "chevrotain": "^11.0.3",
     "immutable": "^5.1.3",
     "monaco-editor": "^0.52.2",
     "process": "^0.11.10",
     "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "react-split": "^2.0.14"
   }
 }

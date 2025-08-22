@@ -1,4 +1,6 @@
-import Editor from "@monaco-editor/react";
+import { useEffect, useRef } from "react";
+import "monaco-editor/esm/vs/editor/editor.all.js";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { editorOptions } from "../lib/editorSetup";
 
 interface CodeEditorProps {
@@ -8,20 +10,46 @@ interface CodeEditorProps {
 }
 
 const CodeEditor = ({ content, onChange, onMount }: CodeEditorProps) => {
-  return (
-    <div style={{ height: "100%", overflow: "hidden" }}>
-      <Editor
-        height="100%"
-        defaultLanguage="tex"
-        value={content}
-        onChange={onChange}
-        theme="vs"
-        loading="Loading TikZ Editor..."
-        options={editorOptions}
-        onMount={onMount}
-      />
-    </div>
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Create the editor instance
+    const editor = monaco.editor.create(containerRef.current, {
+      value: content,
+      language: "tex",
+      theme: "vs",
+      ...editorOptions,
+    });
+
+    editorRef.current = editor;
+
+    // Set up the onChange listener
+    const disposable = editor.onDidChangeModelContent(() => {
+      const value = editor.getValue();
+      onChange(value);
+    });
+
+    // Call the onMount callback
+    onMount(editor, monaco);
+
+    // Cleanup function
+    return () => {
+      disposable.dispose();
+      editor.dispose();
+    };
+  }, [onMount]);
+
+  // Update editor content when prop changes
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.getValue() !== content) {
+      editorRef.current.setValue(content);
+    }
+  }, [content]);
+
+  return <div ref={containerRef} style={{ height: "100%", overflow: "hidden" }} />;
 };
 
 export default CodeEditor;
