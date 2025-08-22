@@ -1,6 +1,7 @@
 import { Set, List } from "immutable";
 import { useState, useEffect, useRef } from "react";
 import Split from "react-split";
+import * as monaco from "monaco-editor";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -45,7 +46,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
 
-  const editorRef = useRef(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
@@ -92,12 +93,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const handleEditorMount = (editor: any, monaco: any) => {
+  const handleEditorMount = (
+    editor: monaco.editor.IStandaloneCodeEditor,
+    monacoInstance: typeof monaco
+  ) => {
     // Register TikZ language if not already registered
-    if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
-      monaco.languages.register({ id: "tikz" });
-      monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
-      monaco.editor.setModelLanguage(editor.getModel()!, "tikz");
+    if (!monacoInstance.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
+      monacoInstance.languages.register({ id: "tikz" });
+      monacoInstance.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
+      monacoInstance.editor.setModelLanguage(editor.getModel()!, "tikz");
     }
 
     editorRef.current = editor;

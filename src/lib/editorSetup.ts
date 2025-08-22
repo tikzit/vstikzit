@@ -1,13 +1,8 @@
-import type { editor } from "monaco-editor";
-import { loader } from "@monaco-editor/react";
+import type { editor, languages } from "monaco-editor";
 // import * as monaco from "monaco-editor";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
-// Configure the loader to use the webpack bundled monaco-editor
-// instead of loading from CDN
-loader.config({ monaco, "vs/nls": { availableLanguages: {} } });
-
-const tikzTokensProvider = {
+const tikzTokensProvider: languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       [/%.*$/, "comment"],
