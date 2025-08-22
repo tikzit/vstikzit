@@ -41,7 +41,9 @@ class Styles {
   public tikz(): string {
     let s = "";
     this._styleData.forEach((style, name) => {
-      s += `\\tikzstyle{${name}}=${style.tikz()}\n`;
+      if (name !== "none") {
+        s += `\\tikzstyle{${name}}=${style.tikz()}\n`;
+      }
     });
     return s;
   }

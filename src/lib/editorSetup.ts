@@ -1,5 +1,4 @@
 import type { editor, languages } from "monaco-editor";
-// import * as monaco from "monaco-editor";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 const tikzTokensProvider: languages.IMonarchLanguage = {
@@ -41,6 +40,12 @@ const tikzTokensProvider: languages.IMonarchLanguage = {
   },
 };
 
+// Register TikZ language if not already registered
+if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
+  monaco.languages.register({ id: "tikz" });
+  monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
+}
+
 const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   fontSize: 14,
   minimap: { enabled: false },
@@ -53,6 +58,8 @@ const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   autoIndent: "full",
   formatOnType: true,
   formatOnPaste: true,
+  language: "tikz",
+  theme: "vs",
 };
 
 export { tikzTokensProvider, editorOptions };

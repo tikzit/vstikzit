@@ -46,8 +46,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
 
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
 
@@ -92,20 +90,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     return () => window.removeEventListener("message", handleMessage);
   }, []);
-
-  const handleEditorMount = (
-    editor: monaco.editor.IStandaloneCodeEditor,
-    monacoInstance: typeof monaco
-  ) => {
-    // Register TikZ language if not already registered
-    if (!monacoInstance.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
-      monacoInstance.languages.register({ id: "tikz" });
-      monacoInstance.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
-      monacoInstance.editor.setModelLanguage(editor.getModel()!, "tikz");
-    }
-
-    editorRef.current = editor;
-  };
 
   // a change in the tikz code, triggered by the code editor
   const handleEditorChange = (value: string | undefined) => {
@@ -179,7 +163,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           />
         </Split>
 
-        <CodeEditor content={initCode} onChange={handleEditorChange} onMount={handleEditorMount} />
+        <CodeEditor content={initCode} onChange={handleEditorChange} />
       </Split>
     </div>
   );

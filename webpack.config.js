@@ -59,6 +59,7 @@ const baseConfig = {
 
 const webviewConfig = {
   ...baseConfig,
+  name: 'webview',
   target: 'web',
   entry: './src/gui/index.tsx',
   output: {
@@ -95,6 +96,7 @@ const webviewConfig = {
 
 const testConfig = {
   ...baseConfig,
+  name: 'test',
   target: 'node',
   entry: './src/test/main.test.ts',
   output: {

@@ -1,41 +1,27 @@
 import { useEffect, useRef } from "react";
 import * as monaco from "monaco-editor";
-import { editorOptions } from "../lib/editorSetup";
+import { editorOptions, tikzTokensProvider } from "../lib/editorSetup";
 
 interface CodeEditorProps {
   content: string;
   onChange: (value: string | undefined) => void;
-  onMount: (
-    editor: monaco.editor.IStandaloneCodeEditor,
-    monaco: typeof import("monaco-editor")
-  ) => void;
 }
 
-const CodeEditor = ({ content, onChange, onMount }: CodeEditorProps) => {
+const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<typeof monaco | null>(null);
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
-      // Create the editor
       editorRef.current = monaco.editor.create(containerRef.current, {
         value: content,
-        language: "tex",
-        theme: "vs",
         ...editorOptions,
       });
 
-      monacoRef.current = monaco;
-
-      // Set up the onChange listener
       editorRef.current.onDidChangeModelContent(() => {
         const value = editorRef.current?.getValue();
         onChange(value);
       });
-
-      // Call the onMount callback
-      onMount(editorRef.current, monaco);
     }
 
     // Cleanup function
