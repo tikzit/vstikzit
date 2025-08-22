@@ -70,7 +70,7 @@ class TikZEditorProvider {
 
   async getHtmlForWebview(webview, content) {
     // Get the local path to main script run in the webview
-    const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
+    const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.mjs");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
     // Use a nonce to only allow specific scripts to be run
@@ -82,11 +82,11 @@ class TikZEditorProvider {
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-        style-src 'unsafe-inline' ${webview.cspSource};
-        img-src 'unsafe-inline' ${webview.cspSource};
-        script-src 'nonce-${nonce}' 'unsafe-eval' ${webview.cspSource};
-        font-src ${webview.cspSource};
-        worker-src 'self' data: blob:;">
+        style-src 'unsafe-inline' ${webview.cspSource} https://cdn.jsdelivr.net;
+        img-src 'unsafe-inline' ${webview.cspSource} data: https://cdn.jsdelivr.net;
+        script-src 'nonce-${nonce}' 'unsafe-eval' ${webview.cspSource} https://cdn.jsdelivr.net;
+        font-src ${webview.cspSource} https://cdn.jsdelivr.net;
+        worker-src ${webview.cspSource} 'self' data: blob: https://cdn.jsdelivr.net;">
 				<title>TikZ Editor</title>
 				<style>
 					body {

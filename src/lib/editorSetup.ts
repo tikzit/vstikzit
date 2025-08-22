@@ -5,7 +5,18 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 // Configure the loader to use the webpack bundled monaco-editor
 // instead of loading from CDN
-loader.config({ monaco, "vs/nls": { availableLanguages: {} } });
+// loader.config({ monaco, "vs/nls": { availableLanguages: {} } });
+
+// @ts-ignore: don't need types
+// import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+
+// self.MonacoEnvironment = {
+//   getWorker(_, label) {
+//     return new editorWorker();
+//   },
+// };
+
+// loader.config({ monaco });
 
 const tikzTokensProvider = {
   tokenizer: {
