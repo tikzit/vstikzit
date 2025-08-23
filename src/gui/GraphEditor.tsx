@@ -249,7 +249,13 @@ const GraphEditor = ({
   return (
     <div
       id="graph-editor-viewport"
-      style={{ height: "100%", padding: "10px", overflow: "auto", tabSize: 4 }}
+      style={{
+        height: "100%",
+        padding: "10px",
+        overflowX: "scroll",
+        overflowY: "scroll",
+        tabSize: 4,
+      }}
     >
       <svg
         id="graph-editor"
