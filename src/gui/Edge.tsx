@@ -53,10 +53,10 @@ const Edge = ({
       sceneCoords.coordToScreen(c2),
       cp1 ? sceneCoords.coordToScreen(cp1) : undefined,
       cp2 ? sceneCoords.coordToScreen(cp2) : undefined,
-      arrowHead !== undefined ? arrowHead?.map(sceneCoords.coordToScreen) : undefined,
-      arrowTail !== undefined ? arrowTail?.map(sceneCoords.coordToScreen) : undefined,
+      arrowHead !== undefined ? arrowHead?.map(c => sceneCoords.coordToScreen(c)) : undefined,
+      arrowTail !== undefined ? arrowTail?.map(c => sceneCoords.coordToScreen(c)) : undefined,
     ];
-  }, [data, sourceData, targetData]);
+  }, [data, sourceData, targetData, sceneCoords]);
 
   const strokeWidth = sceneCoords.scale * 0.05;
   const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";
@@ -85,12 +85,16 @@ const Edge = ({
         <path
           d={`M${arrowHead[0].x},${arrowHead[0].y} L${arrowHead[1].x},${arrowHead[1].y} L${arrowHead[2].x},${arrowHead[2].y}`}
           stroke={drawColor}
+          strokeWidth={strokeWidth}
+          fill="none"
         />
       )}
       {arrowTail !== undefined && (
         <path
           d={`M${arrowTail[0].x},${arrowTail[0].y} L${arrowTail[1].x},${arrowTail[1].y} L${arrowTail[2].x},${arrowTail[2].y}`}
           stroke={drawColor}
+          strokeWidth={strokeWidth}
+          fill="none"
         />
       )}
     </g>
