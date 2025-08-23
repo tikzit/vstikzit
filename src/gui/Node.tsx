@@ -80,6 +80,7 @@ const Node = ({
             alignmentBaseline="middle"
             fontFamily="monospace"
             fontWeight="bold"
+            style={{ cursor: "default" }}
           >
             {formatLabel(data.label)}
           </text>

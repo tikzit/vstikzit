@@ -178,7 +178,11 @@ class Graph {
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
     for (const d of this.nodeData.values()) {
       if (d) {
-        result += `\t\t\\node${d.tikz()} (${d.id}) at (${d.coord.x}, ${d.coord.y}) {${d.label}};\n`;
+        let dt = d.tikz();
+        if (dt !== "") {
+          dt += " ";
+        }
+        result += `\t\t\\node ${dt}(${d.id}) at (${d.coord.x}, ${d.coord.y}) {${d.label}};\n`;
       }
     }
     result += "\t\\end{pgfonlayer}\n";
@@ -186,7 +190,11 @@ class Graph {
     for (const pd of this.pathData.values()) {
       let d = this.edgeData.get(pd.edges.get(0)!)!;
       let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
-      result += `\t\t\\draw${d.tikz()} ${d.sourceRef} to${edgeNode} ${d.targetRef}`;
+      let dt = d.tikz();
+      if (dt !== "") {
+        dt += " ";
+      }
+      result += `\t\t\\draw ${dt}${d.sourceRef} to${edgeNode} ${d.targetRef}`;
 
       for (const edgeId of pd.edges.slice(1)) {
         d = this.edgeData.get(edgeId)!;

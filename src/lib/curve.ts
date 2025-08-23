@@ -91,14 +91,11 @@ export function computeControlPoints(
   sourceData: NodeData,
   targetData: NodeData,
   edgeData: EdgeData
-): [Coord, Coord, Coord | undefined, Coord | undefined] {
+): [Coord[], number, boolean] {
   let c1 = sourceData.coord;
   let c2 = targetData.coord;
   const dx = c2.x - c1.x;
   const dy = c2.y - c1.y;
-
-  let cp1: Coord | undefined;
-  let cp2: Coord | undefined;
 
   let weight: number;
   const looseness = edgeData.propertyFloat("looseness");
@@ -142,12 +139,9 @@ export function computeControlPoints(
     inAngle = Math.PI + outAngle;
   }
 
-  if (bezier) {
-    const cpDist =
-      almostZero(dx) && almostZero(dy) ? weight : Math.sqrt(dx * dx + dy * dy) * weight;
-    cp1 = c1.shift(cpDist * Math.cos(outAngle), cpDist * Math.sin(outAngle));
-    cp2 = c2.shift(cpDist * Math.cos(inAngle), cpDist * Math.sin(inAngle));
-  }
+  const cpDist = almostZero(dx) && almostZero(dy) ? weight : Math.sqrt(dx * dx + dy * dy) * weight;
+  const cp1 = c1.shift(cpDist * Math.cos(outAngle), cpDist * Math.sin(outAngle));
+  const cp2 = c2.shift(cpDist * Math.cos(inAngle), cpDist * Math.sin(inAngle));
 
   if ((sourceData.property("style") ?? "none") !== "none") {
     c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
@@ -157,5 +151,5 @@ export function computeControlPoints(
     c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
   }
 
-  return [c1, c2, cp1, cp2];
+  return [[c1, c2, cp1, cp2], cpDist, bezier];
 }
