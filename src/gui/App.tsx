@@ -46,6 +46,9 @@ const App = ({ initialContent, vscode }: AppProps) => {
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
 
+  const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
+  const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
+
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
 
@@ -153,13 +156,17 @@ const App = ({ initialContent, vscode }: AppProps) => {
             selectedEdges={selectedEdges}
             onSelectionChanged={handleSelectionChanged}
             tikzStyles={tikzStyles}
+            currentNodeStyle={currentNodeStyle}
+            currentEdgeStyle={currentEdgeStyle}
           />
           <StylePanel
             tool={tool}
             onToolChanged={setTool}
             tikzStyles={tikzStyles}
-            currentNodeStyle="none"
-            currentEdgeStyle="none"
+            currentNodeStyle={currentNodeStyle}
+            currentEdgeStyle={currentEdgeStyle}
+            onNodeStyleChanged={setCurrentNodeStyle}
+            onEdgeStyleChanged={setCurrentEdgeStyle}
           />
         </Split>
 

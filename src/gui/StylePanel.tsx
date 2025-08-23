@@ -4,7 +4,6 @@ import Styles from "../lib/Styles";
 import { GraphTool } from "./GraphEditor";
 import Toolbar from "./Toolbar";
 import Node from "./Node";
-import { SVGTextElementAttributes } from "react";
 import Edge from "./Edge";
 
 interface StylePanelProps {
@@ -13,6 +12,8 @@ interface StylePanelProps {
   tikzStyles: Styles;
   currentNodeStyle: string;
   currentEdgeStyle: string;
+  onNodeStyleChanged: (style: string) => void;
+  onEdgeStyleChanged: (style: string) => void;
 }
 
 const StylePanel = ({
@@ -21,8 +22,10 @@ const StylePanel = ({
   tikzStyles,
   currentNodeStyle,
   currentEdgeStyle,
+  onNodeStyleChanged: setNodeStyle,
+  onEdgeStyleChanged: setEdgeStyle,
 }: StylePanelProps) => {
-  const sceneCoords = new SceneCoords(44, 30);
+  const sceneCoords = new SceneCoords(44, 32);
   const labelProps: any = {
     x: 22,
     y: 38,
@@ -30,6 +33,15 @@ const StylePanel = ({
     alignmentBaseline: "middle",
     fontSize: "10px",
     fontStyle: "italic",
+  };
+  const selectionProps: any = {
+    x: 1,
+    y: 1,
+    width: 43,
+    height: 43,
+    fill: "rgba(150, 200, 255, 0.4)",
+    stroke: "rgba(150, 200, 255, 0.8)",
+    strokeWidth: 1,
   };
 
   // dummy node and edge data used for drawing the controls
@@ -66,8 +78,15 @@ const StylePanel = ({
             if (style.isEdgeStyle) return null;
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
-              <a href="#" title={name} onClick={() => false} style={{ outline: "none" }}>
+              <a
+                href="#"
+                draggable="false"
+                title={name}
+                onClick={() => setNodeStyle(name)}
+                style={{ outline: "none" }}
+              >
                 <svg key={name} width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
+                  {currentNodeStyle === name && <rect {...selectionProps} />}
                   <Node data={node} style={style} sceneCoords={sceneCoords} />
                   <text {...labelProps}>{shortName}</text>
                 </svg>
@@ -88,8 +107,15 @@ const StylePanel = ({
             if (name !== "none" && !style.isEdgeStyle) return null;
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
-              <a href="#" title={name} onClick={() => false}>
+              <a
+                href="#"
+                draggable="false"
+                title={name}
+                onClick={() => setEdgeStyle(name)}
+                style={{ outline: "none" }}
+              >
                 <svg key={name} width={44} height={44} style={{ margin: "5px" }}>
+                  {currentEdgeStyle === name && <rect {...selectionProps} />}
                   <Edge
                     data={edge}
                     sourceData={enode1}

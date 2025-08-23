@@ -22,6 +22,8 @@ interface GraphEditorProps {
   selectedEdges: Set<number>;
   onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
   tikzStyles: Styles;
+  currentNodeStyle: string;
+  currentEdgeStyle: string;
 }
 
 const GraphEditor = ({
@@ -33,6 +35,8 @@ const GraphEditor = ({
   selectedEdges,
   onSelectionChanged: updateSelection,
   tikzStyles,
+  currentNodeStyle,
+  currentEdgeStyle,
 }: GraphEditorProps) => {
   const sceneCoords = new SceneCoords(5000, 5000);
 
