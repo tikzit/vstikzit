@@ -67,7 +67,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           if (message.content) {
             console.log("got update from vscode");
             setCode(message.content);
-            const parsed = parseTikzPicture(code);
+            const parsed = parseTikzPicture(message.content);
             if (parsed.result !== undefined) {
               const g = parsed.result.inheritDataFrom(graph);
               setGraph(g);
@@ -99,30 +99,31 @@ const App = ({ initialContent, vscode }: AppProps) => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const updateFromGui = () => {
-    vscode.postMessage({
-      type: "updateFromGui",
-      content: code,
-    });
-  };
-
   // a change in the tikz code, triggered by the user editing it
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
-      updateFromGui();
-      const parsed = parseTikzPicture(code);
+      const parsed = parseTikzPicture(value);
       if (parsed.result !== undefined) {
         const g = parsed.result.inheritDataFrom(graph);
         setGraph(g);
       }
+
+      vscode.postMessage({
+        type: "updateFromGui",
+        content: value,
+      });
     }
   };
 
   // signals the graph has changed and an undo step should be registered, triggered by the graph editor
   const handleCommitGraph = () => {
-    setCode(graph.tikz());
-    updateFromGui();
+    const value = graph.tikz();
+    setCode(value);
+    vscode.postMessage({
+      type: "updateFromGui",
+      content: value,
+    });
   };
 
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
