@@ -1,7 +1,6 @@
 import { Set, List } from "immutable";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Split from "react-split";
-import * as monaco from "monaco-editor";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -10,7 +9,7 @@ import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
-import { tikzTokensProvider } from "../lib/editorSetup";
+import { setupCodeEditor } from "../lib/editorSetup";
 
 interface IContent {
   document: string;
@@ -62,6 +61,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
   );
 
   useEffect(() => {
+    setupCodeEditor(vscode);
+
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       switch (message.type) {
@@ -114,10 +115,9 @@ const App = ({ initialContent, vscode }: AppProps) => {
     }
   };
 
-  // a change in the graph, triggered by the graph editor
-  const handleGraphChange = (graph: Graph) => {
+  // signals the graph has changed and an undo step should be registered, triggered by the graph editor
+  const handleCommitGraph = () => {
     console.log("got graph change");
-    setGraph(graph);
     const tikz = graph.tikz();
     setInitCode(tikz);
     vscode.postMessage({
@@ -151,7 +151,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
             tool={tool}
             enabled={true}
             graph={graph}
-            onGraphChange={handleGraphChange}
+            onGraphChange={setGraph}
+            onCommitGraph={handleCommitGraph}
             selectedNodes={selectedNodes}
             selectedEdges={selectedEdges}
             onSelectionChanged={handleSelectionChanged}

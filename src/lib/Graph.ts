@@ -1,7 +1,7 @@
-import { OrderedMap, Seq } from "immutable";
+import { OrderedMap, Seq, ValueObject } from "immutable";
 import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
-class Graph {
+class Graph implements ValueObject {
   private _graphData: GraphData = new GraphData();
   private _nodeData: OrderedMap<number, NodeData>;
   private _pathData: OrderedMap<number, PathData>;
@@ -171,6 +171,24 @@ class Graph {
       return d1 !== undefined && d.equals(d1) ? d1 : d;
     });
     return g;
+  }
+
+  public equals(other: Graph): boolean {
+    return (
+      this._nodeData.equals(other._nodeData) &&
+      this._edgeData.equals(other._edgeData) &&
+      this._pathData.equals(other._pathData) &&
+      this.maxNodeId === other.maxNodeId &&
+      this.maxEdgeId === other.maxEdgeId &&
+      this.maxPathId === other.maxPathId
+    );
+  }
+
+  public hashCode(): number {
+    let hash = this.nodeData.hashCode();
+    hash = hash * 31 + this.edgeData.hashCode();
+    hash = hash * 31 + this.pathData.hashCode();
+    return hash;
   }
 
   public tikz(): string {

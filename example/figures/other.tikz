@@ -1,9 +1,9 @@
 \begin{tikzpicture}
 	\begin{pgfonlayer}{nodelayer}
-		\node [style=none] (0) at (-2.25, 0) {};
+		\node [style=none] (0) at (-2, 0) {};
 		\node [style=Z dot] (1) at (-1, 0) {$\alpha + \gamma$};
-		\node [style=X dot] (2) at (1.25, 0) {$\beta$};
-		\node [style=none] (3) at (2.25, 0) {};
+		\node [style=X dot] (2) at (1, 0) {$\beta$};
+		\node [style=none] (3) at (2, 0) {};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}
 		\draw (0) to (1);

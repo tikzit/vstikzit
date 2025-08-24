@@ -18,6 +18,7 @@ interface GraphEditorProps {
   enabled: boolean;
   graph: Graph;
   onGraphChange: (graph: Graph) => void;
+  onCommitGraph: () => void;
   selectedNodes: Set<number>;
   selectedEdges: Set<number>;
   onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
@@ -31,6 +32,7 @@ const GraphEditor = ({
   enabled,
   graph,
   onGraphChange: updateGraph,
+  onCommitGraph: commitGraph,
   selectedNodes,
   selectedEdges,
   onSelectionChanged: updateSelection,
@@ -220,6 +222,7 @@ const GraphEditor = ({
   const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (mouseDownPos === undefined || !enabled) return;
+    const p = mousePositionToCoord(event);
 
     if (selectionRect !== undefined) {
       const sel = selectedNodes.withMutations(set => {
@@ -238,6 +241,10 @@ const GraphEditor = ({
       });
 
       updateSelection(sel, selectedEdges);
+    }
+
+    if (draggingNodes) {
+      commitGraph();
     }
 
     setPrevGraph(undefined);

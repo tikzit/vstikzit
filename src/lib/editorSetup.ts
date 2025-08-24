@@ -40,12 +40,6 @@ const tikzTokensProvider: languages.IMonarchLanguage = {
   },
 };
 
-// Register TikZ language if not already registered
-if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
-  monaco.languages.register({ id: "tikz" });
-  monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
-}
-
 const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   fontSize: 14,
   minimap: { enabled: false },
@@ -62,4 +56,12 @@ const editorOptions: editor.IStandaloneEditorConstructionOptions = {
   theme: "vs-dark",
 };
 
-export { tikzTokensProvider, editorOptions };
+function setupCodeEditor(vscode: any) {
+  // Register TikZ language if not already registered
+  if (!monaco.languages.getLanguages().find((lang: any) => lang.id === "tikz")) {
+    monaco.languages.register({ id: "tikz" });
+    monaco.languages.setMonarchTokensProvider("tikz", tikzTokensProvider);
+  }
+}
+
+export { setupCodeEditor, editorOptions };

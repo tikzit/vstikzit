@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as monaco from "monaco-editor";
-import { editorOptions, tikzTokensProvider } from "../lib/editorSetup";
+import { editorOptions } from "../lib/editorSetup";
 
 interface CodeEditorProps {
   content: string;
