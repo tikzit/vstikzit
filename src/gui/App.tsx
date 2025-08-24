@@ -67,11 +67,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           if (message.content) {
             console.log("got update from vscode");
             setCode(message.content);
-            const parsed = parseTikzPicture(message.content);
-            if (parsed.result !== undefined) {
-              const g = parsed.result.inheritDataFrom(graph);
-              setGraph(g);
-            }
+            tryParseGraph(message.content);
           }
           break;
         case "tikzStylesContent":
@@ -99,20 +95,29 @@ const App = ({ initialContent, vscode }: AppProps) => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  const tryParseGraph = (tikz: string) => {
+    const parsed = parseTikzPicture(tikz);
+    if (parsed.result !== undefined) {
+      const g = parsed.result.inheritDataFrom(graph);
+      setSelectedNodes(sel => sel.filter(id => g.nodeData.has(id)));
+      setSelectedEdges(sel => sel.filter(id => g.edgeData.has(id)));
+      setGraph(g);
+    }
+  };
+
+  const updateFromGui = (tikz: string) => {
+    vscode.postMessage({
+      type: "updateFromGui",
+      content: tikz,
+    });
+  };
+
   // a change in the tikz code, triggered by the user editing it
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
-      const parsed = parseTikzPicture(value);
-      if (parsed.result !== undefined) {
-        const g = parsed.result.inheritDataFrom(graph);
-        setGraph(g);
-      }
-
-      vscode.postMessage({
-        type: "updateFromGui",
-        content: value,
-      });
+      tryParseGraph(value);
+      updateFromGui(value);
     }
   };
 
@@ -120,10 +125,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const handleCommitGraph = () => {
     const value = graph.tikz();
     setCode(value);
-    vscode.postMessage({
-      type: "updateFromGui",
-      content: value,
-    });
+    updateFromGui(value);
   };
 
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
