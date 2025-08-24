@@ -10,6 +10,7 @@ interface CodeEditorProps {
 const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const isUpdatingFromPropRef = useRef(false);
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
@@ -19,8 +20,10 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
       });
 
       editorRef.current.onDidChangeModelContent(() => {
-        const value = editorRef.current?.getValue();
-        onChange(value);
+        if (!isUpdatingFromPropRef.current) {
+          const value = editorRef.current?.getValue();
+          onChange(value);
+        }
       });
     }
 
@@ -36,7 +39,9 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
   // Update editor content when prop changes
   useEffect(() => {
     if (editorRef.current && editorRef.current.getValue() !== content) {
+      isUpdatingFromPropRef.current = true;
       editorRef.current.setValue(content);
+      isUpdatingFromPropRef.current = false;
     }
   }, [content]);
 

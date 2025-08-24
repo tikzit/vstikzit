@@ -17,6 +17,7 @@ function activate(context) {
 class TikZEditorProvider {
   constructor(context) {
     this.context = context;
+    this.isUpdatingFromGui = false;
   }
 
   async resolveCustomTextEditor(document, webviewPanel, _token) {
@@ -43,18 +44,23 @@ class TikZEditorProvider {
     //   });
     // };
 
-    // // Listen for document changes
-    // const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-    //   if (e.document.uri.toString() === document.uri.toString()) {
-    //     updateWebview();
-    //   }
-    // });
+    // Post document changes (e.g. undo/redo) to the webview. We use the isUpdatingFromGui flag
+    // to prevent a circular update.
+    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+      console.log('Document changed, isUpdatingFromGui:', this.isUpdatingFromGui);
+      if (e.document.uri.toString() === document.uri.toString() && !this.isUpdatingFromGui) {
+        webviewPanel.webview.postMessage({
+          type: "updateToGui",
+          content: document.getText(),
+        });
+      }
+    });
 
     // Handle messages from the webview
     webviewPanel.webview.onDidReceiveMessage(e => {
       switch (e.type) {
-        case "updateTextDocument":
-          this.updateTextDocument(document, e.content);
+        case "updateFromGui":
+          this.updateFromGui(document, e.content);
           return;
         case "refreshTikzStyles":
           this.refreshTikzStyles(webviewPanel.webview);
@@ -63,9 +69,9 @@ class TikZEditorProvider {
     });
 
     // Clean up subscriptions when webview is disposed
-    // webviewPanel.onDidDispose(() => {
-    //   changeDocumentSubscription.dispose();
-    // });
+    webviewPanel.onDidDispose(() => {
+      changeDocumentSubscription.dispose();
+    });
   }
 
   async getHtmlForWebview(webview, content) {
@@ -112,10 +118,14 @@ class TikZEditorProvider {
 			</html>`;
   }
 
-  updateTextDocument(document, content) {
+  async updateFromGui(document, content) {
+    console.log("got update from gui");
+    this.isUpdatingFromGui = true;
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
-    return vscode.workspace.applyEdit(edit);
+    const result = await vscode.workspace.applyEdit(edit);
+    this.isUpdatingFromGui = false;
+    return result;
   }
 
   async getTikzStyles() {

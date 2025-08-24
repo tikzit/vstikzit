@@ -37,22 +37,19 @@ interface AppProps {
 const App = ({ initialContent, vscode }: AppProps) => {
   const [tool, setTool] = useState<GraphTool>("select");
 
-  const [undoStack, setUndoStack] = useState<List<UndoState>>(List());
-  const [redoStack, setRedoStack] = useState<List<UndoState>>(List());
-
   // the current graph being displayed
   const [graph, setGraph] = useState<Graph>(
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
+
+  // state used to re-initialise contents of the code editor
+  const [code, setCode] = useState(initialContent.document);
 
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
 
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
-
-  // state used to re-initialise contents of the code editor
-  const [initCode, setInitCode] = useState(initialContent.document);
 
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     (parseTikzStyles(initialContent.styles).result ?? new Styles()).setFilename(
@@ -66,6 +63,17 @@ const App = ({ initialContent, vscode }: AppProps) => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       switch (message.type) {
+        case "updateToGui":
+          if (message.content) {
+            console.log("got update from vscode");
+            setCode(message.content);
+            const parsed = parseTikzPicture(code);
+            if (parsed.result !== undefined) {
+              const g = parsed.result.inheritDataFrom(graph);
+              setGraph(g);
+            }
+          }
+          break;
         case "tikzStylesContent":
           if (message.content) {
             console.log("parsing\n" + message.content);
@@ -88,42 +96,33 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     window.addEventListener("message", handleMessage);
 
-    // vscode.postMessage({
-    //   type: "getTikzStyles",
-    // });
-
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  // a change in the tikz code, triggered by the code editor
+  const updateFromGui = () => {
+    vscode.postMessage({
+      type: "updateFromGui",
+      content: code,
+    });
+  };
+
+  // a change in the tikz code, triggered by the user editing it
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      // console.log("got editor change");
-      // console.log(value.substring(0, 100));
-
-      const parsed = parseTikzPicture(value);
+      setCode(value);
+      updateFromGui();
+      const parsed = parseTikzPicture(code);
       if (parsed.result !== undefined) {
-        console.log("graph parsed");
         const g = parsed.result.inheritDataFrom(graph);
         setGraph(g);
       }
-
-      vscode.postMessage({
-        type: "updateTextDocument",
-        content: value,
-      });
     }
   };
 
   // signals the graph has changed and an undo step should be registered, triggered by the graph editor
   const handleCommitGraph = () => {
-    console.log("got graph change");
-    const tikz = graph.tikz();
-    setInitCode(tikz);
-    vscode.postMessage({
-      type: "updateTextDocument",
-      content: tikz,
-    });
+    setCode(graph.tikz());
+    updateFromGui();
   };
 
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
@@ -171,7 +170,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           />
         </Split>
 
-        <CodeEditor content={initCode} onChange={handleEditorChange} />
+        <CodeEditor content={code} onChange={handleEditorChange} />
       </Split>
     </div>
   );
