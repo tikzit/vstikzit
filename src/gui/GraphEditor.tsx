@@ -71,7 +71,7 @@ const GraphEditor = ({
     if (svg !== null) {
       drawGrid(svg, sceneCoords);
     }
-  }, []);
+  }, [sceneCoords]);
 
   const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
   const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);

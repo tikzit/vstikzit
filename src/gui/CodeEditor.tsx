@@ -15,15 +15,8 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
       editorRef.current = monaco.editor.create(containerRef.current, {
-        value: content,
+        // value: content,
         ...editorOptions,
-      });
-
-      editorRef.current.onDidChangeModelContent(() => {
-        if (!isUpdatingFromPropRef.current) {
-          const value = editorRef.current?.getValue();
-          onChange(value);
-        }
       });
     }
 
@@ -35,6 +28,19 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
       }
     };
   }, []);
+
+  // Change the event listener if the onChange changes
+  useEffect(() => {
+    if (editorRef.current) {
+      const disposable = editorRef.current.onDidChangeModelContent(() => {
+        if (!isUpdatingFromPropRef.current) {
+          const value = editorRef.current?.getValue();
+          onChange(value);
+        }
+      });
+      return () => disposable.dispose();
+    }
+  }, [onChange]);
 
   // Update editor content when prop changes
   useEffect(() => {
