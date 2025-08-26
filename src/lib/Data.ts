@@ -30,6 +30,10 @@ class Coord implements ValueObject {
   public shift(dx: number, dy: number): Coord {
     return new Coord(this._x + dx, this._y + dy);
   }
+
+  public snapToGrid(size: number): Coord {
+    return new Coord(Math.round(this._x / size) * size, Math.round(this._y / size) * size);
+  }
 }
 
 function wrapPropertyVal(val: string): string {

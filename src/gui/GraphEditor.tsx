@@ -7,7 +7,7 @@ import SceneCoords from "../lib/SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../lib/Styles";
-import { Coord } from "../lib/Data";
+import { Coord, EdgeData, NodeData } from "../lib/Data";
 import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 
@@ -228,29 +228,51 @@ const GraphEditor = ({
     if (mouseDownPos === undefined || !enabled) {
       return;
     }
-    // const p = mousePositionToCoord(event);
+    const p = mousePositionToCoord(event);
 
-    if (selectionRect !== undefined) {
-      const sel = selectedNodes.withMutations(set => {
-        for (const d of graph.nodeData.values()) {
-          let c = sceneCoords.coordToScreen(d.coord);
-          // if c is in selectionRect
-          if (
-            c.x > selectionRect.x &&
-            c.x < selectionRect.x + selectionRect.width &&
-            c.y > selectionRect.y &&
-            c.y < selectionRect.y + selectionRect.height
-          ) {
-            set.add(d.id);
-          }
+    switch (tool) {
+      case "select":
+        if (selectionRect !== undefined) {
+          const sel = selectedNodes.withMutations(set => {
+            for (const d of graph.nodeData.values()) {
+              let c = sceneCoords.coordToScreen(d.coord);
+              // if c is in selectionRect
+              if (
+                c.x > selectionRect.x &&
+                c.x < selectionRect.x + selectionRect.width &&
+                c.y > selectionRect.y &&
+                c.y < selectionRect.y + selectionRect.height
+              ) {
+                set.add(d.id);
+              }
+            }
+          });
+
+          updateSelection(sel, selectedEdges);
+        } else if (draggingNodes) {
+          commitGraph();
         }
-      });
-
-      updateSelection(sel, selectedEdges);
-    }
-
-    if (draggingNodes) {
-      commitGraph();
+        break;
+      case "vertex":
+        const p1 = p.snapToGrid(4);
+        const node = new NodeData()
+          .setId(graph.freshNodeId)
+          .setCoord(p1)
+          .setProperty("style", currentNodeStyle);
+        updateGraph(graph.addNodeWithData(node));
+        commitGraph();
+        break;
+      case "edge":
+        if (edgeStartNode !== undefined && edgeEndNode !== undefined) {
+          const edge = new EdgeData()
+            .setId(graph.freshEdgeId)
+            .setSource(edgeStartNode)
+            .setTarget(edgeEndNode)
+            .setProperty("style", currentEdgeStyle);
+          updateGraph(graph.addEdgeWithData(edge));
+          commitGraph();
+        }
+        break;
     }
 
     setPrevGraph(undefined);
