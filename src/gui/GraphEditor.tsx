@@ -40,7 +40,7 @@ const GraphEditor = ({
   currentNodeStyle,
   currentEdgeStyle,
 }: GraphEditorProps) => {
-  const sceneCoords = new SceneCoords(5000, 5000);
+  const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords(5000, 5000));
 
   // internal editor state
   // n.b. the graph itself is stored in App, and is updated by this component via updateGraph
@@ -64,7 +64,7 @@ const GraphEditor = ({
     const graphEditor = document.getElementById("graph-editor-viewport")!;
     graphEditor.scrollLeft = Math.max(0, (sceneCoords.width - graphEditor.clientWidth) / 2);
     graphEditor.scrollTop = Math.max(0, (sceneCoords.height - graphEditor.clientHeight) / 2);
-  }, []);
+  }, [sceneCoords]);
 
   useEffect(() => {
     const svg = document.getElementById("graph-editor");
@@ -85,7 +85,9 @@ const GraphEditor = ({
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     const p = mousePositionToCoord(event);
     setMouseDownPos(p);
@@ -171,7 +173,9 @@ const GraphEditor = ({
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
-    if (mouseDownPos === undefined || !enabled) return;
+    if (mouseDownPos === undefined || !enabled) {
+      return;
+    }
     const p = mousePositionToCoord(event);
 
     if (selectionRect !== undefined) {
@@ -221,8 +225,10 @@ const GraphEditor = ({
 
   const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
     event.preventDefault();
-    if (mouseDownPos === undefined || !enabled) return;
-    const p = mousePositionToCoord(event);
+    if (mouseDownPos === undefined || !enabled) {
+      return;
+    }
+    // const p = mousePositionToCoord(event);
 
     if (selectionRect !== undefined) {
       const sel = selectedNodes.withMutations(set => {

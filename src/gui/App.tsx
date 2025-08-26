@@ -93,7 +93,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
     window.addEventListener("message", handleMessage);
 
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  });
 
   const tryParseGraph = (tikz: string) => {
     const parsed = parseTikzPicture(tikz);

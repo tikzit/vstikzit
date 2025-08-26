@@ -32,6 +32,7 @@ export default [{
     rules: {
         ...react.configs.recommended.rules,
         ...reactHooks.configs.recommended.rules,
+        "react/react-in-jsx-scope": "off",
         "@typescript-eslint/naming-convention": ["warn", {
             selector: "import",
             format: ["camelCase", "PascalCase"],

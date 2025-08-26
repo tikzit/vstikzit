@@ -75,17 +75,18 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (style.isEdgeStyle) return null;
+            if (style.isEdgeStyle) {return null;}
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a
+                key={name}
                 href="#"
                 draggable="false"
                 title={name}
                 onClick={() => setNodeStyle(name)}
                 style={{ outline: "none" }}
               >
-                <svg key={name} width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
+                <svg width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
                   {currentNodeStyle === name && <rect {...selectionProps} />}
                   <Node data={node} style={style} sceneCoords={sceneCoords} />
                   <text {...labelProps}>{shortName}</text>
@@ -104,17 +105,18 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (name !== "none" && !style.isEdgeStyle) return null;
+            if (name !== "none" && !style.isEdgeStyle) {return null;}
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a
+                key={name}
                 href="#"
                 draggable="false"
                 title={name}
                 onClick={() => setEdgeStyle(name)}
                 style={{ outline: "none" }}
               >
-                <svg key={name} width={44} height={44} style={{ margin: "5px" }}>
+                <svg width={44} height={44} style={{ margin: "5px" }}>
                   {currentEdgeStyle === name && <rect {...selectionProps} />}
                   <Edge
                     data={edge}
