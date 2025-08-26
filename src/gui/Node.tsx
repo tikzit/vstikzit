@@ -11,21 +11,10 @@ interface NodeProps {
   selected?: boolean;
   highlight?: boolean;
   onMouseDown?: () => void;
-  onMouseOver?: () => void;
-  onMouseOut?: () => void;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({
-  data,
-  style,
-  selected,
-  highlight,
-  onMouseDown,
-  onMouseOver,
-  onMouseOut,
-  sceneCoords,
-}: NodeProps) => {
+const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: NodeProps) => {
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 
@@ -43,8 +32,6 @@ const Node = ({
       id={`node-${data.id}`}
       transform={`translate(${coord.x}, ${coord.y})`}
       onMouseDown={onMouseDown}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
     >
       {style.isNone ? (
         <g>

@@ -121,11 +121,16 @@ const App = ({ initialContent, vscode }: AppProps) => {
     }
   };
 
-  // signals the graph has changed and an undo step should be registered, triggered by the graph editor
-  const handleCommitGraph = () => {
-    const value = graph.tikz();
-    setCode(value);
-    updateFromGui(value);
+  // handle a graph change from the graph editor. "commit" says the document should be updated
+  // and an undo step registered.
+  const handleGraphChange = (g: Graph, commit: boolean) => {
+    setGraph(g);
+
+    if (commit) {
+      const value = g.tikz();
+      setCode(value);
+      updateFromGui(value);
+    }
   };
 
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
@@ -153,8 +158,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             tool={tool}
             enabled={true}
             graph={graph}
-            onGraphChange={setGraph}
-            onCommitGraph={handleCommitGraph}
+            onGraphChange={handleGraphChange}
             selectedNodes={selectedNodes}
             selectedEdges={selectedEdges}
             onSelectionChanged={handleSelectionChanged}

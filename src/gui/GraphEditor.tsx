@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Set } from "immutable";
+import { List, Set } from "immutable";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -7,7 +7,7 @@ import SceneCoords from "../lib/SceneCoords";
 import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../lib/Styles";
-import { Coord, EdgeData, NodeData } from "../lib/Data";
+import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 
@@ -17,8 +17,7 @@ interface GraphEditorProps {
   tool: GraphTool;
   enabled: boolean;
   graph: Graph;
-  onGraphChange: (graph: Graph) => void;
-  onCommitGraph: () => void;
+  onGraphChange: (graph: Graph, commit: boolean) => void;
   selectedNodes: Set<number>;
   selectedEdges: Set<number>;
   onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
@@ -32,7 +31,6 @@ const GraphEditor = ({
   enabled,
   graph,
   onGraphChange: updateGraph,
-  onCommitGraph: commitGraph,
   selectedNodes,
   selectedEdges,
   onSelectionChanged: updateSelection,
@@ -46,7 +44,6 @@ const GraphEditor = ({
   // n.b. the graph itself is stored in App, and is updated by this component via updateGraph
   const [prevGraph, setPrevGraph] = useState<Graph | undefined>(undefined);
   const [mouseDownPos, setMouseDownPos] = useState<Coord | undefined>(undefined);
-  const [mouseDragPos, setMouseDragPos] = useState<Coord | undefined>(undefined);
   const [selectionRect, setSelectionRect] = useState<
     { x: number; y: number; width: number; height: number } | undefined
   >(undefined);
@@ -56,7 +53,6 @@ const GraphEditor = ({
 
   // refs used to pass data from node/edge components to the graph editor
   const clickedNode = useRef<number | undefined>(undefined);
-  const hoveredNode = useRef<number | undefined>(undefined);
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
@@ -193,34 +189,32 @@ const GraphEditor = ({
       updateGraph(
         prevGraph.mapNodeData(d =>
           selectedNodes.contains(d.id) ? d.setCoord(d.coord.shift(dx, dy)) : d
-        )
+        ),
+        false
       );
     }
 
     if (edgeStartNode !== undefined) {
-      setEdgeEndNode(hoveredNode.current);
+      const p1 = sceneCoords.coordFromScreen(p);
+      const n = graph.nodeData.find(
+        d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
+      )?.id;
+      setEdgeEndNode(n);
       let c1: Coord;
       let c2: Coord;
-      if (edgeEndNode !== undefined) {
+      if (n !== undefined) {
         [c1, c2] = shortenLine(
           graph.nodeData.get(edgeStartNode)!.coord,
-          graph.nodeData.get(edgeEndNode)!.coord,
+          graph.nodeData.get(n)!.coord,
           0.2,
           0.2
         );
       } else {
-        [c1, c2] = shortenLine(
-          graph.nodeData.get(edgeStartNode)!.coord,
-          sceneCoords.coordFromScreen(p),
-          0.2,
-          0
-        );
+        [c1, c2] = shortenLine(graph.nodeData.get(edgeStartNode)!.coord, p1, 0.2, 0);
       }
       setAddEdgeLineStart(sceneCoords.coordToScreen(c1));
       setAddEdgeLineEnd(sceneCoords.coordToScreen(c2));
     }
-
-    setMouseDragPos(p);
   };
 
   const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -250,27 +244,28 @@ const GraphEditor = ({
 
           updateSelection(sel, selectedEdges);
         } else if (draggingNodes) {
-          commitGraph();
+          updateGraph(graph, true);
         }
         break;
       case "vertex":
-        const p1 = p.snapToGrid(4);
+        const p1 = sceneCoords.coordFromScreen(p).snapToGrid(4);
         const node = new NodeData()
           .setId(graph.freshNodeId)
           .setCoord(p1)
           .setProperty("style", currentNodeStyle);
-        updateGraph(graph.addNodeWithData(node));
-        commitGraph();
+        updateGraph(graph.addNodeWithData(node), true);
         break;
       case "edge":
         if (edgeStartNode !== undefined && edgeEndNode !== undefined) {
-          const edge = new EdgeData()
+          let edge = new EdgeData()
             .setId(graph.freshEdgeId)
             .setSource(edgeStartNode)
-            .setTarget(edgeEndNode)
-            .setProperty("style", currentEdgeStyle);
-          updateGraph(graph.addEdgeWithData(edge));
-          commitGraph();
+            .setTarget(edgeEndNode);
+          if (currentEdgeStyle !== "none") {
+            edge = edge.setProperty("style", currentEdgeStyle);
+          }
+          const path = new PathData().setId(graph.freshPathId).setEdges(List([edge.id]));
+          updateGraph(graph.addEdgeWithData(edge).addPathWithData(path), true);
         }
         break;
     }
@@ -337,8 +332,6 @@ const GraphEditor = ({
                 selected={selectedNodes.has(key)}
                 highlight={edgeStartNode === key || edgeEndNode === key}
                 onMouseDown={() => (clickedNode.current = key)}
-                onMouseOver={() => (hoveredNode.current = key)}
-                onMouseOut={() => (hoveredNode.current = undefined)}
                 sceneCoords={sceneCoords}
               />
             );
