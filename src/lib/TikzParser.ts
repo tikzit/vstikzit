@@ -60,8 +60,8 @@ const TikzStyleCmd = createToken({ name: "TikzStyleCmd", pattern: /\\tikzstyle/ 
 
 const LParen = createToken({ name: "LParen", pattern: /\(/ });
 const RParen = createToken({ name: "RParen", pattern: /\)/ });
-const LBracket = createToken({ name: "LBracket", pattern: /\[/ });
-const RBracket = createToken({ name: "RBracket", pattern: /\]/ });
+const LBracket = createToken({ name: "LBracket", pattern: /\[/, push_mode: "properties" });
+const RBracket = createToken({ name: "RBracket", pattern: /\]/, pop_mode: true });
 const Semicolon = createToken({ name: "Semicolon", pattern: /;/ });
 const Comma = createToken({ name: "Comma", pattern: /,/ });
 const Period = createToken({ name: "Period", pattern: /\./ });
@@ -85,38 +85,45 @@ const DelimString = createToken({
 const Length = createToken({ name: "Length", pattern: /-?\d+(.\d+)?[a-zA-Z]+/ });
 const Int = createToken({ name: "Int", pattern: /-?\d+/ });
 const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
-const Identifier = createToken({ name: "Identifier", pattern: /[a-zA-Z0-9_\-<>]+/ });
+const Identifier = createToken({ name: "Identifier", pattern: /[0-9a-zA-Z\-']+/ });
 
-const allTokens = [
-  DelimString,
-  WhiteSpace,
-  Comment,
-  BeginTikzPictureCmd,
-  EndTikzPictureCmd,
-  BeginLayerCmd,
-  EndLayerCmd,
-  TikzStyleCmd,
-  LParen,
-  RParen,
-  LBracket,
-  RBracket,
-  Semicolon,
-  Comma,
-  Period,
-  Equals,
-  DrawCmd,
-  NodeCmd,
-  PathCmd,
-  Node,
-  Rectangle,
-  At,
-  To,
-  Cycle,
-  Length,
-  Float,
-  Int,
-  Identifier,
-];
+const PropertyVal = createToken({ name: "PropertyVal", pattern: /[0-9a-zA-Z<>\-'\.]+/ });
+
+const allTokens = {
+  modes: {
+    global: [
+      DelimString,
+      WhiteSpace,
+      Comment,
+      BeginTikzPictureCmd,
+      EndTikzPictureCmd,
+      BeginLayerCmd,
+      EndLayerCmd,
+      TikzStyleCmd,
+      LParen,
+      RParen,
+      LBracket,
+      Semicolon,
+      Comma,
+      Period,
+      Equals,
+      DrawCmd,
+      NodeCmd,
+      PathCmd,
+      Node,
+      Rectangle,
+      At,
+      To,
+      Cycle,
+      Length,
+      Float,
+      Int,
+      Identifier,
+    ],
+    properties: [DelimString, WhiteSpace, PropertyVal, Equals, Comma, RBracket],
+  },
+  defaultMode: "global",
+};
 
 class ParseError extends Error {
   public line: number;
@@ -261,18 +268,7 @@ class TikzParser extends EmbeddedActionsParser {
   public propertyVal = this.RULE("propertyVal", () => {
     let s = "";
     this.MANY(() => {
-      this.OR([
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Identifier).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Length).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Int).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Float).image) },
-        // since we only have one lexer context, we need to include all the keyword tokens here
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Node).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Rectangle).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(At).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(To).image) },
-        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Cycle).image) },
-      ]);
+      this.OR([{ ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(PropertyVal).image) }]);
     });
     return s;
   });
@@ -578,13 +574,17 @@ function parseTikzStyles(input: string): ParseTikzStylesResult {
 }
 
 function isValidPropertyVal(value: string): boolean {
-  const lexResult = lexer.tokenize(value);
-  if (lexResult.errors.length > 0) {
-    return false;
-  }
-  parser.input = lexResult.tokens;
-  parser.propertyVal();
-  return parser.errors.length === 0;
+  // const lexResult = lexer.tokenize(value, "properties");
+  // if (lexResult.errors.length > 0) {
+  //   return false;
+  // }
+  // parser.input = lexResult.tokens;
+  // parser.propertyVal();
+  // return parser.errors.length === 0;
+
+  // pattern should be (PropertyVal | Whitespace)+
+  const pattern = /^[0-9a-zA-Z<>\-'\. \t\n\r]+$/;
+  return pattern.test(value);
 }
 
 export {

@@ -20,6 +20,13 @@ describe("Graph parser", () => {
     \\end{pgfonlayer}
     \\end{tikzpicture}`;
     const parsed = parseTikzPicture(input);
+
+    if (parsed.errors.length > 0) {
+      console.error("Parsing errors found:");
+      parsed.errors.forEach(error => {
+        console.error(`${error.line}(${error.column}): ${error.message}`);
+      });
+    }
     assert.notStrictEqual(parsed.result, undefined);
     const g = parsed.result!;
     assert.strictEqual(g.nodeData.size, 1);
@@ -42,6 +49,12 @@ describe("Graph parser", () => {
     \\end{pgfonlayer}
     \\end{tikzpicture}`;
     const parsed = parseTikzPicture(input);
+    if (parsed.errors.length > 0) {
+      console.error("Parsing errors found:");
+      parsed.errors.forEach(error => {
+        console.error(`${error.line}(${error.column}): ${error.message}`);
+      });
+    }
     assert.notStrictEqual(parsed.result, undefined);
     const g = parsed.result!;
     assert.strictEqual(g.numNodes, 4);
