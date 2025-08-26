@@ -14,7 +14,7 @@ describe("Graph parser", () => {
     const input = `
     \\begin{tikzpicture}
     \\begin{pgfonlayer}{nodelayer}
-    \\node[style=Z] (0) at (1, 2) {A};
+    \\node [style=Z] (0) at (1, 2) {A};
     \\end{pgfonlayer}
     \\begin{pgfonlayer}{edgelayer}
     \\end{pgfonlayer}
@@ -31,10 +31,10 @@ describe("Graph parser", () => {
     const input = `
     \\begin{tikzpicture}
     \\begin{pgfonlayer}{nodelayer}
-    \\node[style=A, complex style={{foo} {bar\\\\} {baz=$\\{$}}] (0) at (0, 0) {a};
-    \\node[style=B] (1) at (1, 0) {b};
-    \\node[style=C] (2) at (2, 0) {c};
-    \\node[style=D] (3) at (3, 0) {d};
+    \\node [style=A, complex style={{foo} {bar\\\\} {baz=$\\{$}}] (0) at (0, 0) {a};
+    \\node [style=B] (1) at (1, 0) {b};
+    \\node [style=C] (2) at (2, 0) {c};
+    \\node [style=D] (3) at (3, 0) {d};
     \\end{pgfonlayer}
     \\begin{pgfonlayer}{edgelayer}
     \\draw (0) to (1);
@@ -66,20 +66,20 @@ describe("Graph parser", () => {
   it("should parse a graph twice and preserve unchanged data", () => {
     const input1 = `
     \\begin{tikzpicture}
-    \\node[style=A] (0) at (0, 0) {};
-    \\node[style=B] (1) at (0, 0) {};
-    \\node[style=C] (2) at (0, 0) {};
-    \\node[style=D] (3) at (0, 0) {};
+    \\node [style=A] (0) at (0, 0) {};
+    \\node [style=B] (1) at (0, 0) {};
+    \\node [style=C] (2) at (0, 0) {};
+    \\node [style=D] (3) at (0, 0) {};
     \\end{tikzpicture}`;
     const parsed1 = parseTikzPicture(input1);
     assert.notStrictEqual(parsed1.result, undefined);
 
     const input2 = `
     \\begin{tikzpicture}
-    \\node[style=A] (0) at (0, 0) {};
-    \\node[style=B2] (1) at (0, 0) {};
-    \\node[style=C] (2) at (0, 0) {};
-    \\node[style=D] (3) at (0, 0) {};
+    \\node [style=A] (0) at (0, 0) {};
+    \\node [style=B2] (1) at (0, 0) {};
+    \\node [style=C] (2) at (0, 0) {};
+    \\node [style=D] (3) at (0, 0) {};
     \\end{tikzpicture}`;
     const parsed2 = parseTikzPicture(input2);
     assert.notStrictEqual(parsed2.result, undefined);
@@ -111,8 +111,8 @@ describe("Tikzstyles parser", () => {
 
   it("should parse several node and edge styles", () => {
     const input = `
-    \\tikzstyle{gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, yshift=0.5mm, fill=white, draw=black, minimum height=5mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
-    \\tikzstyle{big gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, yshift=0.5mm, fill=white, draw=black, minimum height=10mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
+    \\tikzstyle{gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, fill=white, draw=black, minimum height=5mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
+    \\tikzstyle{big gate}=[shape=rectangle, text height=1.5ex, text depth=0.25ex, fill=white, draw=black, minimum height=10mm, yshift=-0.5mm, minimum width=5mm, font={\\small}, tikzit category=circuit]
     \\tikzstyle{Z dot}=[inner sep=0mm, minimum size=2mm, shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, tikzit category=zx]
     \\tikzstyle{Z bold dot}=[inner sep=0mm, minimum size=2mm, shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, line width=1.2pt, tikzit category=zx]
     \\tikzstyle{Z phase dot}=[minimum size=5mm, font={\\footnotesize\\boldmath}, shape=rectangle, rounded corners=2mm, inner sep=0.2mm, outer sep=-2mm, scale=0.8, tikzit shape=circle, draw=black, fill=zxgreen, tikzit fill={rgb,255: red,221; green,255; blue,221}, tikzit draw=blue, tikzit category=zx]
@@ -125,6 +125,6 @@ describe("Tikzstyles parser", () => {
     assert.notStrictEqual(parsed.result, undefined);
     const styles = parsed.result!;
     // TODO: fix this. It currently doesn't output the spacing of numbers with unit of measure correctly.
-    // assert.strictEqual(strip(styles.tikz()), strip(input));
+    assert.strictEqual(strip(styles.tikz()), strip(input));
   });
 });

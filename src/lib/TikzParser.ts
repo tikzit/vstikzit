@@ -82,6 +82,7 @@ const DelimString = createToken({
   line_breaks: true,
 });
 // const ArrowDef = createToken({ name: "ArrowDef", pattern: /[a-zA-Z<>|]*-[a-zA-Z<>|]*/ });
+const Length = createToken({ name: "Length", pattern: /-?\d+(.\d+)?[a-zA-Z]+/ });
 const Int = createToken({ name: "Int", pattern: /-?\d+/ });
 const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
 const Identifier = createToken({ name: "Identifier", pattern: /[a-zA-Z0-9_\-<>]+/ });
@@ -111,6 +112,7 @@ const allTokens = [
   At,
   To,
   Cycle,
+  Length,
   Float,
   Int,
   Identifier,
@@ -261,6 +263,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.MANY(() => {
       this.OR([
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Identifier).image) },
+        { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Length).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Int).image) },
         { ALT: () => (s += (s === "" ? "" : " ") + this.CONSUME(Float).image) },
         // since we only have one lexer context, we need to include all the keyword tokens here
