@@ -1,4 +1,4 @@
-import { Set, List } from "immutable";
+import { Set } from "immutable";
 import { useState, useEffect } from "react";
 import Split from "react-split";
 

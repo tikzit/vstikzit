@@ -267,7 +267,7 @@ const GraphEditor = ({
     <div
       id="graph-editor-viewport"
       style={{
-        height: "100%",
+        height: "calc(100% - 20px)",
         padding: "10px",
         overflowX: "scroll",
         overflowY: "scroll",
