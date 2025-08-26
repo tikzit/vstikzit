@@ -15,6 +15,7 @@ export type GraphTool = "select" | "vertex" | "edge";
 
 interface GraphEditorProps {
   tool: GraphTool;
+  onToolChanged: (tool: GraphTool) => void;
   enabled: boolean;
   graph: Graph;
   onGraphChange: (graph: Graph, commit: boolean) => void;
@@ -28,6 +29,7 @@ interface GraphEditorProps {
 
 const GraphEditor = ({
   tool,
+  onToolChanged: setTool,
   enabled,
   graph,
   onGraphChange: updateGraph,
@@ -84,6 +86,9 @@ const GraphEditor = ({
     if (!enabled) {
       return;
     }
+
+    // Focus the SVG element to enable keyboard events
+    event.currentTarget.focus();
 
     const p = mousePositionToCoord(event);
     setMouseDownPos(p);
@@ -280,6 +285,24 @@ const GraphEditor = ({
     setDraggingNodes(false);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
+    console.log("key", event.key);
+    switch (event.key) {
+      case "s":
+        setTool("select");
+        break;
+      case "n":
+        setTool("vertex");
+        break;
+      case "e":
+        setTool("edge");
+        break;
+      case "Delete":
+        updateGraph(graph.removeNodes(selectedNodes).removeEdges(selectedEdges), true);
+        break;
+    }
+  };
+
   return (
     <div
       id="graph-editor-viewport"
@@ -297,10 +320,13 @@ const GraphEditor = ({
           height: `${sceneCoords.height}px`,
           width: `${sceneCoords.width}px`,
           backgroundColor: "white",
+          // outline: "none", // Remove default focus outline
         }}
+        tabIndex={0}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onKeyDown={handleKeyDown}
       >
         <g id="grid"></g>
         <g id="edgeLayer">

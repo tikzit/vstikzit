@@ -18,7 +18,7 @@ interface StylePanelProps {
 
 const StylePanel = ({
   tool,
-  onToolChanged,
+  onToolChanged: setTool,
   tikzStyles,
   currentNodeStyle,
   currentEdgeStyle,
@@ -58,7 +58,7 @@ const StylePanel = ({
         overflow: "hidden",
       }}
     >
-      <Toolbar tool={tool} onToolChanged={onToolChanged} />
+      <Toolbar tool={tool} onToolChanged={setTool} />
       <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
 
       <br />
@@ -75,7 +75,9 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (style.isEdgeStyle) {return null;}
+            if (style.isEdgeStyle) {
+              return null;
+            }
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a
@@ -105,7 +107,9 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styleData.entrySeq().map(([name, style]) => {
-            if (name !== "none" && !style.isEdgeStyle) {return null;}
+            if (name !== "none" && !style.isEdgeStyle) {
+              return null;
+            }
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
             return (
               <a

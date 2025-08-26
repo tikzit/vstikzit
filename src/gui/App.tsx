@@ -156,6 +156,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
         >
           <GraphEditor
             tool={tool}
+            onToolChanged={setTool}
             enabled={true}
             graph={graph}
             onGraphChange={handleGraphChange}

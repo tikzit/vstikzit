@@ -1,4 +1,4 @@
-import { OrderedMap, Seq, ValueObject } from "immutable";
+import { OrderedMap, Seq, Set, ValueObject } from "immutable";
 import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
 class Graph implements ValueObject {
@@ -134,6 +134,35 @@ class Graph implements ValueObject {
     } else {
       return this;
     }
+  }
+
+  public removeNodes(nodes: Iterable<number>): Graph {
+    let g = this.copy();
+
+    for (const n of nodes) {
+      g = g.removeEdges(g.edgeData.filter(d => d.source === n || d.target === n).keys());
+      g._nodeData = g._nodeData.delete(n);
+    }
+    return g;
+  }
+
+  public removeEdges(edges: Iterable<number>): Graph {
+    const g = this.copy();
+    const edgeSet = Set(edges);
+
+    for (const e of edges) {
+      g._edgeData = g._edgeData.delete(e);
+    }
+
+    g._pathData.map(d => d.setEdges(d.edges.filter(e => !edgeSet.contains(e))));
+    g._pathData = g._pathData.filter(p => !p.edges.isEmpty());
+    return g;
+  }
+
+  public subgraphFromNodes(nodes: Iterable<number>): Graph {
+    const nodeSet = Set(nodes);
+    const nodeComp = this._nodeData.keySeq().filter(key => !nodeSet.contains(key));
+    return this.removeNodes(nodeComp);
   }
 
   public get freshNodeId(): number {
