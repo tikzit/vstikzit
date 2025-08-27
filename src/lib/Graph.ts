@@ -1,4 +1,4 @@
-import { OrderedMap, Seq, Set, ValueObject } from "immutable";
+import { List, OrderedMap, Seq, Set, ValueObject } from "immutable";
 import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
 class Graph implements ValueObject {
@@ -138,24 +138,25 @@ class Graph implements ValueObject {
 
   public removeNodes(nodes: Iterable<number>): Graph {
     let g = this.copy();
-
-    for (const n of nodes) {
-      g = g.removeEdges(g.edgeData.filter(d => d.source === n || d.target === n).keys());
-      g._nodeData = g._nodeData.delete(n);
-    }
-    return g;
+    let nodeSet = Set(nodes);
+    g._nodeData = g._nodeData.filter(d => !nodeSet.contains(d.id));
+    g._edgeData = g._edgeData.filter(
+      d => !nodeSet.contains(d.source) && !nodeSet.contains(d.target)
+    );
+    return g.removeDanglingPaths();
   }
 
   public removeEdges(edges: Iterable<number>): Graph {
     const g = this.copy();
     const edgeSet = Set(edges);
+    g._edgeData = g._edgeData.filter(d => !edgeSet.contains(d.id));
+    return g.removeDanglingPaths();
+  }
 
-    for (const e of edges) {
-      g._edgeData = g._edgeData.delete(e);
-    }
-
+  private removeDanglingPaths(): Graph {
+    const g = this.copy();
     g._pathData = g._pathData
-      .map(d => d.setEdges(d.edges.filter(e => !edgeSet.contains(e))))
+      .map(d => d.setEdges(d.edges.filter(e => g._edgeData.has(e))))
       .filter(p => !p.edges.isEmpty());
     return g;
   }
