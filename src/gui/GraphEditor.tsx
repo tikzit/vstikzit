@@ -298,7 +298,11 @@ const GraphEditor = ({
         setTool("edge");
         break;
       case "Delete":
-        updateGraph(graph.removeNodes(selectedNodes).removeEdges(selectedEdges), true);
+        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+        console.log("graph after delete");
+        console.log(g);
+        updateGraph(g, true);
+        updateSelection(Set(), Set());
         break;
     }
   };

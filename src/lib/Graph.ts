@@ -154,8 +154,9 @@ class Graph implements ValueObject {
       g._edgeData = g._edgeData.delete(e);
     }
 
-    g._pathData.map(d => d.setEdges(d.edges.filter(e => !edgeSet.contains(e))));
-    g._pathData = g._pathData.filter(p => !p.edges.isEmpty());
+    g._pathData = g._pathData
+      .map(d => d.setEdges(d.edges.filter(e => !edgeSet.contains(e))))
+      .filter(p => !p.edges.isEmpty());
     return g;
   }
 
