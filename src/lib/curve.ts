@@ -106,18 +106,13 @@ export function computeControlPoints(
   }
 
   // extract bend value from properties
-  let bend: number | undefined;
-  if (edgeData.hasKey("bend left")) {
-    bend = -(edgeData.propertyInt("bend left") ?? 30);
-  } else if (edgeData.hasKey("bend right")) {
-    bend = edgeData.propertyInt("bend right") ?? 30;
-  }
+  let bend = edgeData.bend;
 
   let bezier = false;
   let inAngle: number;
   let outAngle: number;
 
-  if (bend !== undefined) {
+  if (bend !== 0) {
     // If bend is given, compute in/out angles relative to straight line
     const bendRadians = bend * (Math.PI / 180);
     const angle = Math.atan2(dy, dx);

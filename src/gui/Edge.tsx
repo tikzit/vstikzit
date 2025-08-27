@@ -150,6 +150,7 @@ const Edge = ({
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
             strokeWidth={2}
+            onMouseDown={() => onControlPointMouseDown?.(1)}
           />
           <circle
             cx={nodeCoord2.x}
@@ -174,6 +175,7 @@ const Edge = ({
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
             strokeWidth={2}
+            onMouseDown={() => onControlPointMouseDown?.(2)}
           />
         </g>
       )}

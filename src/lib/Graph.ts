@@ -108,6 +108,12 @@ class Graph implements ValueObject {
     }
   }
 
+  public setNodeData(id: number, data: NodeData): Graph {
+    const g = this.copy();
+    g._nodeData = g._nodeData.set(id, data);
+    return g;
+  }
+
   public mapNodeData(fn: (data: NodeData) => NodeData): Graph {
     const g = this.copy();
     g._nodeData = g._nodeData.map(fn);
@@ -125,6 +131,12 @@ class Graph implements ValueObject {
     }
   }
 
+  public setEdgeData(id: number, data: EdgeData): Graph {
+    const g = this.copy();
+    g._edgeData = g._edgeData.set(id, data);
+    return g;
+  }
+
   public updatePathData(id: number, fn: (data: PathData) => PathData): Graph {
     const path = this._pathData.get(id);
     if (path) {
@@ -133,6 +145,30 @@ class Graph implements ValueObject {
       return g;
     } else {
       return this;
+    }
+  }
+
+  public setPathData(id: number, data: PathData): Graph {
+    const g = this.copy();
+    g._pathData = g._pathData.set(id, data);
+    return g;
+  }
+
+  public edgeSourceData(id: number): NodeData | undefined {
+    const edge = this._edgeData.get(id);
+    if (edge) {
+      return this._nodeData.get(edge.source);
+    } else {
+      return undefined;
+    }
+  }
+
+  public edgeTargetData(id: number): NodeData | undefined {
+    const edge = this._edgeData.get(id);
+    if (edge) {
+      return this._nodeData.get(edge.target);
+    } else {
+      return undefined;
     }
   }
 

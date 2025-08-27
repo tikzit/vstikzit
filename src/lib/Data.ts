@@ -85,9 +85,9 @@ class Data<T extends Data<T>> {
     return d;
   }
 
-  public setProperty(key: string, value: string): T {
+  public setProperty(key: string, value: any): T {
     const d = new (this.constructor as any)(this);
-    d._map = d._map.set(key, value);
+    d._map = d._map.set(key, value.toString());
     return d;
   }
 
@@ -279,6 +279,33 @@ class EdgeData extends Data<EdgeData> implements ValueObject {
 
   public get basicBendMode(): boolean {
     return this.property("in") === undefined || this.property("out") === undefined;
+  }
+
+  public get bend(): number {
+    let bend: number | undefined;
+    if (this.hasKey("bend left")) {
+      bend = -(this.propertyInt("bend left") ?? 30);
+    } else if (this.hasKey("bend right")) {
+      bend = this.propertyInt("bend right") ?? 30;
+    }
+
+    return bend ?? 0;
+  }
+
+  public setBend(bend: number): EdgeData {
+    let d = new EdgeData(this).unset("bend left").unset("bend right");
+    if (bend === -30) {
+      d = d.setAtom("bend left");
+    } else if (bend === 30) {
+      d = d.setAtom("bend right");
+    } else if (bend < 0) {
+      d = d.setProperty("bend left", -bend);
+    } else if (bend > 0) {
+      d = d.setProperty("bend right", bend);
+    } else if (bend === 0) {
+      d = d.unset("looseness");
+    }
+    return d;
   }
 }
 
