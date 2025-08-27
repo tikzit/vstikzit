@@ -22,6 +22,7 @@ interface GraphEditorProps {
   selectedNodes: Set<number>;
   selectedEdges: Set<number>;
   onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
+  onJumpToNode: (node: number) => void;
   tikzStyles: Styles;
   currentNodeStyle: string;
   currentEdgeStyle: string;
@@ -36,6 +37,7 @@ const GraphEditor = ({
   selectedNodes,
   selectedEdges,
   onSelectionChanged: updateSelection,
+  onJumpToNode: jumpToNode,
   tikzStyles,
   currentNodeStyle,
   currentEdgeStyle,
@@ -301,7 +303,9 @@ const GraphEditor = ({
       case "select":
         if (event.detail === 2) {
           // double click
-          if (clickedEdge.current !== undefined) {
+          if (clickedNode.current !== undefined) {
+            jumpToNode(clickedNode.current);
+          } else if (clickedEdge.current !== undefined) {
             let d = graph.edgeData.get(clickedEdge.current)!;
             const sCoord = graph.nodeData.get(d.source)!.coord;
             const tCoord = graph.nodeData.get(d.target)!.coord;

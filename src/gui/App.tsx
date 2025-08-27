@@ -10,23 +10,12 @@ import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import { setupCodeEditor } from "../lib/editorSetup";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 interface IContent {
   document: string;
   styleFile: string;
   styles: string;
-}
-
-// merge undo items where merge=true in 5-second chunks
-const mergeResolution = 5000;
-
-interface UndoState {
-  graph?: Graph;
-  tikz?: string;
-  selectedNodes: Set<number>;
-  selectedEdges: Set<number>;
-  timestamp: number;
-  merge: boolean;
 }
 
 interface AppProps {
@@ -44,6 +33,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   // state used to re-initialise contents of the code editor
   const [code, setCode] = useState(initialContent.document);
+  const [codeSelection, setCodeSelection] = useState<monaco.ISelection | undefined>(undefined);
 
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
@@ -138,6 +128,19 @@ const App = ({ initialContent, vscode }: AppProps) => {
     setSelectedEdges(selectedEdges);
   };
 
+  const handleJumpToNode = (node: number) => {
+    const [tikz, selection] = graph.tikzWithSelection(node);
+
+    if (tikz !== code) {
+      setCode(tikz);
+      updateFromGui(tikz);
+    }
+
+    if (selection !== undefined) {
+      setCodeSelection(selection);
+    }
+  };
+
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <Split
@@ -163,6 +166,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             selectedNodes={selectedNodes}
             selectedEdges={selectedEdges}
             onSelectionChanged={handleSelectionChanged}
+            onJumpToNode={handleJumpToNode}
             tikzStyles={tikzStyles}
             currentNodeStyle={currentNodeStyle}
             currentEdgeStyle={currentEdgeStyle}
@@ -178,7 +182,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           />
         </Split>
 
-        <CodeEditor content={code} onChange={handleEditorChange} />
+        <CodeEditor content={code} selection={codeSelection} onChange={handleEditorChange} />
       </Split>
     </div>
   );

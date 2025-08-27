@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
-import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { editorOptions } from "../lib/editorSetup";
 
 interface CodeEditorProps {
   content: string;
+  selection?: monaco.ISelection;
   onChange: (value: string | undefined) => void;
 }
 
-const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
+const CodeEditor = ({ content, selection, onChange }: CodeEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const isUpdatingFromPropRef = useRef(false);
@@ -50,6 +51,15 @@ const CodeEditor = ({ content, onChange }: CodeEditorProps) => {
       isUpdatingFromPropRef.current = false;
     }
   }, [content]);
+
+  // Update editor selection when prop changes
+  useEffect(() => {
+    if (editorRef.current && selection !== undefined) {
+      editorRef.current.setSelection(selection);
+      editorRef.current.revealLine(selection.selectionStartLineNumber);
+      editorRef.current.focus();
+    }
+  }, [selection]);
 
   return <div ref={containerRef} style={{ height: "100%", overflow: "hidden" }} />;
 };
