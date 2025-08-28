@@ -325,6 +325,97 @@ describe("Graph", () => {
       assert.strictEqual(subgraph.numEdges, 1);
       assert.ok(subgraph.edgeData.has(1)); // Edge between nodes 1 and 2
       assert.ok(!subgraph.edgeData.has(2)); // Edge to removed node 3
+
+      // Should have one path
+      assert.strictEqual(subgraph.numPaths, 1);
+      assert.ok(subgraph.pathData.has(1)); // Path 1 is still present
+      assert.ok(!subgraph.pathData.has(2)); // Path 2 is removed
+    });
+  });
+
+  describe("Inserting graphs", () => {
+    it("should insert another graph correctly", () => {
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const path1 = new PathData().setId(1).setEdges(List.of(1));
+
+      const graph1 = new Graph()
+        .addNodeWithData(node1)
+        .addNodeWithData(node2)
+        .addEdgeWithData(edge1)
+        .addPathWithData(path1);
+
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      const edge2 = new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2);
+      const path2 = new PathData().setId(2).setEdges(List.of(2));
+
+      const graph2 = new Graph()
+        .addNodeWithData(node3)
+        .addNodeWithData(node4)
+        .addEdgeWithData(edge2)
+        .addPathWithData(path2);
+
+      const combinedGraph = graph1.insertGraph(graph2);
+
+      assert.strictEqual(combinedGraph.numNodes, 4, "Combined graph should have 4 nodes");
+      assert.strictEqual(combinedGraph.numEdges, 2, "Combined graph should have 2 edges");
+      assert.strictEqual(combinedGraph.numPaths, 2, "Combined graph should have 2 paths");
+
+      // check nodes, edges, and paths are present
+      assert.ok(combinedGraph.nodeData.has(2), "Node 2 should be present");
+      assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
+      assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
+      assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
+
+      // check new edge has correct sources and targets
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
+
+      // check new edge points to the correct paths
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
+
+      // check new path contains correct edges
+      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
+    });
+
+    it("should assign fresh names correctly", () => {
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const path1 = new PathData().setId(1).setEdges(List.of(1));
+
+      const graph1 = new Graph()
+        .addNodeWithData(node1)
+        .addNodeWithData(node2)
+        .addEdgeWithData(edge1)
+        .addPathWithData(path1);
+
+      const combinedGraph = graph1.insertGraph(graph1).insertGraph(graph1);
+
+      assert.strictEqual(combinedGraph.numNodes, 6, "Combined graph should have 6 nodes");
+      assert.strictEqual(combinedGraph.numEdges, 3, "Combined graph should have 3 edges");
+      assert.strictEqual(combinedGraph.numPaths, 3, "Combined graph should have 3 paths");
+
+      // check nodes, edges, and paths are present
+      assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
+      assert.ok(combinedGraph.nodeData.has(4), "Node 4 should be present");
+      assert.ok(combinedGraph.nodeData.has(5), "Node 5 should be present");
+      assert.ok(combinedGraph.nodeData.has(6), "Node 6 should be present");
+      assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
+      assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
+      assert.ok(combinedGraph.edgeData.has(2), "Edge 3 should be present");
+      assert.ok(combinedGraph.pathData.has(2), "Path 3 should be present");
+
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
+      assert.strictEqual(combinedGraph.edgeData.get(3)?.source, 5, "Edge 3 should have source 5");
+      assert.strictEqual(combinedGraph.edgeData.get(3)?.target, 6, "Edge 3 should have target 6");
+      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
+      assert.strictEqual(combinedGraph.edgeData.get(3)?.path, 3, "Edge 3 should belong to path 3");
+      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
+      assert.ok(combinedGraph.pathData.get(3)?.edges.includes(3), "Path 3 should include edge 3");
     });
   });
 });

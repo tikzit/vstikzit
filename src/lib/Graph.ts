@@ -216,6 +216,40 @@ class Graph implements ValueObject {
     return this.removeNodes(nodeComp);
   }
 
+  // insert the other graph, setting fresh IDs where necessary
+  public insertGraph(other: Graph): Graph {
+    let g = this.copy();
+    const ntab: { [key: number]: number } = {};
+    const etab: { [key: number]: number } = {};
+    const ptab: { [key: number]: number } = {};
+
+    for (const [id, data] of other._nodeData) {
+      ntab[id] = g._nodeData.has(id) ? g.freshNodeId : id;
+      g = g.addNodeWithData(data.setId(ntab[id]));
+    }
+
+    for (const [id, data] of other._edgeData) {
+      etab[id] = g._edgeData.has(id) ? g.freshEdgeId : id;
+      const d = data.setId(etab[id]).setSource(ntab[data.source]).setTarget(ntab[data.target]);
+      g = g.addEdgeWithData(d);
+    }
+
+    for (const [id, data] of other._pathData) {
+      ptab[id] = g._pathData.has(id) ? g.freshPathId : id;
+      const d = data.setId(ptab[id]).setEdges(data.edges.map(e => etab[e]));
+      g = g.addPathWithData(d);
+    }
+
+    g = g.mapEdgeData(d => (!this._edgeData.has(d.id) ? d.setPath(ptab[d.path]) : d));
+
+    return g;
+  }
+
+  // shift all nodes by the given offsets
+  public shiftGraph(dx: number, dy: number): Graph {
+    return this.mapNodeData(d => d.setCoord(d.coord.shift(dx, dy)));
+  }
+
   public get freshNodeId(): number {
     return this.maxNodeId + 1;
   }
@@ -251,40 +285,6 @@ class Graph implements ValueObject {
       return d1 !== undefined && d.equals(d1) ? d1 : d;
     });
     return g;
-  }
-
-  // insert the other graph, setting fresh IDs where necessary
-  public insertGraph(other: Graph): Graph {
-    let g = this.copy();
-    const ntab: { [key: number]: number } = {};
-    const etab: { [key: number]: number } = {};
-    const ptab: { [key: number]: number } = {};
-
-    for (const [id, data] of other._nodeData) {
-      ntab[id] = g._nodeData.has(id) ? g.freshNodeId : id;
-      g = g.addNodeWithData(data.setId(ntab[id]));
-    }
-
-    for (const [id, data] of other._edgeData) {
-      etab[id] = g._edgeData.has(id) ? g.freshEdgeId : id;
-      const d = data.setId(etab[id]).setSource(ntab[data.source]).setTarget(ntab[data.target]);
-      g = g.addEdgeWithData(d);
-    }
-
-    for (const [id, data] of other._pathData) {
-      ptab[id] = g._pathData.has(id) ? g.freshPathId : id;
-      const d = data.setId(ptab[id]).setEdges(data.edges.map(e => etab[e]));
-      g = g.addPathWithData(d);
-    }
-
-    g = g.mapEdgeData(d => (etab[d.id] !== undefined ? d.setPath(ptab[d.path]) : d));
-
-    return g;
-  }
-
-  // shift all nodes by the given offsets
-  public shiftGraph(dx: number, dy: number): Graph {
-    return this.mapNodeData(d => d.setCoord(d.coord.shift(dx, dy)));
   }
 
   public equals(other: Graph): boolean {
