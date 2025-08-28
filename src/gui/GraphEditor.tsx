@@ -10,6 +10,7 @@ import Styles from "../lib/Styles";
 import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
+import { parseTikzPicture } from "../lib/TikzParser";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -42,6 +43,7 @@ const GraphEditor = ({
   currentNodeStyle,
   currentEdgeStyle,
 }: GraphEditorProps) => {
+  const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords(5000, 5000));
 
   // internal editor state
@@ -112,50 +114,41 @@ const GraphEditor = ({
 
     switch (tool) {
       case "select":
-        if (clickedControlPoint.current !== undefined) {
-          // dragging a control point
-          // Save current state of the edge
-          // _oldBend = e->bend();
-          // _oldInAngle = e->inAngle();
-          // _oldOutAngle = e->outAngle();
-          // _oldWeight = e->weight();
-        } else {
-          // not dragging a control point, handle click as usual
-          if (clickedNode.current !== undefined) {
-            // select a node single node and/or prepare to drag nodes
-            if (event.shiftKey) {
-              if (selectedNodes.contains(clickedNode.current)) {
-                updateSelection(selectedNodes.remove(clickedNode.current), selectedEdges);
-              } else {
-                updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
-              }
+        // not dragging a control point, handle click as usual
+        if (clickedNode.current !== undefined) {
+          // select a node single node and/or prepare to drag nodes
+          if (event.shiftKey) {
+            if (selectedNodes.contains(clickedNode.current)) {
+              updateSelection(selectedNodes.remove(clickedNode.current), selectedEdges);
             } else {
-              setDraggingNodes(true);
-              setPrevGraph(graph);
-              if (!selectedNodes.contains(clickedNode.current)) {
-                updateSelection(Set([clickedNode.current]), Set());
-              }
-            }
-          } else if (clickedEdge.current !== undefined) {
-            // select a single edge
-            if (event.shiftKey) {
-              updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
-            } else {
-              updateSelection(Set(), Set([clickedEdge.current]));
+              updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
             }
           } else {
-            if (!event.shiftKey) {
-              updateSelection(Set(), Set());
+            setDraggingNodes(true);
+            setPrevGraph(graph);
+            if (!selectedNodes.contains(clickedNode.current)) {
+              updateSelection(Set([clickedNode.current]), Set());
             }
-
-            // start rubber band selection
-            setSelectionRect({
-              x: p.x,
-              y: p.y,
-              width: 0,
-              height: 0,
-            });
           }
+        } else if (clickedEdge.current !== undefined) {
+          // select a single edge
+          if (event.shiftKey) {
+            updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
+          } else {
+            updateSelection(Set(), Set([clickedEdge.current]));
+          }
+        } else {
+          if (!event.shiftKey) {
+            updateSelection(Set(), Set());
+          }
+
+          // start rubber band selection
+          setSelectionRect({
+            x: p.x,
+            y: p.y,
+            width: 0,
+            height: 0,
+          });
         }
 
         break;
@@ -388,25 +381,56 @@ const GraphEditor = ({
     setDraggingNodes(false);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
-    console.log("key", event.key);
-    switch (event.key) {
-      case "s":
-        setTool("select");
-        break;
-      case "n":
-        setTool("vertex");
-        break;
-      case "e":
-        setTool("edge");
-        break;
-      case "Delete":
-        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
-        console.log("graph after delete");
-        console.log(g);
-        updateGraph(g, true);
-        updateSelection(Set(), Set());
-        break;
+  const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
+    // console.log("key", event.key);
+    if (event.getModifierState(CTRL)) {
+      switch (event.key) {
+        case "c":
+          if (!selectedNodes.isEmpty()) {
+            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+          }
+          break;
+        case "v":
+          const pastedData = await window.navigator.clipboard.readText();
+          const parsed = parseTikzPicture(pastedData);
+          if (parsed.result !== undefined) {
+            let g = parsed.result;
+            let n = g.nodeData.first();
+            while (
+              graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
+            ) {
+              g = g.shiftGraph(0.5, -0.5);
+              n = g.nodeData.first();
+            }
+
+            const g1 = graph.insertGraph(g);
+            const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
+            updateGraph(g1, true);
+            updateSelection(sel, Set());
+          }
+          break;
+      }
+    } else if (event.getModifierState("Alt")) {
+      // alt key events here
+    } else {
+      switch (event.key) {
+        case "s":
+          setTool("select");
+          break;
+        case "n":
+          setTool("vertex");
+          break;
+        case "e":
+          setTool("edge");
+          break;
+        case "Delete":
+          const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+          console.log("graph after delete");
+          console.log(g);
+          updateGraph(g, true);
+          updateSelection(Set(), Set());
+          break;
+      }
     }
   };
 
