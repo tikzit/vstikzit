@@ -362,21 +362,13 @@ describe("Graph", () => {
       assert.strictEqual(combinedGraph.numNodes, 4, "Combined graph should have 4 nodes");
       assert.strictEqual(combinedGraph.numEdges, 2, "Combined graph should have 2 edges");
       assert.strictEqual(combinedGraph.numPaths, 2, "Combined graph should have 2 paths");
-
-      // check nodes, edges, and paths are present
-      assert.ok(combinedGraph.nodeData.has(2), "Node 2 should be present");
       assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
+      assert.ok(combinedGraph.nodeData.has(4), "Node 4 should be present");
       assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
       assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
-
-      // check new edge has correct sources and targets
       assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
       assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
-
-      // check new edge points to the correct paths
       assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
-
-      // check new path contains correct edges
       assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
     });
 
