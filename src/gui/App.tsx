@@ -55,7 +55,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
       switch (message.type) {
         case "updateToGui":
           if (message.content) {
-            console.log("got update from vscode");
+            // console.log("got update from vscode");
             setCode(message.content);
             tryParseGraph(message.content);
           }

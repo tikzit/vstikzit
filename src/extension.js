@@ -47,7 +47,7 @@ class TikZEditorProvider {
     // Post document changes (e.g. undo/redo) to the webview. We use the isUpdatingFromGui flag
     // to prevent a circular update.
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-      console.log('Document changed, isUpdatingFromGui:', this.isUpdatingFromGui);
+      // console.log('Document changed, isUpdatingFromGui:', this.isUpdatingFromGui);
       if (e.document.uri.toString() === document.uri.toString() && !this.isUpdatingFromGui) {
         webviewPanel.webview.postMessage({
           type: "updateToGui",
@@ -119,7 +119,7 @@ class TikZEditorProvider {
   }
 
   async updateFromGui(document, content) {
-    console.log("got update from gui");
+    // console.log("got update from gui");
     this.isUpdatingFromGui = true;
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
