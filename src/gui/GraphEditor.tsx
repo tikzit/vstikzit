@@ -390,6 +390,14 @@ const GraphEditor = ({
             window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
           }
           break;
+        case "x":
+          if (!selectedNodes.isEmpty()) {
+            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+            const g = graph.removeNodes(selectedNodes);
+            updateGraph(g, true);
+            updateSelection(Set(), Set());
+          }
+          break;
         case "v":
           const pastedData = await window.navigator.clipboard.readText();
           const parsed = parseTikzPicture(pastedData);
@@ -425,8 +433,6 @@ const GraphEditor = ({
           break;
         case "Delete":
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
-          console.log("graph after delete");
-          console.log(g);
           updateGraph(g, true);
           updateSelection(Set(), Set());
           break;
