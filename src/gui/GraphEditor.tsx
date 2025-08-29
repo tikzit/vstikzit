@@ -65,8 +65,14 @@ const GraphEditor = ({
   const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
 
   useEffect(() => {
+    // Grab focus initially and when the editor tab gains focus
+    const editor = document.getElementById("graph-editor")!;
+    editor.focus();
+    const focusHandler = () => editor.focus();
+    window.addEventListener("focus", focusHandler);
+
     // Draw the background grid
-    drawGrid(document.getElementById("graph-editor")!, sceneCoords);
+    drawGrid(editor, sceneCoords);
 
     // Center the viewport and preserve the current center point on resize
     const viewport = document.getElementById("graph-editor-viewport")!;
@@ -87,7 +93,10 @@ const GraphEditor = ({
     });
 
     resizeObserver.observe(viewport);
-    return () => resizeObserver.disconnect();
+    return () => {
+      window.removeEventListener("focus", focusHandler);
+      resizeObserver.disconnect();
+    };
   }, [sceneCoords]);
 
   const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
@@ -415,6 +424,22 @@ const GraphEditor = ({
             const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
             updateGraph(g1, true);
             updateSelection(sel, Set());
+          }
+          break;
+        case "ArrowLeft":
+          if (!selectedNodes.isEmpty()) {
+            const g = graph.mapNodeData(d =>
+              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-0.25, 0)) : d
+            );
+            updateGraph(g, true);
+          }
+          break;
+        case "ArrowRight":
+          if (!selectedNodes.isEmpty()) {
+            const g = graph.mapNodeData(d =>
+              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0.25, 0)) : d
+            );
+            updateGraph(g, true);
           }
           break;
       }
