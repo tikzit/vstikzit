@@ -102,6 +102,33 @@ const App = ({ initialContent, vscode }: AppProps) => {
     });
   };
 
+  const handleNodeStyleChanged = (style: string, apply: boolean) => {
+    setCurrentNodeStyle(style);
+    if (apply) {
+      const g = graph.mapNodeData(d =>
+        selectedNodes.has(d.id) ? d.setProperty("style", style) : d
+      );
+      handleGraphChange(g, true);
+    }
+  };
+
+  const handleEdgeStyleChanged = (style: string, apply: boolean) => {
+    setCurrentEdgeStyle(style);
+    if (apply) {
+      const g = graph.mapEdgeData(d => {
+        if (selectedEdges.has(d.id)) {
+          if (style === "none") {
+            return d.unset("style");
+          } else {
+            return d.setProperty("style", style);
+          }
+        }
+        return d;
+      });
+      handleGraphChange(g, true);
+    }
+  };
+
   // a change in the tikz code, triggered by the user editing it
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
@@ -177,8 +204,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
             tikzStyles={tikzStyles}
             currentNodeStyle={currentNodeStyle}
             currentEdgeStyle={currentEdgeStyle}
-            onNodeStyleChanged={setCurrentNodeStyle}
-            onEdgeStyleChanged={setCurrentEdgeStyle}
+            onNodeStyleChanged={handleNodeStyleChanged}
+            onEdgeStyleChanged={handleEdgeStyleChanged}
           />
         </Split>
 

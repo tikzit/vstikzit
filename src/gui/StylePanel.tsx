@@ -12,8 +12,8 @@ interface StylePanelProps {
   tikzStyles: Styles;
   currentNodeStyle: string;
   currentEdgeStyle: string;
-  onNodeStyleChanged: (style: string) => void;
-  onEdgeStyleChanged: (style: string) => void;
+  onNodeStyleChanged: (style: string, apply: boolean) => void;
+  onEdgeStyleChanged: (style: string, apply: boolean) => void;
 }
 
 const StylePanel = ({
@@ -85,7 +85,7 @@ const StylePanel = ({
                 href="#"
                 draggable="false"
                 title={name}
-                onClick={() => setNodeStyle(name)}
+                onClick={e => setNodeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
                 <svg width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
@@ -117,7 +117,7 @@ const StylePanel = ({
                 href="#"
                 draggable="false"
                 title={name}
-                onClick={() => setEdgeStyle(name)}
+                onClick={e => setEdgeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
                 <svg width={44} height={44} style={{ margin: "5px" }}>
