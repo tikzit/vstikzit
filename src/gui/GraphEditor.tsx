@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { List, Set } from "immutable";
 
 import Graph from "../lib/Graph";
@@ -61,22 +61,34 @@ const GraphEditor = ({
   const clickedNode = useRef<number | undefined>(undefined);
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
-
-  useEffect(() => {
-    const graphEditor = document.getElementById("graph-editor-viewport")!;
-    graphEditor.scrollLeft = Math.max(0, (sceneCoords.width - graphEditor.clientWidth) / 2);
-    graphEditor.scrollTop = Math.max(0, (sceneCoords.height - graphEditor.clientHeight) / 2);
-  }, [sceneCoords]);
-
-  useEffect(() => {
-    const svg = document.getElementById("graph-editor");
-    if (svg !== null) {
-      drawGrid(svg, sceneCoords);
-    }
-  }, [sceneCoords]);
-
   const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
   const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
+
+  useEffect(() => {
+    // Draw the background grid
+    drawGrid(document.getElementById("graph-editor")!, sceneCoords);
+
+    // Center the viewport and preserve the current center point on resize
+    const viewport = document.getElementById("graph-editor-viewport")!;
+    viewport.scrollLeft = Math.max(0, (sceneCoords.width - viewport.clientWidth) / 2);
+    viewport.scrollTop = Math.max(0, (sceneCoords.height - viewport.clientHeight) / 2);
+
+    let prevW = viewport.clientWidth;
+    let prevH = viewport.clientHeight;
+    const resizeObserver = new ResizeObserver(() => {
+      const w = viewport.clientWidth;
+      const h = viewport.clientHeight;
+      const centerX = viewport.scrollLeft + prevW / 2;
+      const centerY = viewport.scrollTop + prevH / 2;
+      viewport.scrollLeft = Math.max(0, Math.min(centerX - w / 2, sceneCoords.width - w));
+      viewport.scrollTop = Math.max(0, Math.min(centerY - h / 2, sceneCoords.height - h));
+      prevW = w;
+      prevH = h;
+    });
+
+    resizeObserver.observe(viewport);
+    return () => resizeObserver.disconnect();
+  }, [sceneCoords]);
 
   const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -98,19 +110,7 @@ const GraphEditor = ({
     setMouseDownPos(p);
     setDraggingNodes(false);
 
-    // if (event->button() == Qt::RightButton &&
-    //     _tools->currentTool() == ToolPalette::SELECT &&
-    //     settings.value("smart-tool-enabled", true).toBool())
-    // {
-    //     _smartTool = true;
-    //     if (!items(_mouseDownPos).isEmpty() &&
-    //         dynamic_cast<NodeItem*>(items(_mouseDownPos)[0]))
-    //     {
-    //         _tools->setCurrentTool(ToolPalette::EDGE);
-    //     } else {
-    //         _tools->setCurrentTool(ToolPalette::VERTEX);
-    //     }
-    // }
+    // TODO: Right-click for "smart tool" should be implemented here
 
     switch (tool) {
       case "select":
