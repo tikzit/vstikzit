@@ -1,5 +1,9 @@
 // import * as vscode from "vscode";
 const vscode = require("vscode");
+const path = require("path");
+
+// Set to track all open TikZ documents
+const tikzDocuments = new Set();
 
 function activate(context) {
   // Register the custom text editor provider
@@ -11,7 +15,12 @@ function activate(context) {
     supportsMultipleEditorsPerDocument: false,
   });
 
-  context.subscriptions.push(registration);
+  // Register the Build TikZ figure command
+  const buildCommand = vscode.commands.registerCommand("vstikzit.buildTikzFigure", async () => {
+    await buildTikzFigure();
+  });
+
+  context.subscriptions.push(registration, buildCommand);
 }
 
 class TikZEditorProvider {
@@ -21,6 +30,9 @@ class TikZEditorProvider {
   }
 
   async resolveCustomTextEditor(document, webviewPanel, _token) {
+    // Track this document
+    tikzDocuments.add(document);
+
     // Setup webview options
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -71,6 +83,8 @@ class TikZEditorProvider {
     // Clean up subscriptions when webview is disposed
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
+      // Remove from tracking set
+      tikzDocuments.delete(document);
     });
   }
 
@@ -178,9 +192,116 @@ function getNonce() {
   return text;
 }
 
+async function buildTikzFigure() {
+  // Find the document associated with the currently active tab
+  const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+
+  if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+    vscode.window.showErrorMessage("No active TikZ editor found");
+    return;
+  }
+
+  // Find the document that matches the active tab's URI
+  let document = null;
+  for (const doc of tikzDocuments) {
+    if (doc.uri.toString() === activeTab.input.uri.toString()) {
+      document = doc;
+      break;
+    }
+  }
+
+  if (!document) {
+    vscode.window.showErrorMessage("No active TikZ document found");
+    return;
+  }
+
+  try {
+    vscode.window.showInformationMessage("Building TikZ figure...");
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      vscode.window.showInformationMessage("No active workspace");
+      return;
+    }
+
+    const workspaceRoot = workspaceFolders[0].uri;
+    // create tikzcache folder in workspaceRoot, if it doesn't exist
+    const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
+    try {
+      await vscode.workspace.fs.createDirectory(tikzCacheFolder);
+    } catch {}
+
+    // locate a .tikzstyles file and .tikzdefs file in the workspace root
+    const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
+
+    // Try to locate .tikzstyles and .tikzdefs files
+    const tikzStyles = files.find(
+      ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzstyles")
+    );
+    const tikzDefs = files.find(
+      ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzdefs")
+    );
+
+    let tex = "\\documentclass{article}\n";
+
+    // check tikzit.sty is in the workspace root
+    const tikzitSty = files.find(
+      ([name, type]) => type === vscode.FileType.File && name === "tikzit.sty"
+    );
+
+    if (tikzitSty) {
+      await vscode.workspace.fs.copy(
+        vscode.Uri.joinPath(workspaceRoot, "tikzit.sty"),
+        vscode.Uri.joinPath(tikzCacheFolder, "tikzit.sty")
+      );
+      tex += "\\usepackage{tikzit}\n\\tikzstyle{every picture}=[tikzfig]\n";
+    } else {
+      vscode.window.showInformationMessage("Warning: tikzit.sty not found in workspace");
+    }
+
+    tex += "\\usepackage[graphics,active,tightpage]{preview}\n\\PreviewEnvironment{tikzpicture}\n";
+
+    if (tikzStyles) {
+      await vscode.workspace.fs.copy(
+        vscode.Uri.joinPath(workspaceRoot, tikzStyles[0]),
+        vscode.Uri.joinPath(tikzCacheFolder, tikzStyles[0])
+      );
+      tex += `\\input{${tikzStyles[0]}}\n`;
+    }
+
+    if (tikzDefs) {
+      await vscode.workspace.fs.copy(
+        vscode.Uri.joinPath(workspaceRoot, tikzDefs[0]),
+        vscode.Uri.joinPath(tikzCacheFolder, tikzDefs[0])
+      );
+      tex += `\\input{${tikzDefs[0]}}\n`;
+    }
+
+    tex += "\\begin{document}\n\n";
+    tex += document.getText();
+    tex += "\n\\end{document}\n";
+
+    // if this document has a file name, get the base name
+    const baseName = path.basename(document.fileName, ".tikz");
+    const fileName = baseName !== undefined ? baseName + ".tex" : "tikzfigure.tex";
+
+    await vscode.workspace.fs.writeFile(
+      vscode.Uri.joinPath(tikzCacheFolder, fileName),
+      Buffer.from(tex)
+    );
+
+    // TODO: Add your TikZ compilation logic here
+    // This could involve calling pdflatex, lualatex, or other LaTeX engines
+    // For now, this is just a placeholder
+
+    vscode.window.showInformationMessage("TikZ figure built successfully!");
+  } catch (error) {
+    vscode.window.showErrorMessage(`Failed to build TikZ figure: ${error.message}`);
+  }
+}
+
 function deactivate() {}
 
 module.exports = {
   activate,
-  deactivate
+  deactivate,
 };

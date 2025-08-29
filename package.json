@@ -12,6 +12,13 @@
   "activationEvents": [],
   "main": "./src/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "vstikzit.buildTikzFigure",
+        "title": "Build TikZ figure",
+        "category": "TikZiT"
+      }
+    ],
     "customEditors": [
       {
         "viewType": "vstikzit.tikzEditor",
