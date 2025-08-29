@@ -1,6 +1,7 @@
 // import * as vscode from "vscode";
 const vscode = require("vscode");
 const path = require("path");
+const spawn = require("child_process").spawn;
 
 // Set to track all open TikZ documents
 const tikzDocuments = new Set();
@@ -251,7 +252,8 @@ async function buildTikzFigure() {
     if (tikzitSty) {
       await vscode.workspace.fs.copy(
         vscode.Uri.joinPath(workspaceRoot, "tikzit.sty"),
-        vscode.Uri.joinPath(tikzCacheFolder, "tikzit.sty")
+        vscode.Uri.joinPath(tikzCacheFolder, "tikzit.sty"),
+        { overwrite: true }
       );
       tex += "\\usepackage{tikzit}\n\\tikzstyle{every picture}=[tikzfig]\n";
     } else {
@@ -263,7 +265,8 @@ async function buildTikzFigure() {
     if (tikzStyles) {
       await vscode.workspace.fs.copy(
         vscode.Uri.joinPath(workspaceRoot, tikzStyles[0]),
-        vscode.Uri.joinPath(tikzCacheFolder, tikzStyles[0])
+        vscode.Uri.joinPath(tikzCacheFolder, tikzStyles[0]),
+        { overwrite: true }
       );
       tex += `\\input{${tikzStyles[0]}}\n`;
     }
@@ -271,7 +274,8 @@ async function buildTikzFigure() {
     if (tikzDefs) {
       await vscode.workspace.fs.copy(
         vscode.Uri.joinPath(workspaceRoot, tikzDefs[0]),
-        vscode.Uri.joinPath(tikzCacheFolder, tikzDefs[0])
+        vscode.Uri.joinPath(tikzCacheFolder, tikzDefs[0]),
+        { overwrite: true }
       );
       tex += `\\input{${tikzDefs[0]}}\n`;
     }
@@ -289,11 +293,24 @@ async function buildTikzFigure() {
       Buffer.from(tex)
     );
 
-    // TODO: Add your TikZ compilation logic here
-    // This could involve calling pdflatex, lualatex, or other LaTeX engines
-    // For now, this is just a placeholder
+    // run pdflatex from tikzCacheFolder on fileName
+    const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", fileName], {
+      cwd: tikzCacheFolder.fsPath,
+      shell: true,
+    });
 
-    vscode.window.showInformationMessage("TikZ figure built successfully!");
+    pdflatex.on("close", code => {
+      if (code === 0) {
+        for (const ext of [".tex", ".aux", ".log", ".out"]) {
+          vscode.workspace.fs.delete(vscode.Uri.joinPath(tikzCacheFolder, baseName + ext));
+        }
+        vscode.window.showInformationMessage("TikZ figure built successfully!");
+      } else {
+        vscode.window.showErrorMessage(
+          `Failed to build TikZ figure: pdflatex exited with code ${code}`
+        );
+      }
+    });
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to build TikZ figure: ${error.message}`);
   }
