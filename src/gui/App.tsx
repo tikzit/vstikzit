@@ -6,11 +6,8 @@ import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
 import Graph from "../lib/Graph";
 import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
-import CodeEditor from "./CodeEditor";
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
-import { setupCodeEditor } from "../lib/editorSetup";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 interface IContent {
   document: string;
@@ -33,7 +30,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   // state used to re-initialise contents of the code editor
   const [code, setCode] = useState(initialContent.document);
-  const [codeSelection, setCodeSelection] = useState<monaco.ISelection | undefined>(undefined);
+  // const [codeSelection, setCodeSelection] = useState<monaco.ISelection | undefined>(undefined);
 
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
@@ -48,7 +45,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   );
 
   useEffect(() => {
-    setupCodeEditor(vscode);
+    // setupCodeEditor(vscode);
 
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
@@ -163,9 +160,10 @@ const App = ({ initialContent, vscode }: AppProps) => {
       updateFromGui(tikz);
     }
 
-    if (selection !== undefined) {
-      setCodeSelection(selection);
-    }
+    // TODO
+    // if (selection !== undefined) {
+    //   setCodeSelection(selection);
+    // }
   };
 
   return (
@@ -173,43 +171,33 @@ const App = ({ initialContent, vscode }: AppProps) => {
       <Split
         sizes={[80, 20]}
         minSize={0}
-        direction="vertical"
-        cursor="row-resize"
-        style={{ display: "flex", flexDirection: "column", height: "100%" }}
+        direction="horizontal"
+        cursor="col-resize"
+        style={{ display: "flex", flexDirection: "row", height: "100%" }}
       >
-        <Split
-          sizes={[80, 20]}
-          minSize={0}
-          direction="horizontal"
-          cursor="col-resize"
-          style={{ display: "flex", flexDirection: "row", height: "100%" }}
-        >
-          <GraphEditor
-            tool={tool}
-            onToolChanged={setTool}
-            enabled={true}
-            graph={graph}
-            onGraphChange={handleGraphChange}
-            selectedNodes={selectedNodes}
-            selectedEdges={selectedEdges}
-            onSelectionChanged={handleSelectionChanged}
-            onJumpToNode={handleJumpToNode}
-            tikzStyles={tikzStyles}
-            currentNodeStyle={currentNodeStyle}
-            currentEdgeStyle={currentEdgeStyle}
-          />
-          <StylePanel
-            tool={tool}
-            onToolChanged={setTool}
-            tikzStyles={tikzStyles}
-            currentNodeStyle={currentNodeStyle}
-            currentEdgeStyle={currentEdgeStyle}
-            onNodeStyleChanged={handleNodeStyleChanged}
-            onEdgeStyleChanged={handleEdgeStyleChanged}
-          />
-        </Split>
-
-        <CodeEditor content={code} selection={codeSelection} onChange={handleEditorChange} />
+        <GraphEditor
+          tool={tool}
+          onToolChanged={setTool}
+          enabled={true}
+          graph={graph}
+          onGraphChange={handleGraphChange}
+          selectedNodes={selectedNodes}
+          selectedEdges={selectedEdges}
+          onSelectionChanged={handleSelectionChanged}
+          onJumpToNode={handleJumpToNode}
+          tikzStyles={tikzStyles}
+          currentNodeStyle={currentNodeStyle}
+          currentEdgeStyle={currentEdgeStyle}
+        />
+        <StylePanel
+          tool={tool}
+          onToolChanged={setTool}
+          tikzStyles={tikzStyles}
+          currentNodeStyle={currentNodeStyle}
+          currentEdgeStyle={currentEdgeStyle}
+          onNodeStyleChanged={handleNodeStyleChanged}
+          onEdgeStyleChanged={handleEdgeStyleChanged}
+        />
       </Split>
     </div>
   );
