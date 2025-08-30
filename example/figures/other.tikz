@@ -2,7 +2,7 @@
 	\begin{pgfonlayer}{nodelayer}
 		\node [style=none] (0) at (-2, 0) {};
 		\node [style=Z phase dot] (1) at (-1, 0) {\,$\alpha + \gamma$\,};
-		\node [style=X phase dot] (2) at (1, 0) {$\beta'$};
+		\node [style=X phase dot] (2) at (1, 0) {$\beta$};
 		\node [style=none] (3) at (2, 0) {};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}

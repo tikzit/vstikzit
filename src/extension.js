@@ -1,7 +1,9 @@
-// import * as vscode from "vscode";
-const vscode = require("vscode");
-const path = require("path");
-const spawn = require("child_process").spawn;
+import * as vscode from "vscode";
+import * as path from "path";
+import { spawn } from "child_process";
+// const vscode = require("vscode");
+// const path = require("path");
+// const spawn = require("child_process").spawn;
 
 // Set to track all open TikZ documents
 const tikzDocuments = new Set();
@@ -16,12 +18,13 @@ function activate(context) {
     supportsMultipleEditorsPerDocument: false,
   });
 
-  // Register the Build TikZ figure command
-  const buildCommand = vscode.commands.registerCommand("vstikzit.buildTikzFigure", async () => {
-    await buildTikzFigure();
-  });
+  const buildCommand = vscode.commands.registerCommand("vstikzit.buildTikzFigure", buildTikzFigure);
+  const toggleEditorCommand = vscode.commands.registerCommand(
+    "vstikzit.toggleEditor",
+    toggleEditor
+  );
 
-  context.subscriptions.push(registration, buildCommand);
+  context.subscriptions.push(registration, buildCommand, toggleEditorCommand);
 }
 
 class TikZEditorProvider {
@@ -316,9 +319,34 @@ async function buildTikzFigure() {
   }
 }
 
+async function toggleEditor() {
+  const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+
+  if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+    vscode.window.showErrorMessage("No active editor found");
+    return;
+  }
+
+  const documentUri = activeTab.input.uri;
+
+  if (vscode.window.activeTextEditor === undefined) {
+    // Switch to default text editor
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      documentUri,
+      "vscode.editor.defaultEditor"
+    );
+  } else {
+    // Switch to TikZ editor
+    await vscode.commands.executeCommand("vscode.openWith", documentUri, "vstikzit.tikzEditor");
+  }
+}
+
 function deactivate() {}
 
-module.exports = {
-  activate,
-  deactivate,
-};
+// module.exports = {
+//   activate,
+//   deactivate,
+// };
+
+export { activate, deactivate };

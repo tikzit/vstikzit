@@ -1,5 +1,6 @@
 {
   "name": "vstikzit",
+  "type": "module",
   "displayName": "TikZiT for VS Code",
   "description": "TikZiT-like GUI for editing tikz files in VS Code",
   "version": "0.0.1",
@@ -17,6 +18,26 @@
         "command": "vstikzit.buildTikzFigure",
         "title": "Build TikZ figure",
         "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.toggleEditor",
+        "title": "Toggle TikZ Editor",
+        "category": "TikZiT"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vstikzit.toggleEditor",
+        "key": "ctrl+shift+t",
+        "when": "resourceExtname == .tikz"
+      }
+    ],
+    "languages": [
+      {
+        "id": "latex",
+        "aliases": ["LaTeX", "latex"],
+        "extensions": [".tikz"],
+        "configuration": ""
       }
     ],
     "customEditors": [
@@ -27,7 +48,8 @@
           {
             "filenamePattern": "*.tikz"
           }
-        ]
+        ],
+        "priority": "default"
       }
     ]
   },

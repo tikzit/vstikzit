@@ -349,9 +349,13 @@ const GraphEditor = ({
 
           updateSelection(sel, selectedEdges);
         } else if (draggingNodes) {
-          updateGraph(graph, true);
+          if (!prevGraph?.equals(graph)) {
+            updateGraph(graph, true);
+          }
         } else if (clickedControlPoint.current !== undefined) {
-          updateGraph(graph, true);
+          if (!prevGraph?.equals(graph)) {
+            updateGraph(graph, true);
+          }
         }
         break;
       case "vertex":
