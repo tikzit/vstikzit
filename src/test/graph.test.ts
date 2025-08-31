@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import { assert } from "chai";
 import { List } from "immutable";
 import Graph from "../lib/Graph";
 import { NodeData, EdgeData, PathData, Coord } from "../lib/Data";
@@ -14,7 +14,10 @@ describe("Graph", () => {
 
     it("should add a node with data", () => {
       const graph = new Graph();
-      const nodeData = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(1, 2));
+      const nodeData = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(1, 2));
 
       const newGraph = graph.addNodeWithData(nodeData);
 
@@ -30,8 +33,14 @@ describe("Graph", () => {
 
     it("should add multiple nodes", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
 
       const newGraph = graph.addNodeWithData(node1).addNodeWithData(node2);
 
@@ -44,10 +53,18 @@ describe("Graph", () => {
 
     it("should remove a single node", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
 
-      const graphWithNodes = graph.addNodeWithData(node1).addNodeWithData(node2);
+      const graphWithNodes = graph
+        .addNodeWithData(node1)
+        .addNodeWithData(node2);
 
       const graphAfterRemoval = graphWithNodes.removeNodes([1]);
 
@@ -58,9 +75,18 @@ describe("Graph", () => {
 
     it("should remove multiple nodes", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
+      const node3 = new NodeData()
+        .setId(3)
+        .setLabel("Node 3")
+        .setCoord(new Coord(2, 2));
 
       const graphWithNodes = graph
         .addNodeWithData(node1)
@@ -77,10 +103,15 @@ describe("Graph", () => {
 
     it("should update node data", () => {
       const graph = new Graph();
-      const node = new NodeData().setId(1).setLabel("Original").setCoord(new Coord(0, 0));
+      const node = new NodeData()
+        .setId(1)
+        .setLabel("Original")
+        .setCoord(new Coord(0, 0));
 
       const graphWithNode = graph.addNodeWithData(node);
-      const updatedGraph = graphWithNode.updateNodeData(1, data => data.setLabel("Updated"));
+      const updatedGraph = graphWithNode.updateNodeData(1, (data) =>
+        data.setLabel("Updated")
+      );
 
       assert.strictEqual(updatedGraph.nodeData.get(1)?.label, "Updated");
       assert.strictEqual(graphWithNode.nodeData.get(1)?.label, "Original");
@@ -88,10 +119,18 @@ describe("Graph", () => {
 
     it("should generate fresh node IDs", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(5).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(10).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(5)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(10)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
 
-      const graphWithNodes = graph.addNodeWithData(node1).addNodeWithData(node2);
+      const graphWithNodes = graph
+        .addNodeWithData(node1)
+        .addNodeWithData(node2);
 
       assert.strictEqual(graphWithNodes.freshNodeId, 11);
     });
@@ -100,8 +139,14 @@ describe("Graph", () => {
   describe("Edge operations", () => {
     it("should add an edge with data", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
       const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
       const path = new PathData().setId(1).setEdges(List.of(1));
 
@@ -119,11 +164,21 @@ describe("Graph", () => {
 
     it("should create a self-loop edge", () => {
       const graph = new Graph();
-      const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const selfLoop = new EdgeData().setId(1).setSource(1).setTarget(1).setPath(1);
+      const node = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const selfLoop = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(1)
+        .setPath(1);
       const path = new PathData().setId(1).setEdges(List.of(1));
 
-      const newGraph = graph.addNodeWithData(node).addEdgeWithData(selfLoop).addPathWithData(path);
+      const newGraph = graph
+        .addNodeWithData(node)
+        .addEdgeWithData(selfLoop)
+        .addPathWithData(path);
 
       assert.strictEqual(newGraph.numEdges, 1);
       assert.strictEqual(newGraph.numPaths, 1);
@@ -132,12 +187,29 @@ describe("Graph", () => {
 
     it("should add multiple edges", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
+      const node3 = new NodeData()
+        .setId(3)
+        .setLabel("Node 3")
+        .setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
+      const edge2 = new EdgeData()
+        .setId(2)
+        .setSource(2)
+        .setTarget(3)
+        .setPath(2);
       const path1 = new PathData().setId(1).setEdges(List.of(1));
       const path2 = new PathData().setId(2).setEdges(List.of(2));
 
@@ -158,11 +230,25 @@ describe("Graph", () => {
 
     it("should remove edges", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(1).setPath(2);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
+      const edge2 = new EdgeData()
+        .setId(2)
+        .setSource(2)
+        .setTarget(1)
+        .setPath(2);
       const path1 = new PathData().setId(1).setEdges(List.of(1));
       const path2 = new PathData().setId(2).setEdges(List.of(2));
 
@@ -183,13 +269,34 @@ describe("Graph", () => {
 
     it("should automatically remove edges when removing nodes", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
+      const node3 = new NodeData()
+        .setId(3)
+        .setLabel("Node 3")
+        .setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
-      const edge3 = new EdgeData().setId(3).setSource(1).setTarget(3).setPath(3);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
+      const edge2 = new EdgeData()
+        .setId(2)
+        .setSource(2)
+        .setTarget(3)
+        .setPath(2);
+      const edge3 = new EdgeData()
+        .setId(3)
+        .setSource(1)
+        .setTarget(3)
+        .setPath(3);
 
       const path1 = new PathData().setId(1).setEdges(List.of(1));
       const path2 = new PathData().setId(2).setEdges(List.of(2));
@@ -219,8 +326,14 @@ describe("Graph", () => {
 
     it("should update edge data", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
       const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
       const path = new PathData().setId(1).setEdges(List.of(1));
 
@@ -230,18 +343,32 @@ describe("Graph", () => {
         .addEdgeWithData(edge)
         .addPathWithData(path);
 
-      const updatedGraph = graphWithEdge.updateEdgeData(1, data =>
+      const updatedGraph = graphWithEdge.updateEdgeData(1, (data) =>
         data.setProperty("style", "dashed")
       );
 
-      assert.strictEqual(updatedGraph.edgeData.get(1)?.property("style"), "dashed");
-      assert.strictEqual(graphWithEdge.edgeData.get(1)?.property("style"), undefined);
+      assert.strictEqual(
+        updatedGraph.edgeData.get(1)?.property("style"),
+        "dashed"
+      );
+      assert.strictEqual(
+        graphWithEdge.edgeData.get(1)?.property("style"),
+        undefined
+      );
     });
 
     it("should generate fresh edge IDs", () => {
       const graph = new Graph();
-      const edge1 = new EdgeData().setId(5).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(15).setSource(2).setTarget(1).setPath(2);
+      const edge1 = new EdgeData()
+        .setId(5)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
+      const edge2 = new EdgeData()
+        .setId(15)
+        .setSource(2)
+        .setTarget(1)
+        .setPath(2);
       const path1 = new PathData().setId(1).setEdges(List.of(5));
       const path2 = new PathData().setId(2).setEdges(List.of(15));
 
@@ -258,7 +385,10 @@ describe("Graph", () => {
   describe("Graph immutability", () => {
     it("should be immutable when adding nodes", () => {
       const graph = new Graph();
-      const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
+      const node = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
 
       const newGraph = graph.addNodeWithData(node);
 
@@ -269,7 +399,10 @@ describe("Graph", () => {
 
     it("should be immutable when removing nodes", () => {
       const graph = new Graph();
-      const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
+      const node = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
 
       const graphWithNode = graph.addNodeWithData(node);
       const graphAfterRemoval = graphWithNode.removeNodes([1]);
@@ -282,7 +415,10 @@ describe("Graph", () => {
     it("should support equality comparison", () => {
       const graph1 = new Graph();
       const graph2 = new Graph();
-      const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
+      const node = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
 
       const graphWithNode1 = graph1.addNodeWithData(node);
       const graphWithNode2 = graph2.addNodeWithData(node);
@@ -296,12 +432,29 @@ describe("Graph", () => {
   describe("Subgraph operations", () => {
     it("should create subgraph from nodes", () => {
       const graph = new Graph();
-      const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
+      const node1 = new NodeData()
+        .setId(1)
+        .setLabel("Node 1")
+        .setCoord(new Coord(0, 0));
+      const node2 = new NodeData()
+        .setId(2)
+        .setLabel("Node 2")
+        .setCoord(new Coord(1, 1));
+      const node3 = new NodeData()
+        .setId(3)
+        .setLabel("Node 3")
+        .setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
+      const edge2 = new EdgeData()
+        .setId(2)
+        .setSource(2)
+        .setTarget(3)
+        .setPath(2);
       const path1 = new PathData().setId(1).setEdges(List.of(1));
       const path2 = new PathData().setId(2).setEdges(List.of(2));
 
@@ -337,7 +490,11 @@ describe("Graph", () => {
     it("should insert another graph correctly", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
       const path1 = new PathData().setId(1).setEdges(List.of(1));
 
       const graph1 = new Graph()
@@ -348,7 +505,11 @@ describe("Graph", () => {
 
       const node3 = new NodeData().setId(3);
       const node4 = new NodeData().setId(4);
-      const edge2 = new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2);
+      const edge2 = new EdgeData()
+        .setId(2)
+        .setSource(3)
+        .setTarget(4)
+        .setPath(2);
       const path2 = new PathData().setId(2).setEdges(List.of(2));
 
       const graph2 = new Graph()
@@ -359,23 +520,54 @@ describe("Graph", () => {
 
       const combinedGraph = graph1.insertGraph(graph2);
 
-      assert.strictEqual(combinedGraph.numNodes, 4, "Combined graph should have 4 nodes");
-      assert.strictEqual(combinedGraph.numEdges, 2, "Combined graph should have 2 edges");
-      assert.strictEqual(combinedGraph.numPaths, 2, "Combined graph should have 2 paths");
+      assert.strictEqual(
+        combinedGraph.numNodes,
+        4,
+        "Combined graph should have 4 nodes"
+      );
+      assert.strictEqual(
+        combinedGraph.numEdges,
+        2,
+        "Combined graph should have 2 edges"
+      );
+      assert.strictEqual(
+        combinedGraph.numPaths,
+        2,
+        "Combined graph should have 2 paths"
+      );
       assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
       assert.ok(combinedGraph.nodeData.has(4), "Node 4 should be present");
       assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
       assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
-      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.source,
+        3,
+        "Edge 2 should have source 3"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.target,
+        4,
+        "Edge 2 should have target 4"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.path,
+        2,
+        "Edge 2 should belong to path 2"
+      );
+      assert.ok(
+        combinedGraph.pathData.get(2)?.edges.includes(2),
+        "Path 2 should include edge 2"
+      );
     });
 
     it("should assign fresh names correctly", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge1 = new EdgeData()
+        .setId(1)
+        .setSource(1)
+        .setTarget(2)
+        .setPath(1);
       const path1 = new PathData().setId(1).setEdges(List.of(1));
 
       const graph1 = new Graph()
@@ -386,9 +578,21 @@ describe("Graph", () => {
 
       const combinedGraph = graph1.insertGraph(graph1).insertGraph(graph1);
 
-      assert.strictEqual(combinedGraph.numNodes, 6, "Combined graph should have 6 nodes");
-      assert.strictEqual(combinedGraph.numEdges, 3, "Combined graph should have 3 edges");
-      assert.strictEqual(combinedGraph.numPaths, 3, "Combined graph should have 3 paths");
+      assert.strictEqual(
+        combinedGraph.numNodes,
+        6,
+        "Combined graph should have 6 nodes"
+      );
+      assert.strictEqual(
+        combinedGraph.numEdges,
+        3,
+        "Combined graph should have 3 edges"
+      );
+      assert.strictEqual(
+        combinedGraph.numPaths,
+        3,
+        "Combined graph should have 3 paths"
+      );
 
       // check nodes, edges, and paths are present
       assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
@@ -400,14 +604,44 @@ describe("Graph", () => {
       assert.ok(combinedGraph.edgeData.has(2), "Edge 3 should be present");
       assert.ok(combinedGraph.pathData.has(2), "Path 3 should be present");
 
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.source, 5, "Edge 3 should have source 5");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.target, 6, "Edge 3 should have target 6");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.path, 3, "Edge 3 should belong to path 3");
-      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
-      assert.ok(combinedGraph.pathData.get(3)?.edges.includes(3), "Path 3 should include edge 3");
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.source,
+        3,
+        "Edge 2 should have source 3"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.target,
+        4,
+        "Edge 2 should have target 4"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(3)?.source,
+        5,
+        "Edge 3 should have source 5"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(3)?.target,
+        6,
+        "Edge 3 should have target 6"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(2)?.path,
+        2,
+        "Edge 2 should belong to path 2"
+      );
+      assert.strictEqual(
+        combinedGraph.edgeData.get(3)?.path,
+        3,
+        "Edge 3 should belong to path 3"
+      );
+      assert.ok(
+        combinedGraph.pathData.get(2)?.edges.includes(2),
+        "Path 2 should include edge 2"
+      );
+      assert.ok(
+        combinedGraph.pathData.get(3)?.edges.includes(3),
+        "Path 3 should include edge 3"
+      );
     });
   });
 });

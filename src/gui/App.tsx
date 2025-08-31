@@ -5,9 +5,10 @@ import Split from "react-split";
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
 import Graph from "../lib/Graph";
-import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
+import { isValidDelimString, parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
+import Toolbar from "./Toolbar";
 
 interface IContent {
   document: string;
@@ -32,6 +33,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const [code, setCode] = useState(initialContent.document);
   // const [codeSelection, setCodeSelection] = useState<monaco.ISelection | undefined>(undefined);
 
+  const [currentNodeLabel, setCurrentNodeLabel] = useState<string | undefined>(undefined);
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
 
@@ -99,6 +101,18 @@ const App = ({ initialContent, vscode }: AppProps) => {
     });
   };
 
+  const handleCurrentNodeLabelChanged = (label: string) => {
+    if (selectedNodes.size === 1) {
+      setCurrentNodeLabel(label);
+
+      if (isValidDelimString("{" + label + "}")) {
+        const n = selectedNodes.first()!;
+        const g = graph.updateNodeData(n, d => d.setLabel(label));
+        handleGraphChange(g, true);
+      }
+    }
+  };
+
   const handleNodeStyleChanged = (style: string, apply: boolean) => {
     setCurrentNodeStyle(style);
     if (apply) {
@@ -107,6 +121,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
       );
       handleGraphChange(g, true);
     }
+
+    document.getElementById("graph-editor")?.focus();
   };
 
   const handleEdgeStyleChanged = (style: string, apply: boolean) => {
@@ -124,15 +140,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
       });
       handleGraphChange(g, true);
     }
-  };
 
-  // a change in the tikz code, triggered by the user editing it
-  const handleEditorChange = (value: string | undefined) => {
-    if (value !== undefined) {
-      setCode(value);
-      tryParseGraph(value);
-      updateFromGui(value);
-    }
+    document.getElementById("graph-editor")?.focus();
   };
 
   // handle a graph change from the graph editor. "commit" says the document should be updated
@@ -150,6 +159,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
     setSelectedNodes(selectedNodes);
     setSelectedEdges(selectedEdges);
+
+    if (selectedNodes.size === 1) {
+      setCurrentNodeLabel(graph.nodeData.get(selectedNodes.first()!)?.label);
+    } else {
+      setCurrentNodeLabel(undefined);
+    }
   };
 
   const handleJumpToNode = (node: number) => {
@@ -167,7 +182,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   return (
-    <div style={{ height: "100vh", width: "100vw" }}>
+    <div style={{ height: "100%", width: "100%" }}>
       <Split
         sizes={[80, 20]}
         minSize={0}
@@ -175,30 +190,62 @@ const App = ({ initialContent, vscode }: AppProps) => {
         cursor="col-resize"
         style={{ display: "flex", flexDirection: "row", height: "100%" }}
       >
-        <GraphEditor
-          tool={tool}
-          onToolChanged={setTool}
-          enabled={true}
-          graph={graph}
-          onGraphChange={handleGraphChange}
-          selectedNodes={selectedNodes}
-          selectedEdges={selectedEdges}
-          onSelectionChanged={handleSelectionChanged}
-          onJumpToNode={handleJumpToNode}
-          tikzStyles={tikzStyles}
-          currentNodeStyle={currentNodeStyle}
-          currentEdgeStyle={currentEdgeStyle}
-        />
+        <div>
+          <Toolbar
+            tool={tool}
+            onToolChanged={t => {
+              setTool(t);
+              document.getElementById("graph-editor")?.focus();
+            }}
+          />
+          <GraphEditor
+            tool={tool}
+            onToolChanged={setTool}
+            enabled={true}
+            graph={graph}
+            onGraphChange={handleGraphChange}
+            selectedNodes={selectedNodes}
+            selectedEdges={selectedEdges}
+            onSelectionChanged={handleSelectionChanged}
+            onJumpToNode={handleJumpToNode}
+            tikzStyles={tikzStyles}
+            currentNodeStyle={currentNodeStyle}
+            currentEdgeStyle={currentEdgeStyle}
+          />
+        </div>
         <StylePanel
-          tool={tool}
-          onToolChanged={setTool}
           tikzStyles={tikzStyles}
+          currentNodeLabel={currentNodeLabel}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
+          onCurrentNodeLabelChanged={handleCurrentNodeLabelChanged}
           onNodeStyleChanged={handleNodeStyleChanged}
           onEdgeStyleChanged={handleEdgeStyleChanged}
         />
       </Split>
+      <style>
+        {`
+        input {
+          width: 100%;
+          background-color: var(--vscode-input-background);
+          color: var(--vscode-input-foreground);
+          border: 1px solid var(--vscode-input-border);
+          border-radius: 2px;
+          padding: 4px 8px;
+          font-size: var(--vscode-editor-font-size);
+          font-family: var(--vscode-editor-font-family);
+          selection-color: var(--vscode-editor-selection-background);
+        }
+        input::selection {
+          background-color: var(--vscode-editor-selectionBackground);
+          color: var(--vscode-editor-selectionForeground);
+        }
+        input.error {
+          border-color: red !important;
+          outline: 1px solid red !important;
+        }
+      `}
+      </style>
     </div>
   );
 };

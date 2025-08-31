@@ -1,4 +1,4 @@
-import SceneCoords from "../gui/SceneCoords";
+import SceneCoords from "./SceneCoords";
 
 const drawGrid = (svg: HTMLElement, sceneCoords: SceneCoords) => {
   const gridSize = sceneCoords.scale;

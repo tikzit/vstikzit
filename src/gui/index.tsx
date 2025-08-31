@@ -4,7 +4,7 @@ import App from "./App";
 // VSCode WebView API types (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
 const vscode = acquireVsCodeApi();
-const initialContentText = document.getElementById("initial-content")!.textContent;
+const initialContentText = document.getElementById("initial-content")!.textContent!;
 const container = document.getElementById("root")!;
 
 try {

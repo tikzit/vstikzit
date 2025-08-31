@@ -1,11 +1,11 @@
-import * as assert from "assert";
+import { assert } from "chai";
 import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 
 function strip(input: string): string {
   return input
     .split("\n")
-    .map(line => line.trim())
-    .filter(line => line !== "")
+    .map((line) => line.trim())
+    .filter((line) => line !== "")
     .join("\n");
 }
 
@@ -23,7 +23,7 @@ describe("Graph parser", () => {
 
     if (parsed.errors.length > 0) {
       console.error("Parsing errors found:");
-      parsed.errors.forEach(error => {
+      parsed.errors.forEach((error) => {
         console.error(`${error.line}(${error.column}): ${error.message}`);
       });
     }
@@ -51,7 +51,7 @@ describe("Graph parser", () => {
     const parsed = parseTikzPicture(input);
     if (parsed.errors.length > 0) {
       console.error("Parsing errors found:");
-      parsed.errors.forEach(error => {
+      parsed.errors.forEach((error) => {
         console.error(`${error.line}(${error.column}): ${error.message}`);
       });
     }
@@ -61,7 +61,10 @@ describe("Graph parser", () => {
     assert.strictEqual(g.numEdges, 3);
     assert.strictEqual(g.numPaths, 2);
     assert.strictEqual(g.nodeData.get(0)?.property("style"), "A");
-    assert.strictEqual(g.nodeData.get(0)?.property("complex style"), "{foo} {bar\\\\} {baz=$\\{$}");
+    assert.strictEqual(
+      g.nodeData.get(0)?.property("complex style"),
+      "{foo} {bar\\\\} {baz=$\\{$}"
+    );
     assert.strictEqual(g.nodeData.get(1)?.property("style"), "B");
     assert.strictEqual(g.nodeData.get(2)?.property("style"), "C");
     assert.strictEqual(g.nodeData.get(3)?.property("style"), "D");
@@ -100,14 +103,34 @@ describe("Graph parser", () => {
     const g1 = parsed1.result!;
 
     const g2 = parsed2.result!;
-    assert.notStrictEqual(g1.nodeData.get(0), g2.nodeData.get(0), "g1[0] ? g2[0]");
-    assert.notStrictEqual(g1.nodeData.get(1), g2.nodeData.get(1), "g1[1] ? g2[1]");
-    assert.notStrictEqual(g1.nodeData.get(2), g2.nodeData.get(2), "g1[2] ? g2[2]");
-    assert.notStrictEqual(g1.nodeData.get(3), g2.nodeData.get(3), "g1[3] ? g2[3]");
+    assert.notStrictEqual(
+      g1.nodeData.get(0),
+      g2.nodeData.get(0),
+      "g1[0] ? g2[0]"
+    );
+    assert.notStrictEqual(
+      g1.nodeData.get(1),
+      g2.nodeData.get(1),
+      "g1[1] ? g2[1]"
+    );
+    assert.notStrictEqual(
+      g1.nodeData.get(2),
+      g2.nodeData.get(2),
+      "g1[2] ? g2[2]"
+    );
+    assert.notStrictEqual(
+      g1.nodeData.get(3),
+      g2.nodeData.get(3),
+      "g1[3] ? g2[3]"
+    );
 
     const g3 = g2.inheritDataFrom(g1);
     assert.strictEqual(g1.nodeData.get(0), g3.nodeData.get(0), "g1[0] ? g3[0]");
-    assert.notStrictEqual(g1.nodeData.get(1), g3.nodeData.get(1), "g1[1] ? g3[1]");
+    assert.notStrictEqual(
+      g1.nodeData.get(1),
+      g3.nodeData.get(1),
+      "g1[1] ? g3[1]"
+    );
     assert.strictEqual(g1.nodeData.get(2), g3.nodeData.get(2), "g1[2] ? g3[2]");
     assert.strictEqual(g1.nodeData.get(3), g3.nodeData.get(3), "g1[3] ? g3[3]");
   });

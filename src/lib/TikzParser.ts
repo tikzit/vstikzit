@@ -587,10 +587,16 @@ function isValidPropertyVal(value: string): boolean {
   return pattern.test(value);
 }
 
+function isValidDelimString(value: string): boolean {
+  const result = matchDelimString(value, 0);
+  return result !== null && result[0] === value;
+}
+
 export {
   parseTikzPicture,
   ParseTikzPictureResult,
   parseTikzStyles,
   ParseTikzStylesResult,
   isValidPropertyVal,
+  isValidDelimString,
 };

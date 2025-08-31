@@ -107,7 +107,7 @@ class TikZEditorProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none';
         style-src 'unsafe-inline' ${webview.cspSource};
-        img-src 'unsafe-inline' ${webview.cspSource};
+        img-src 'unsafe-inline' ${webview.cspSource} data: blob:;
         script-src 'nonce-${nonce}' 'unsafe-eval' ${webview.cspSource};
         font-src ${webview.cspSource};
         worker-src 'self' data: blob:;">
@@ -131,7 +131,7 @@ class TikZEditorProvider {
 			<body>
 				<div id="root"></div>
 				<script id="initial-content" type="application/json">${JSON.stringify(content)}</script>
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<script nonce="${nonce}" src="${scriptUri}" type="module"></script>
 			</body>
 			</html>`;
   }

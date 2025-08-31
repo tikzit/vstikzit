@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import { assert } from "chai";
 import { NodeData, Coord } from "../lib/Data";
 import { OrderedMap } from "immutable";
 

@@ -1,27 +1,28 @@
 import { Coord, EdgeData, NodeData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import Styles from "../lib/Styles";
-import { GraphTool } from "./GraphEditor";
-import Toolbar from "./Toolbar";
 import Node from "./Node";
 import Edge from "./Edge";
+import { isValidDelimString } from "../lib/TikzParser";
+import { useState } from "react";
+import { is } from "immutable";
 
 interface StylePanelProps {
-  tool: GraphTool;
-  onToolChanged: (tool: GraphTool) => void;
   tikzStyles: Styles;
+  currentNodeLabel: string | undefined;
   currentNodeStyle: string;
   currentEdgeStyle: string;
+  onCurrentNodeLabelChanged: (label: string) => void;
   onNodeStyleChanged: (style: string, apply: boolean) => void;
   onEdgeStyleChanged: (style: string, apply: boolean) => void;
 }
 
 const StylePanel = ({
-  tool,
-  onToolChanged: setTool,
   tikzStyles,
+  currentNodeLabel,
   currentNodeStyle,
   currentEdgeStyle,
+  onCurrentNodeLabelChanged: setCurrentNodeLabel,
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
 }: StylePanelProps) => {
@@ -58,16 +59,28 @@ const StylePanel = ({
         overflow: "hidden",
       }}
     >
-      <Toolbar tool={tool} onToolChanged={setTool} />
+      <div
+        style={{ marginBottom: "2px", marginTop: "2px", marginLeft: "0px", marginRight: "15px" }}
+      >
+        <input
+          value={currentNodeLabel ?? ""}
+          onChange={e => setCurrentNodeLabel(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter") {
+              document.getElementById("graph-editor")?.focus();
+            }
+          }}
+          disabled={currentNodeLabel === undefined}
+          className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
+        />
+      </div>
+
       <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
-
-      <br />
-
-      <div style={{ overflow: "hidden", height: "calc(100% - 64px)", width: "100%" }}>
+      <div style={{ overflow: "hidden", height: "calc(100% - 80px)", width: "100%" }}>
         <div
           id="node-styles"
           style={{
-            height: "calc(50% - 5px)",
+            height: "calc(70% - 5px)",
             overflowY: "scroll",
             backgroundColor: "#fff",
             color: "#000",
@@ -100,7 +113,7 @@ const StylePanel = ({
         <div
           id="edge-styles"
           style={{
-            height: "calc(50% - 5px)",
+            height: "calc(30% - 5px)",
             overflowY: "scroll",
             backgroundColor: "#fff",
             color: "#000",
