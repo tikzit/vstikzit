@@ -74,6 +74,7 @@ class TikZEditorProvider {
 
     // Handle messages from the webview
     webviewPanel.webview.onDidReceiveMessage(e => {
+      console.log(`Received message from webview: ${e.type}`, e);
       switch (e.type) {
         case "updateFromGui":
           this.updateFromGui(document, e.content);
@@ -82,6 +83,7 @@ class TikZEditorProvider {
           this.refreshTikzStyles(webviewPanel.webview);
           return;
         case "openCodeEditor":
+          console.log("openCodeEditor message received with content:", e.content);
           this.openCodeEditor(e.content.line, e.content.column);
           return;
       }
@@ -193,17 +195,23 @@ class TikZEditorProvider {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
     if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+      console.log("No active tab found");
       return;
     }
 
     const documentUri = activeTab.input.uri;
 
-    await vscode.commands.executeCommand(
-      "vscode.openWith",
-      documentUri,
-      "vscode.editor.defaultEditor",
-      { selection: new vscode.Range(line, column, line, column) }
-    );
+    const editor = await vscode.window.showTextDocument(documentUri, vscode.ViewColumn.Beside);
+
+    // Force cursor positioning
+    if (editor) {
+      const position = new vscode.Position(line, column);
+      editor.selection = new vscode.Selection(position, position);
+      editor.revealRange(
+        new vscode.Range(position, position),
+        vscode.TextEditorRevealType.InCenter
+      );
+    }
   }
 }
 

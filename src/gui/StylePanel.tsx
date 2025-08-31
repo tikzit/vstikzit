@@ -63,6 +63,7 @@ const StylePanel = ({
         style={{ marginBottom: "2px", marginTop: "2px", marginLeft: "0px", marginRight: "15px" }}
       >
         <input
+          id="label-field"
           value={currentNodeLabel ?? ""}
           onChange={e => setCurrentNodeLabel(e.target.value)}
           onKeyDown={e => {

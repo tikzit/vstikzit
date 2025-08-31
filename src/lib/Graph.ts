@@ -298,7 +298,10 @@ class Graph implements ValueObject {
     return hash;
   }
 
-  public tikzWithPosition(node?: number): [string, { line: number; column: number } | undefined] {
+  public tikzWithPosition(
+    node?: number,
+    edge?: number
+  ): [string, { line: number; column: number } | undefined] {
     let position: { line: number; column: number } | undefined = undefined;
 
     let result = "\\begin{tikzpicture}\n";
@@ -306,11 +309,16 @@ class Graph implements ValueObject {
     for (const d of this.nodeData.values()) {
       if (d) {
         let dt = d.tikz();
-        result += "\t\t\\node " + dt + (dt !== "" ? " " : "");
+        result += "\t\t\\node " + dt;
 
         if (node === d.id) {
+          // return the position of the end of the property list
           const lines = result.split("\n");
-          position = { line: lines.length, column: lines[lines.length - 1].length };
+          position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
+        }
+
+        if (dt !== "") {
+          result += " ";
         }
 
         result += `(${d.id}) at (${d.coord.x}, ${d.coord.y}) {${d.label}};\n`;
@@ -320,12 +328,21 @@ class Graph implements ValueObject {
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
     for (const pd of this.pathData.values()) {
       let d = this.edgeData.get(pd.edges.get(0)!)!;
-      let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
       let dt = d.tikz();
-      if (dt !== "") {
-        dt += " ";
+      result += `\t\t\\draw ${dt}`;
+
+      if (edge !== undefined && pd.edges.contains(edge)) {
+        // return the position of the end of the edge property list
+        const lines = result.split("\n");
+        position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
       }
-      result += `\t\t\\draw ${dt}${d.sourceRef} to${edgeNode} ${d.targetRef}`;
+
+      if (dt !== "") {
+        result += " ";
+      }
+
+      let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
+      result += `${d.sourceRef} to${edgeNode} ${d.targetRef}`;
 
       for (const edgeId of pd.edges.slice(1)) {
         d = this.edgeData.get(edgeId)!;

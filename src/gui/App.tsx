@@ -168,17 +168,23 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   const handleJumpToNode = (node: number) => {
-    const [_, position] = graph.tikzWithPosition(node);
+    const [_, position] = graph.tikzWithPosition(node, undefined);
+    console.log("got position", position);
 
     vscode.postMessage({
       type: "openCodeEditor",
       content: position,
     });
+  };
 
-    // TODO
-    // if (selection !== undefined) {
-    //   setCodeSelection(selection);
-    // }
+  const handleJumpToEdge = (edge: number) => {
+    const [_, position] = graph.tikzWithPosition(undefined, edge);
+    console.log("got position", position);
+
+    vscode.postMessage({
+      type: "openCodeEditor",
+      content: position,
+    });
   };
 
   return (
@@ -208,6 +214,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             selectedEdges={selectedEdges}
             onSelectionChanged={handleSelectionChanged}
             onJumpToNode={handleJumpToNode}
+            onJumpToEdge={handleJumpToEdge}
             tikzStyles={tikzStyles}
             currentNodeStyle={currentNodeStyle}
             currentEdgeStyle={currentEdgeStyle}

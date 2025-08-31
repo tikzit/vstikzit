@@ -24,6 +24,7 @@ interface GraphEditorProps {
   selectedEdges: Set<number>;
   onSelectionChanged: (selectedNodes: Set<number>, selectedEdges: Set<number>) => void;
   onJumpToNode: (node: number) => void;
+  onJumpToEdge: (edge: number) => void;
   tikzStyles: Styles;
   currentNodeStyle: string;
   currentEdgeStyle: string;
@@ -39,6 +40,7 @@ const GraphEditor = ({
   selectedEdges,
   onSelectionChanged: updateSelection,
   onJumpToNode: jumpToNode,
+  onJumpToEdge: jumpToEdge,
   tikzStyles,
   currentNodeStyle,
   currentEdgeStyle,
@@ -306,7 +308,7 @@ const GraphEditor = ({
         if (event.detail === 2) {
           // double click
           if (clickedNode.current !== undefined) {
-            jumpToNode(clickedNode.current);
+            document.getElementById("label-field")?.focus();
           } else if (clickedEdge.current !== undefined) {
             let d = graph.edgeData.get(clickedEdge.current)!;
             const sCoord = graph.nodeData.get(d.source)!.coord;
@@ -430,6 +432,13 @@ const GraphEditor = ({
             updateSelection(sel, Set());
           }
           break;
+        case "J":
+          if (selectedNodes.size === 1) {
+            jumpToNode(selectedNodes.first()!);
+          } else if (selectedEdges.size === 1) {
+            jumpToEdge(selectedEdges.first()!);
+          }
+          break;
         case "ArrowLeft":
           if (!selectedNodes.isEmpty()) {
             const g = graph.mapNodeData(d =>
@@ -442,6 +451,22 @@ const GraphEditor = ({
           if (!selectedNodes.isEmpty()) {
             const g = graph.mapNodeData(d =>
               selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0.25, 0)) : d
+            );
+            updateGraph(g, true);
+          }
+          break;
+        case "ArrowUp":
+          if (!selectedNodes.isEmpty()) {
+            const g = graph.mapNodeData(d =>
+              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, 0.25)) : d
+            );
+            updateGraph(g, true);
+          }
+          break;
+        case "ArrowDown":
+          if (!selectedNodes.isEmpty()) {
+            const g = graph.mapNodeData(d =>
+              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -0.25)) : d
             );
             updateGraph(g, true);
           }
