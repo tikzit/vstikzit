@@ -1,13 +1,6 @@
 import { List, OrderedMap, Seq, Set, ValueObject } from "immutable";
 import { NodeData, EdgeData, PathData, GraphData } from "./Data";
 
-interface ITikzSelection {
-  positionColumn: number;
-  positionLineNumber: number;
-  selectionStartColumn: number;
-  selectionStartLineNumber: number;
-}
-
 class Graph implements ValueObject {
   private _graphData: GraphData = new GraphData();
   private _nodeData: OrderedMap<number, NodeData>;
@@ -305,40 +298,22 @@ class Graph implements ValueObject {
     return hash;
   }
 
-  public tikzWithSelection(node?: number): [string, ITikzSelection | undefined] {
-    let selection: ITikzSelection | undefined = undefined;
+  public tikzWithPosition(node?: number): [string, { line: number; column: number } | undefined] {
+    let position: { line: number; column: number } | undefined = undefined;
 
     let result = "\\begin{tikzpicture}\n";
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
     for (const d of this.nodeData.values()) {
       if (d) {
         let dt = d.tikz();
-        if (dt !== "") {
-          dt += " ";
-        }
-        result += `\t\t\\node ${dt}(${d.id}) at (${d.coord.x}, ${d.coord.y}) {`;
+        result += "\t\t\\node " + dt + (dt !== "" ? " " : "");
 
         if (node === d.id) {
-          // compute line an column number of the start and end of the node label. Note labels can
-          // be multi-lined if they contain {}-delimited strings.
           const lines = result.split("\n");
-          const line = lines.length;
-          const column = lines[line - 1].length + 1;
-          const labelLines = d.label.split("\n");
-          const labelCol = labelLines[labelLines.length - 1].length;
-
-          const endLine = line + labelLines.length - 1;
-          const endCol = line === endLine ? labelCol + column : labelCol;
-
-          selection = {
-            positionColumn: endCol,
-            positionLineNumber: endLine,
-            selectionStartColumn: column,
-            selectionStartLineNumber: line,
-          };
+          position = { line: lines.length, column: lines[lines.length - 1].length };
         }
 
-        result += `${d.label}};\n`;
+        result += `(${d.id}) at (${d.coord.x}, ${d.coord.y}) {${d.label}};\n`;
       }
     }
     result += "\t\\end{pgfonlayer}\n";
@@ -361,13 +336,12 @@ class Graph implements ValueObject {
     }
     result += "\t\\end{pgfonlayer}\n";
     result += "\\end{tikzpicture}\n";
-    return [result, selection];
+    return [result, position];
   }
 
   public tikz(): string {
-    return this.tikzWithSelection()[0];
+    return this.tikzWithPosition()[0];
   }
 }
 
 export default Graph;
-export { ITikzSelection };

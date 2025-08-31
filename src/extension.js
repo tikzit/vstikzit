@@ -81,6 +81,9 @@ class TikZEditorProvider {
         case "refreshTikzStyles":
           this.refreshTikzStyles(webviewPanel.webview);
           return;
+        case "openCodeEditor":
+          this.openCodeEditor(e.content.line, e.content.column);
+          return;
       }
     });
 
@@ -184,6 +187,23 @@ class TikZEditorProvider {
       content: styles,
       filename: styleFile,
     });
+  }
+
+  async openCodeEditor(line, column) {
+    const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+
+    if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+      return;
+    }
+
+    const documentUri = activeTab.input.uri;
+
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      documentUri,
+      "vscode.editor.defaultEditor",
+      { selection: new vscode.Range(line, column, line, column) }
+    );
   }
 }
 

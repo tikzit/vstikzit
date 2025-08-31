@@ -168,12 +168,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   const handleJumpToNode = (node: number) => {
-    const [tikz, selection] = graph.tikzWithSelection(node);
+    const [_, position] = graph.tikzWithPosition(node);
 
-    if (tikz !== code) {
-      setCode(tikz);
-      updateFromGui(tikz);
-    }
+    vscode.postMessage({
+      type: "openCodeEditor",
+      content: position,
+    });
 
     // TODO
     // if (selection !== undefined) {
