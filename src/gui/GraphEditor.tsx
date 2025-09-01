@@ -498,11 +498,12 @@ const GraphEditor = ({
     <div
       id="graph-editor-viewport"
       style={{
-        height: "calc(100% - 70px)",
+        height: "100%",
+        maxHeight: "calc(100vh - 70px)", // Limit to viewport height minus toolbar and margins
         padding: "10px",
         overflowX: "scroll",
         overflowY: "scroll",
-        tabSize: 4,
+        // boxSizing: "border-box",
       }}
     >
       <svg
