@@ -1,6 +1,6 @@
 import { Set } from "immutable";
 import { useState, useEffect } from "react";
-import Split from "react-split";
+// import Split from "react-split";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -9,6 +9,7 @@ import { isValidDelimString, parseTikzPicture, parseTikzStyles } from "../lib/Ti
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
+import Splitpane from "./Splitpane";
 
 interface IContent {
   document: string;
@@ -189,13 +190,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <Split
-        sizes={[80, 20]}
-        minSize={0}
-        direction="horizontal"
-        cursor="col-resize"
-        style={{ display: "flex", flexDirection: "row", height: "100%" }}
-      >
+      <Splitpane splitRatio={0.8} orientation="horizontal">
         <div>
           <Toolbar
             tool={tool}
@@ -229,7 +224,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
           onNodeStyleChanged={handleNodeStyleChanged}
           onEdgeStyleChanged={handleEdgeStyleChanged}
         />
-      </Split>
+      </Splitpane>
       <style>
         {`
         input {
