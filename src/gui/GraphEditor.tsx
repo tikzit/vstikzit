@@ -46,7 +46,7 @@ const GraphEditor = ({
   currentEdgeStyle,
 }: GraphEditorProps) => {
   const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
-  const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords(5000, 5000));
+  const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
 
   // internal editor state
   // n.b. the graph itself is stored in App, and is updated by this component via updateGraph
@@ -78,8 +78,8 @@ const GraphEditor = ({
 
     // Center the viewport and preserve the current center point on resize
     const viewport = document.getElementById("graph-editor-viewport")!;
-    viewport.scrollLeft = Math.max(0, (sceneCoords.width - viewport.clientWidth) / 2);
-    viewport.scrollTop = Math.max(0, (sceneCoords.height - viewport.clientHeight) / 2);
+    viewport.scrollLeft = sceneCoords.originX;
+    viewport.scrollTop = sceneCoords.originY;
 
     let prevW = viewport.clientWidth;
     let prevH = viewport.clientHeight;
@@ -88,8 +88,8 @@ const GraphEditor = ({
       const h = viewport.clientHeight;
       const centerX = viewport.scrollLeft + prevW / 2;
       const centerY = viewport.scrollTop + prevH / 2;
-      viewport.scrollLeft = Math.max(0, Math.min(centerX - w / 2, sceneCoords.width - w));
-      viewport.scrollTop = Math.max(0, Math.min(centerY - h / 2, sceneCoords.height - h));
+      viewport.scrollLeft = centerX - w / 2;
+      viewport.scrollTop = centerY - h / 2;
       prevW = w;
       prevH = h;
     });
@@ -397,100 +397,97 @@ const GraphEditor = ({
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
-    // console.log("key", event.key);
-    if (event.getModifierState(CTRL)) {
-      switch (event.key) {
-        case "c":
-          if (!selectedNodes.isEmpty()) {
-            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-          }
-          break;
-        case "x":
-          if (!selectedNodes.isEmpty()) {
-            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-            const g = graph.removeNodes(selectedNodes);
-            updateGraph(g, true);
-            updateSelection(Set(), Set());
-          }
-          break;
-        case "v":
-          const pastedData = await window.navigator.clipboard.readText();
-          const parsed = parseTikzPicture(pastedData);
-          if (parsed.result !== undefined) {
-            let g = parsed.result;
-            let n = g.nodeData.first();
-            while (
-              graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
-            ) {
-              g = g.shiftGraph(0.5, -0.5);
-              n = g.nodeData.first();
-            }
+    let combo = [];
+    if (event.getModifierState(CTRL)) combo.push("ctrl");
+    if (event.getModifierState("Alt")) combo.push("alt");
+    combo.push(event.key === "+" ? "Plus" : event.key);
 
-            const g1 = graph.insertGraph(g);
-            const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
-            updateGraph(g1, true);
-            updateSelection(sel, Set());
-          }
-          break;
-        case "J":
-          if (selectedNodes.size === 1) {
-            jumpToNode(selectedNodes.first()!);
-          } else if (selectedEdges.size === 1) {
-            jumpToEdge(selectedEdges.first()!);
-          }
-          break;
-        case "ArrowLeft":
-          if (!selectedNodes.isEmpty()) {
-            const g = graph.mapNodeData(d =>
-              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-0.25, 0)) : d
-            );
-            updateGraph(g, true);
-          }
-          break;
-        case "ArrowRight":
-          if (!selectedNodes.isEmpty()) {
-            const g = graph.mapNodeData(d =>
-              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0.25, 0)) : d
-            );
-            updateGraph(g, true);
-          }
-          break;
-        case "ArrowUp":
-          if (!selectedNodes.isEmpty()) {
-            const g = graph.mapNodeData(d =>
-              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, 0.25)) : d
-            );
-            updateGraph(g, true);
-          }
-          break;
-        case "ArrowDown":
-          if (!selectedNodes.isEmpty()) {
-            const g = graph.mapNodeData(d =>
-              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -0.25)) : d
-            );
-            updateGraph(g, true);
-          }
-          break;
-      }
-    } else if (event.getModifierState("Alt")) {
-      // alt key events here
-    } else {
-      switch (event.key) {
-        case "s":
-          setTool("select");
-          break;
-        case "n":
-          setTool("vertex");
-          break;
-        case "e":
-          setTool("edge");
-          break;
-        case "Delete":
-          const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+    switch (combo.join("+")) {
+      case "ctrl+alt+c":
+        if (!selectedNodes.isEmpty()) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+        }
+        break;
+      case "ctrl+alt+x":
+        if (!selectedNodes.isEmpty()) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+          const g = graph.removeNodes(selectedNodes);
           updateGraph(g, true);
           updateSelection(Set(), Set());
-          break;
-      }
+        }
+        break;
+      case "ctrl+alt+v":
+        const pastedData = await window.navigator.clipboard.readText();
+        const parsed = parseTikzPicture(pastedData);
+        if (parsed.result !== undefined) {
+          let g = parsed.result;
+          let n = g.nodeData.first();
+          while (
+            graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
+          ) {
+            g = g.shiftGraph(0.5, -0.5);
+            n = g.nodeData.first();
+          }
+
+          const g1 = graph.insertGraph(g);
+          const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
+          updateGraph(g1, true);
+          updateSelection(sel, Set());
+        }
+        break;
+      case "ctrl+J":
+        if (selectedNodes.size === 1) {
+          jumpToNode(selectedNodes.first()!);
+        } else if (selectedEdges.size === 1) {
+          jumpToEdge(selectedEdges.first()!);
+        }
+        break;
+      case "ctrl+ArrowLeft":
+        if (!selectedNodes.isEmpty()) {
+          const g = graph.mapNodeData(d =>
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-0.25, 0)) : d
+          );
+          updateGraph(g, true);
+        }
+        break;
+      case "ctrl+ArrowRight":
+        if (!selectedNodes.isEmpty()) {
+          const g = graph.mapNodeData(d =>
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0.25, 0)) : d
+          );
+          updateGraph(g, true);
+        }
+        break;
+      case "ctrl+ArrowUp":
+        if (!selectedNodes.isEmpty()) {
+          const g = graph.mapNodeData(d =>
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, 0.25)) : d
+          );
+          updateGraph(g, true);
+        }
+        break;
+      case "ctrl+ArrowDown":
+        if (!selectedNodes.isEmpty()) {
+          const g = graph.mapNodeData(d =>
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -0.25)) : d
+          );
+          updateGraph(g, true);
+        }
+        break;
+      case "s":
+        setTool("select");
+        break;
+      case "n":
+        setTool("vertex");
+        break;
+      case "e":
+        setTool("edge");
+        break;
+      case "Delete":
+        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+        updateGraph(g, true);
+        updateSelection(Set(), Set());
+        break;
     }
   };
 
@@ -500,17 +497,15 @@ const GraphEditor = ({
       style={{
         height: "100%",
         maxHeight: "calc(100vh - 70px)", // Limit to viewport height minus toolbar and margins
-        padding: "10px",
         overflowX: "scroll",
         overflowY: "scroll",
-        // boxSizing: "border-box",
       }}
     >
       <svg
         id="graph-editor"
         style={{
-          height: `${sceneCoords.height}px`,
-          width: `${sceneCoords.width}px`,
+          height: `${sceneCoords.screenHeight}px`,
+          width: `${sceneCoords.screenWidth}px`,
           backgroundColor: "white",
           // outline: "none", // Remove default focus outline
         }}
