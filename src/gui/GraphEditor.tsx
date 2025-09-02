@@ -240,7 +240,7 @@ const GraphEditor = ({
 
           // compute angle of the line connecting the node with its control point. Note we flip
           // dy because screen coordinates are inverted in the Y axis from tikz coordinates
-          let controlAngle = (Math.atan2(-dy2, dx2) * 180) / Math.PI;
+          const controlAngle = (Math.atan2(-dy2, dx2) * 180) / Math.PI;
           if (d.basicBendMode) {
             // compute the angle of the line connecting source and target. Bend is the difference between this
             // and the control point angle
@@ -336,7 +336,7 @@ const GraphEditor = ({
         } else if (selectionRect !== undefined) {
           const sel = selectedNodes.withMutations(set => {
             for (const d of graph.nodeData.values()) {
-              let c = sceneCoords.coordToScreen(d.coord);
+              const c = sceneCoords.coordToScreen(d.coord);
               // if c is in selectionRect
               if (
                 c.x > selectionRect.x &&
@@ -361,12 +361,14 @@ const GraphEditor = ({
         }
         break;
       case "vertex":
-        const p1 = sceneCoords.coordFromScreen(p).snapToGrid(4);
-        const node = new NodeData()
-          .setId(graph.freshNodeId)
-          .setCoord(p1)
-          .setProperty("style", currentNodeStyle);
-        updateGraph(graph.addNodeWithData(node), true);
+        {
+          const p1 = sceneCoords.coordFromScreen(p).snapToGrid(4);
+          const node = new NodeData()
+            .setId(graph.freshNodeId)
+            .setCoord(p1)
+            .setProperty("style", currentNodeStyle);
+          updateGraph(graph.addNodeWithData(node), true);
+        }
         break;
       case "edge":
         if (edgeStartNode !== undefined && edgeEndNode !== undefined) {
@@ -397,7 +399,7 @@ const GraphEditor = ({
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
-    let combo = [];
+    const combo = [];
     if (event.getModifierState(CTRL)) combo.push("ctrl");
     if (event.getModifierState("Alt")) combo.push("alt");
     combo.push(event.key === "+" ? "Plus" : event.key);
@@ -417,22 +419,24 @@ const GraphEditor = ({
         }
         break;
       case "ctrl+alt+v":
-        const pastedData = await window.navigator.clipboard.readText();
-        const parsed = parseTikzPicture(pastedData);
-        if (parsed.result !== undefined) {
-          let g = parsed.result;
-          let n = g.nodeData.first();
-          while (
-            graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
-          ) {
-            g = g.shiftGraph(0.5, -0.5);
-            n = g.nodeData.first();
-          }
+        {
+          const pastedData = await window.navigator.clipboard.readText();
+          const parsed = parseTikzPicture(pastedData);
+          if (parsed.result !== undefined) {
+            let g = parsed.result;
+            let n = g.nodeData.first();
+            while (
+              graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
+            ) {
+              g = g.shiftGraph(0.5, -0.5);
+              n = g.nodeData.first();
+            }
 
-          const g1 = graph.insertGraph(g);
-          const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
-          updateGraph(g1, true);
-          updateSelection(sel, Set());
+            const g1 = graph.insertGraph(g);
+            const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
+            updateGraph(g1, true);
+            updateSelection(sel, Set());
+          }
         }
         break;
       case "ctrl+J":
@@ -484,9 +488,11 @@ const GraphEditor = ({
         setTool("edge");
         break;
       case "Delete":
-        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
-        updateGraph(g, true);
-        updateSelection(Set(), Set());
+        {
+          const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+          updateGraph(g, true);
+          updateSelection(Set(), Set());
+        }
         break;
     }
   };

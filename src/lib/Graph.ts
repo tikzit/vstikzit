@@ -179,8 +179,8 @@ class Graph implements ValueObject {
   }
 
   public removeNodes(nodes: Iterable<number>): Graph {
-    let g = this.copy();
-    let nodeSet = Set(nodes);
+    const g = this.copy();
+    const nodeSet = Set(nodes);
     g._nodeData = g._nodeData.filter(d => !nodeSet.contains(d.id));
     g._edgeData = g._edgeData.filter(
       d => !nodeSet.contains(d.source) && !nodeSet.contains(d.target)
@@ -308,7 +308,7 @@ class Graph implements ValueObject {
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
     for (const d of this.nodeData.values()) {
       if (d) {
-        let dt = d.tikz();
+        const dt = d.tikz();
         result += "\t\t\\node " + dt;
 
         if (node === d.id) {
@@ -328,7 +328,7 @@ class Graph implements ValueObject {
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
     for (const pd of this.pathData.values()) {
       let d = this.edgeData.get(pd.edges.get(0)!)!;
-      let dt = d.tikz();
+      const dt = d.tikz();
       result += `\t\t\\draw ${dt}`;
 
       if (edge !== undefined && pd.edges.contains(edge)) {

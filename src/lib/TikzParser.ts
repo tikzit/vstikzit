@@ -1,4 +1,3 @@
-// @ts-ignore - webpack will handle this
 import { createToken, Lexer, EmbeddedActionsParser } from "chevrotain";
 import Graph from "./Graph";
 import { Coord, GraphData, EdgeData, NodeData, PathData, StyleData } from "./Data";
@@ -87,7 +86,7 @@ const Int = createToken({ name: "Int", pattern: /-?\d+/ });
 const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
 const Identifier = createToken({ name: "Identifier", pattern: /[0-9a-zA-Z\-']+/ });
 
-const PropertyVal = createToken({ name: "PropertyVal", pattern: /[0-9a-zA-Z<>\-'\.]+/ });
+const PropertyVal = createToken({ name: "PropertyVal", pattern: /[0-9a-zA-Z<>\-'.]+/ });
 
 const allTokens = {
   modes: {
@@ -143,6 +142,7 @@ class TikzParser extends EmbeddedActionsParser {
   public nodeTikzPositions?: Map<number, { start: number; end: number }>;
 
   // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   private d?: any;
   // the parser allows arbitrary node names in tikz files, but only stores ids. This field maps names to generated ids
   private nodeIds?: Map<string, number>;
@@ -583,7 +583,7 @@ function isValidPropertyVal(value: string): boolean {
   // return parser.errors.length === 0;
 
   // pattern should be (PropertyVal | Whitespace)+
-  const pattern = /^[0-9a-zA-Z<>\-'\. \t\n\r]+$/;
+  const pattern = /^[0-9a-zA-Z<>\-'. \t\n\r]+$/;
   return pattern.test(value);
 }
 

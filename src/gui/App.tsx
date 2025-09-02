@@ -19,7 +19,7 @@ interface IContent {
 
 interface AppProps {
   initialContent: IContent;
-  vscode: any;
+  vscode: VsCodeApi;
 }
 
 const App = ({ initialContent, vscode }: AppProps) => {
@@ -29,10 +29,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const [graph, setGraph] = useState<Graph>(
     parseTikzPicture(initialContent.document).result ?? new Graph()
   );
-
-  // state used to re-initialise contents of the code editor
-  const [code, setCode] = useState(initialContent.document);
-  // const [codeSelection, setCodeSelection] = useState<monaco.ISelection | undefined>(undefined);
 
   const [currentNodeLabel, setCurrentNodeLabel] = useState<string | undefined>(undefined);
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
@@ -56,7 +52,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
         case "updateToGui":
           if (message.content) {
             // console.log("got update from vscode");
-            setCode(message.content);
             tryParseGraph(message.content);
           }
           break;
@@ -152,7 +147,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     if (commit) {
       const value = g.tikz();
-      setCode(value);
       updateFromGui(value);
     }
   };

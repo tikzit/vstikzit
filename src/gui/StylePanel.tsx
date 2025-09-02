@@ -4,8 +4,7 @@ import Styles from "../lib/Styles";
 import Node from "./Node";
 import Edge from "./Edge";
 import { isValidDelimString } from "../lib/TikzParser";
-import { useState } from "react";
-import { is } from "immutable";
+import { SVGProps } from "react";
 
 interface StylePanelProps {
   tikzStyles: Styles;
@@ -27,7 +26,7 @@ const StylePanel = ({
   onEdgeStyleChanged: setEdgeStyle,
 }: StylePanelProps) => {
   const sceneCoords = new SceneCoords(44, 32);
-  const labelProps: any = {
+  const labelProps: SVGProps<SVGTextElement> = {
     x: 22,
     y: 38,
     textAnchor: "middle",
@@ -35,7 +34,7 @@ const StylePanel = ({
     fontSize: "10px",
     fontStyle: "italic",
   };
-  const selectionProps: any = {
+  const selectionProps = {
     x: 1,
     y: 1,
     width: 43,
