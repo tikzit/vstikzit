@@ -25,7 +25,7 @@ const StylePanel = ({
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
 }: StylePanelProps) => {
-  const sceneCoords = new SceneCoords(44, 32);
+  const sceneCoords = new SceneCoords(64, 0.35, 0.35, 0.25, 0.25);
   const labelProps: SVGProps<SVGTextElement> = {
     x: 22,
     y: 38,
@@ -101,7 +101,11 @@ const StylePanel = ({
                 onClick={e => setNodeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
-                <svg width={44} height={44} style={{ margin: "5px", borderWidth: 0 }}>
+                <svg
+                  width={sceneCoords.screenWidth}
+                  height={sceneCoords.screenHeight + 12}
+                  style={{ margin: "5px", borderWidth: 0 }}
+                >
                   {currentNodeStyle === name && <rect {...selectionProps} />}
                   <Node data={node} style={style} sceneCoords={sceneCoords} />
                   <text {...labelProps}>{shortName}</text>
@@ -133,7 +137,11 @@ const StylePanel = ({
                 onClick={e => setEdgeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
-                <svg width={44} height={44} style={{ margin: "5px" }}>
+                <svg
+                  width={sceneCoords.screenWidth}
+                  height={sceneCoords.screenHeight + 12}
+                  style={{ margin: "5px" }}
+                >
                   {currentEdgeStyle === name && <rect {...selectionProps} />}
                   <Edge
                     data={edge}
