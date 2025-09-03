@@ -512,11 +512,25 @@ const GraphEditor = ({
         break;
       case "-":
       case "_":
-        updateSceneCoords(sceneCoords.zoomOut());
+        {
+          const coords = sceneCoords.zoomOut();
+          const viewport = document.getElementById("graph-editor-viewport")!;
+          if (
+            coords.screenWidth >= viewport.clientWidth &&
+            coords.screenHeight >= viewport.clientHeight
+          ) {
+            updateSceneCoords(coords);
+          }
+        }
         break;
       case "=":
       case "+":
-        updateSceneCoords(sceneCoords.zoomIn());
+        {
+          const coords = sceneCoords.zoomIn();
+          if (coords.scale <= 1024) {
+            updateSceneCoords(coords);
+          }
+        }
         break;
     }
   };
