@@ -80,6 +80,14 @@ class SceneCoords {
   public coordFromScreen(c: Coord): Coord {
     return new Coord((c.x - this.originX) / this._scale, (this.originY - c.y) / this._scale);
   }
+
+  public zoomIn(): SceneCoords {
+    return this.setScale(this._scale * 1.25);
+  }
+
+  public zoomOut(): SceneCoords {
+    return this.setScale(this._scale / 1.25);
+  }
 }
 
 export default SceneCoords;
