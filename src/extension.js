@@ -18,13 +18,17 @@ function activate(context) {
     supportsMultipleEditorsPerDocument: false,
   });
 
-  const buildCommand = vscode.commands.registerCommand("vstikzit.buildTikzFigure", buildTikzFigure);
-  const toggleEditorCommand = vscode.commands.registerCommand(
-    "vstikzit.toggleEditor",
-    toggleEditor
+  const buildCommand = vscode.commands.registerCommand(
+    "vstikzit.buildCurrentTikzFigure",
+    buildCurrentTikzFigure
   );
 
-  context.subscriptions.push(registration, buildCommand, toggleEditorCommand);
+  const viewCommand = vscode.commands.registerCommand(
+    "vstikzit.viewCurrentTikzFigure",
+    viewCurrentTikzFigure
+  );
+
+  context.subscriptions.push(registration, buildCommand, viewCommand);
 }
 
 class TikZEditorProvider {
@@ -51,14 +55,6 @@ class TikZEditorProvider {
 
     // Set up the initial webview content
     webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview, content);
-
-    // // Update webview when document changes
-    // const updateWebview = () => {
-    //   webviewPanel.webview.postMessage({
-    //     type: "update",
-    //     content: document.getText(),
-    //   });
-    // };
 
     // Post document changes (e.g. undo/redo) to the webview. We use the isUpdatingFromGui flag
     // to prevent a circular update.
@@ -163,20 +159,20 @@ class TikZEditorProvider {
       const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
 
       // Find the first .tikzstyles file
-      const tikzStylesFile = files.find(
-        ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzstyles")
+      const tikzStyles = files.find(
+        f => f[1] === vscode.FileType.File && f[0].endsWith(".tikzstyles")
       );
 
-      if (!tikzStylesFile) {
+      if (!tikzStyles) {
         return ["", ""];
       }
 
       // Read the file content
-      const fileUri = vscode.Uri.joinPath(workspaceRoot, tikzStylesFile[0]);
+      const fileUri = vscode.Uri.joinPath(workspaceRoot, tikzStyles[0]);
       const fileContent = await vscode.workspace.fs.readFile(fileUri);
       const content = Buffer.from(fileContent).toString("utf8");
 
-      return [tikzStylesFile[0], content];
+      return [tikzStyles[0], content];
     } catch {
       return ["", ""];
     }
@@ -224,149 +220,173 @@ function getNonce() {
   return text;
 }
 
-async function buildTikzFigure() {
+async function prepareBuildDir(workspaceRoot) {
+  let tikzIncludes = "";
+
+  // create tikzcache folder in workspaceRoot, if it doesn't exist
+  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(workspaceRoot, "tikzcache"));
+
+  const cp = f => {
+    return vscode.workspace.fs.copy(
+      vscode.Uri.joinPath(workspaceRoot, f),
+      vscode.Uri.joinPath(workspaceRoot, "tikzcache", f),
+      { overwrite: true }
+    );
+  };
+
+  // Try to locate tikzit.sty, .tikzstyles, and .tikzdefs files
+  const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
+  const tikzit = files.find(f => f[1] === vscode.FileType.File && f[0] === "tikzit.sty");
+  const tikzStyles = files.find(f => f[1] === vscode.FileType.File && f[0].endsWith(".tikzstyles"));
+  const tikzDefs = files.find(f => f[1] === vscode.FileType.File && f[0].endsWith(".tikzdefs"));
+
+  if (tikzit) {
+    await cp("tikzit.sty");
+    tikzIncludes += "\\usepackage{tikzit}\n\\tikzstyle{every picture}=[tikzfig]\n";
+  } else {
+    vscode.window.showInformationMessage("Warning: tikzit.sty not found in workspace");
+  }
+
+  tikzIncludes +=
+    "\\usepackage[graphics,active,tightpage]{preview}\n\\PreviewEnvironment{tikzpicture}\n";
+
+  if (tikzStyles) {
+    await cp(tikzStyles[0]);
+    tikzIncludes += `\\input{${tikzStyles[0]}}\n`;
+  }
+
+  if (tikzDefs) {
+    await cp(tikzDefs[0]);
+    tikzIncludes += `\\input{${tikzDefs[0]}}\n`;
+  }
+
+  return tikzIncludes;
+}
+
+async function buildTikz(workspaceRoot, fileName, source, tikzIncludes) {
+  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
+  // if source is null, load it from the file at URI
+  if (!source) {
+    source = fs.readFileSync(uri, "utf8");
+  }
+
+  let tex = "\\documentclass{article}\n";
+  tex += tikzIncludes;
+  tex += "\\begin{document}\n\n";
+  tex += source;
+  tex += "\n\\end{document}\n";
+
+  // if this document has a file name, get the base name
+  const baseName = path.basename(fileName, ".tikz");
+  const texFile = baseName !== undefined ? baseName + ".tmp.tex" : "tikzfigure.tmp.tex";
+
+  await vscode.workspace.fs.writeFile(
+    vscode.Uri.joinPath(tikzCacheFolder, texFile),
+    Buffer.from(tex)
+  );
+
+  // run pdflatex from tikzCacheFolder on texFile
+  const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", texFile], {
+    cwd: tikzCacheFolder.fsPath,
+    shell: true,
+  });
+
+  return new Promise((resolve, reject) => {
+    pdflatex.on("close", async code => {
+      console.log(`pdflatex process exited with code ${code}`);
+      if (code === 0) {
+        // copy the contents of FILE.tmp.pdf into FILE.pdf
+        const pdfContent = await vscode.workspace.fs.readFile(
+          vscode.Uri.joinPath(tikzCacheFolder, baseName + ".tmp.pdf")
+        );
+        await vscode.workspace.fs.writeFile(
+          vscode.Uri.joinPath(tikzCacheFolder, baseName + ".pdf"),
+          pdfContent
+        );
+
+        for (const ext of [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf"]) {
+          await vscode.workspace.fs.delete(vscode.Uri.joinPath(tikzCacheFolder, baseName + ext));
+        }
+        resolve(code);
+      } else {
+        reject(code);
+      }
+    });
+  });
+}
+
+async function getDocAndWorkspace() {
   // Find the document associated with the currently active tab
   const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
   if (!activeTab || !activeTab.input || !activeTab.input.uri) {
     vscode.window.showErrorMessage("No active TikZ editor found");
-    return;
+    return [null, null];
   }
 
-  // Find the document that matches the active tab's URI
-  let document = null;
-  for (const doc of tikzDocuments) {
-    if (doc.uri.toString() === activeTab.input.uri.toString()) {
-      document = doc;
-      break;
-    }
-  }
+  const document = tikzDocuments
+    .keys()
+    .find(doc => doc.uri.toString() === activeTab.input.uri.toString());
 
   if (!document) {
     vscode.window.showErrorMessage("No active TikZ document found");
+    return [null, null];
+  }
+
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage("No workspace folder found");
+    return [null, null];
+  }
+  // const workspaceFolders = vscode.workspace.workspaceFolders;
+  // if (!workspaceFolders || workspaceFolders.length === 0) {
+  //   vscode.window.showInformationMessage("No active workspace");
+  //   return;
+  // }
+
+  // const workspaceRoot = workspaceFolders[0].uri;
+
+  return [document, workspaceFolder.uri];
+}
+
+async function buildCurrentTikzFigure() {
+  const [document, workspaceRoot] = await getDocAndWorkspace();
+  if (!document || !workspaceRoot) {
     return;
   }
 
   try {
-    vscode.window.showInformationMessage("Building TikZ figure...");
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders || workspaceFolders.length === 0) {
-      vscode.window.showInformationMessage("No active workspace");
-      return;
-    }
-
-    const workspaceRoot = workspaceFolders[0].uri;
-    // create tikzcache folder in workspaceRoot, if it doesn't exist
-    const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
-    try {
-      await vscode.workspace.fs.createDirectory(tikzCacheFolder);
-    } catch {}
-
-    // locate a .tikzstyles file and .tikzdefs file in the workspace root
-    const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
-
-    // Try to locate .tikzstyles and .tikzdefs files
-    const tikzStyles = files.find(
-      ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzstyles")
-    );
-    const tikzDefs = files.find(
-      ([name, type]) => type === vscode.FileType.File && name.endsWith(".tikzdefs")
-    );
-
-    let tex = "\\documentclass{article}\n";
-
-    // check tikzit.sty is in the workspace root
-    const tikzitSty = files.find(
-      ([name, type]) => type === vscode.FileType.File && name === "tikzit.sty"
-    );
-
-    if (tikzitSty) {
-      await vscode.workspace.fs.copy(
-        vscode.Uri.joinPath(workspaceRoot, "tikzit.sty"),
-        vscode.Uri.joinPath(tikzCacheFolder, "tikzit.sty"),
-        { overwrite: true }
-      );
-      tex += "\\usepackage{tikzit}\n\\tikzstyle{every picture}=[tikzfig]\n";
-    } else {
-      vscode.window.showInformationMessage("Warning: tikzit.sty not found in workspace");
-    }
-
-    tex += "\\usepackage[graphics,active,tightpage]{preview}\n\\PreviewEnvironment{tikzpicture}\n";
-
-    if (tikzStyles) {
-      await vscode.workspace.fs.copy(
-        vscode.Uri.joinPath(workspaceRoot, tikzStyles[0]),
-        vscode.Uri.joinPath(tikzCacheFolder, tikzStyles[0]),
-        { overwrite: true }
-      );
-      tex += `\\input{${tikzStyles[0]}}\n`;
-    }
-
-    if (tikzDefs) {
-      await vscode.workspace.fs.copy(
-        vscode.Uri.joinPath(workspaceRoot, tikzDefs[0]),
-        vscode.Uri.joinPath(tikzCacheFolder, tikzDefs[0]),
-        { overwrite: true }
-      );
-      tex += `\\input{${tikzDefs[0]}}\n`;
-    }
-
-    tex += "\\begin{document}\n\n";
-    tex += document.getText();
-    tex += "\n\\end{document}\n";
-
-    // if this document has a file name, get the base name
-    const baseName = path.basename(document.fileName, ".tikz");
-    const fileName = baseName !== undefined ? baseName + ".tex" : "tikzfigure.tex";
-
-    await vscode.workspace.fs.writeFile(
-      vscode.Uri.joinPath(tikzCacheFolder, fileName),
-      Buffer.from(tex)
-    );
-
-    // run pdflatex from tikzCacheFolder on fileName
-    const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", fileName], {
-      cwd: tikzCacheFolder.fsPath,
-      shell: true,
-    });
-
-    pdflatex.on("close", code => {
-      if (code === 0) {
-        for (const ext of [".tex", ".aux", ".log", ".out"]) {
-          vscode.workspace.fs.delete(vscode.Uri.joinPath(tikzCacheFolder, baseName + ext));
-        }
-        vscode.window.showInformationMessage("TikZ figure built successfully!");
-      } else {
-        vscode.window.showErrorMessage(
-          `Failed to build TikZ figure: pdflatex exited with code ${code}`
-        );
+    const tikzIncludes = await prepareBuildDir(workspaceRoot);
+    buildTikz(workspaceRoot, document.fileName, document.getText(), tikzIncludes).then(
+      _ => vscode.window.showInformationMessage(`Success`),
+      errorCode => {
+        vscode.window.showErrorMessage(`pdflatex exited with code ${errorCode}`);
+        const baseName = path.basename(document.fileName, ".tikz");
+        const logFile = baseName !== undefined ? baseName + ".tmp.log" : "tikzfigure.tmp.log";
+        vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "tikzcache", logFile));
       }
-    });
+    );
   } catch (error) {
-    vscode.window.showErrorMessage(`Failed to build TikZ figure: ${error.message}`);
+    vscode.window.showErrorMessage(`Unexpected error: ${error.message}`);
   }
 }
 
-async function toggleEditor() {
-  const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-
-  if (!activeTab || !activeTab.input || !activeTab.input.uri) {
-    vscode.window.showErrorMessage("No active editor found");
+async function viewCurrentTikzFigure() {
+  const [document, workspaceRoot] = await getDocAndWorkspace();
+  if (!document || !workspaceRoot) {
     return;
   }
 
-  const documentUri = activeTab.input.uri;
+  const baseName = path.basename(document.fileName, ".tikz");
+  const pdfFile = baseName !== undefined ? baseName + ".pdf" : "tikzfigure.pdf";
+  const pdfPath = vscode.Uri.joinPath(workspaceRoot, "tikzcache", pdfFile);
 
-  if (vscode.window.activeTextEditor === undefined) {
-    // Switch to default text editor
-    await vscode.commands.executeCommand(
-      "vscode.openWith",
-      documentUri,
-      "vscode.editor.defaultEditor"
-    );
-  } else {
-    // Switch to TikZ editor
-    await vscode.commands.executeCommand("vscode.openWith", documentUri, "vstikzit.tikzEditor");
+  // if the PDF file at pdfPath exists, open it
+  try {
+    await vscode.workspace.fs.stat(pdfPath);
+    await vscode.commands.executeCommand("vscode.open", pdfPath, vscode.ViewColumn.Beside);
+  } catch (error) {
+    vscode.window.showErrorMessage(`Failed to open PDF file: ${error.message}`);
   }
 }
 

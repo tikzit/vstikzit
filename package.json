@@ -15,20 +15,25 @@
   "contributes": {
     "commands": [
       {
-        "command": "vstikzit.buildTikzFigure",
-        "title": "Build TikZ figure",
+        "command": "vstikzit.buildCurrentTikzFigure",
+        "title": "Build Current TikZ figure",
         "category": "TikZiT"
       },
       {
-        "command": "vstikzit.toggleEditor",
-        "title": "Toggle TikZ Editor",
+        "command": "vstikzit.viewCurrentTikzFigure",
+        "title": "View Current TikZ figure",
         "category": "TikZiT"
       }
     ],
     "keybindings": [
       {
-        "command": "vstikzit.toggleEditor",
-        "key": "ctrl+shift+t",
+        "command": "vstikzit.buildCurrentTikzFigure",
+        "key": "ctrl+alt+b",
+        "when": "resourceExtname == .tikz"
+      },
+      {
+        "command": "vstikzit.viewCurrentTikzFigure",
+        "key": "ctrl+alt+v",
         "when": "resourceExtname == .tikz"
       }
     ],
