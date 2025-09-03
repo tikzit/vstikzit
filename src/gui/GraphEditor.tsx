@@ -73,15 +73,13 @@ const GraphEditor = ({
     const focusHandler = () => editor.focus();
     window.addEventListener("focus", focusHandler);
 
-    // Draw the background grid
-    drawGrid(editor, sceneCoords);
-
     // Center the viewport and preserve the current center point on resize
+    const initCoords = new SceneCoords();
     const viewport = document.getElementById("graph-editor-viewport")!;
     let prevW = viewport.clientWidth;
     let prevH = viewport.clientHeight;
-    viewport.scrollLeft = sceneCoords.originX - prevW / 2;
-    viewport.scrollTop = sceneCoords.originY - prevH / 2;
+    viewport.scrollLeft = initCoords.originX - prevW / 2;
+    viewport.scrollTop = initCoords.originY - prevH / 2;
 
     const resizeObserver = new ResizeObserver(() => {
       const w = viewport.clientWidth;
@@ -99,6 +97,12 @@ const GraphEditor = ({
       window.removeEventListener("focus", focusHandler);
       resizeObserver.disconnect();
     };
+  }, []);
+
+  useEffect(() => {
+    // Draw the background grid
+    const editor = document.getElementById("graph-editor")!;
+    drawGrid(editor, sceneCoords);
   }, [sceneCoords]);
 
   const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
@@ -106,6 +110,18 @@ const GraphEditor = ({
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     return new Coord(x, y);
+  };
+
+  const updateSceneCoords = (coords: SceneCoords) => {
+    const viewport = document.getElementById("graph-editor-viewport")!;
+    const c0 = new Coord(
+      viewport.scrollLeft + viewport.clientWidth / 2,
+      viewport.scrollTop + viewport.clientHeight / 2
+    );
+    const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
+    viewport.scrollLeft += c1.x - c0.x;
+    viewport.scrollTop += c1.y - c0.y;
+    setSceneCoords(coords);
   };
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -493,6 +509,14 @@ const GraphEditor = ({
           updateGraph(g, true);
           updateSelection(Set(), Set());
         }
+        break;
+      case "-":
+      case "_":
+        updateSceneCoords(sceneCoords.zoomOut());
+        break;
+      case "=":
+      case "+":
+        updateSceneCoords(sceneCoords.zoomIn());
         break;
     }
   };
