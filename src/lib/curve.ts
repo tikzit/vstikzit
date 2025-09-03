@@ -106,7 +106,7 @@ export function computeControlPoints(
   }
 
   // extract bend value from properties
-  let bend = edgeData.bend;
+  const bend = edgeData.bend;
 
   let bezier = false;
   let inAngle: number;

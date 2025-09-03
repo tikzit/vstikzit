@@ -142,7 +142,6 @@ class TikzParser extends EmbeddedActionsParser {
   public nodeTikzPositions?: Map<number, { start: number; end: number }>;
 
   // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   private d?: any;
   // the parser allows arbitrary node names in tikz files, but only stores ids. This field maps names to generated ids
   private nodeIds?: Map<string, number>;

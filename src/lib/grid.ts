@@ -3,15 +3,15 @@ import SceneCoords from "./SceneCoords";
 const drawGrid = (svg: HTMLElement, sceneCoords: SceneCoords) => {
   const gridSize = sceneCoords.scale;
   const gridMinorSize = gridSize / 4;
-  const width = sceneCoords.width;
-  const height = sceneCoords.height;
+  const width = sceneCoords.screenWidth;
+  const height = sceneCoords.screenHeight;
 
   const axisColor = "#e99";
   const majorColor = "#acf";
   const minorColor = "#ddf";
 
   // create a group for the grid lines if it doesn't exist. Otherwise clear it
-  let gridGroup = svg.querySelector("#grid")! as SVGGElement;
+  const gridGroup = svg.querySelector("#grid")! as SVGGElement;
   gridGroup.innerHTML = "";
 
   let line: SVGLineElement;

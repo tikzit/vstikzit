@@ -78,11 +78,11 @@ const GraphEditor = ({
 
     // Center the viewport and preserve the current center point on resize
     const viewport = document.getElementById("graph-editor-viewport")!;
-    viewport.scrollLeft = sceneCoords.originX;
-    viewport.scrollTop = sceneCoords.originY;
-
     let prevW = viewport.clientWidth;
     let prevH = viewport.clientHeight;
+    viewport.scrollLeft = sceneCoords.originX - prevW / 2;
+    viewport.scrollTop = sceneCoords.originY - prevH / 2;
+
     const resizeObserver = new ResizeObserver(() => {
       const w = viewport.clientWidth;
       const h = viewport.clientHeight;

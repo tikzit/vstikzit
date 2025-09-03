@@ -26,7 +26,10 @@ const Edge = ({
   onControlPointMouseDown,
   sceneCoords,
 }: EdgeProps) => {
-  let [[c1, c2, cp1, cp2], cpDist, bezier] = computeControlPoints(sourceData, targetData, data);
+  const computed = computeControlPoints(sourceData, targetData, data);
+  let [c1, c2, cp1, cp2] = computed[0];
+  let cpDist = computed[1];
+  const bezier = computed[2];
 
   let arrowTail: Coord[] | undefined = undefined;
   if (style.arrowTail !== "none") {

@@ -54,7 +54,7 @@
     ]
   },
   "scripts": {
-    "dev": "vite",
+    "watch": "vite build --watch",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

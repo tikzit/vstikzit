@@ -1,4 +1,3 @@
-/* eslint-disable */
 // VSCode WebView API types
 interface VsCodeApi {
   postMessage(message: any): void;
