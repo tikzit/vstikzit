@@ -37,7 +37,9 @@ function activate(context: vscode.ExtensionContext): void {
     viewCurrentTikzFigure
   );
 
-  context.subscriptions.push(registration, buildCommand, viewCommand);
+  const toggleCommand = vscode.commands.registerCommand("vstikzit.toggleTikzEditor", toggleTikzEditor);
+
+  context.subscriptions.push(registration, buildCommand, viewCommand, toggleCommand);
 }
 
 class TikZEditorProvider implements vscode.CustomTextEditorProvider {
@@ -240,6 +242,29 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
   }
 }
 
+function currentUri(): vscode.Uri | undefined {
+  const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+  if (!activeTab?.input) {
+    return undefined;
+  }
+  const tabInput = activeTab.input as any;
+  if (!tabInput.uri) {
+    return undefined;
+  }
+  return tabInput.uri as vscode.Uri;
+}
+
+function toggleTikzEditor(): void {
+  if (vscode.window.activeTextEditor) {
+    vscode.commands.executeCommand("open", vscode.window.activeTextEditor.document.uri);
+  } else {
+    const uri = currentUri();
+    if (uri) {
+      vscode.window.showTextDocument(uri);
+    }
+  }
+}
+
 function getNonce(): string {
   let text = "";
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -351,22 +376,14 @@ async function buildTikz(
 
 async function getDocAndWorkspace(): Promise<[vscode.TextDocument | null, vscode.Uri | null]> {
   // Find the document associated with the currently active tab
-  const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-
-  if (!activeTab?.input) {
-    vscode.window.showErrorMessage("No active TikZ editor found");
-    return [null, null];
-  }
-
-  // Type guard for tab input with uri
-  const tabInput = activeTab.input as any;
-  if (!tabInput.uri) {
+  const uri = currentUri();
+  if (!uri) {
     vscode.window.showErrorMessage("No active TikZ editor found");
     return [null, null];
   }
 
   const document = Array.from(tikzDocuments).find(
-    (doc: vscode.TextDocument) => doc.uri.toString() === tabInput.uri.toString()
+    (doc: vscode.TextDocument) => doc.uri.toString() === uri.toString()
   );
 
   if (!document) {
@@ -433,7 +450,7 @@ async function viewCurrentTikzFigure(): Promise<void> {
   }
 }
 
-function deactivate(): void {}
+function deactivate(): void { }
 
 // module.exports = {
 //   activate,

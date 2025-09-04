@@ -23,6 +23,11 @@
         "command": "vstikzit.viewCurrentTikzFigure",
         "title": "View Current TikZ figure",
         "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.tikzEditor",
+        "title": "Toggle TikZ Editor",
+        "category": "TikZiT"
       }
     ],
     "keybindings": [
@@ -34,6 +39,11 @@
       {
         "command": "vstikzit.viewCurrentTikzFigure",
         "key": "ctrl+alt+v",
+        "when": "resourceExtname == .tikz"
+      },
+      {
+        "command": "vstikzit.toggleTikzEditor",
+        "key": "ctrl+alt+t",
         "when": "resourceExtname == .tikz"
       }
     ],
