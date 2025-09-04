@@ -37,16 +37,20 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
   private context: vscode.ExtensionContext;
   private isUpdatingFromGui: boolean;
 
-  static async currentDocument(): Promise<vscode.TextDocument | undefined> {
+  static documentWithUri(uri: vscode.Uri): vscode.TextDocument | undefined {
+    return Array.from(TikzEditorProvider.tikzDocuments).find(
+      doc => doc.uri.toString() === uri.toString()
+    );
+  }
+
+  static currentDocument(): vscode.TextDocument | undefined {
     // Find the document associated with the currently active tab
     const uri = currentUri();
     if (!uri) {
       return undefined;
     }
 
-    return Array.from(TikzEditorProvider.tikzDocuments).find(
-      doc => doc.uri.toString() === uri.toString()
-    );
+    return TikzEditorProvider.documentWithUri(uri);
   }
 
   constructor(context: vscode.ExtensionContext) {

@@ -104,7 +104,7 @@ async function buildTikz(
 }
 
 async function buildCurrentTikzFigure(): Promise<void> {
-  const document = await TikzEditorProvider.currentDocument();
+  const document = TikzEditorProvider.currentDocument();
   const workspaceRoot = document?.uri
     ? vscode.workspace.getWorkspaceFolder(document?.uri)?.uri
     : undefined;
@@ -114,11 +114,11 @@ async function buildCurrentTikzFigure(): Promise<void> {
 
   try {
     const tikzIncludes = await prepareBuildDir(workspaceRoot);
-    buildTikz(workspaceRoot, document.fileName, document.getText(), tikzIncludes).then(
+    buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes).then(
       (_: number) => vscode.window.showInformationMessage(`Success`),
       (errorCode: number) => {
         vscode.window.showErrorMessage(`pdflatex exited with code ${errorCode}`);
-        const baseName = path.basename(document.fileName, ".tikz");
+        const baseName = path.basename(document.uri.fsPath, ".tikz");
         const logFile = baseName !== undefined ? baseName + ".tmp.log" : "tikzfigure.tmp.log";
         vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "tikzcache", logFile));
       }

@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
 
 import TikzEditorProvider, { currentUri } from "./TikzEditorProvider";
 import { buildCurrentTikzFigure } from "./buildTikz";
@@ -29,6 +28,25 @@ function activate(context: vscode.ExtensionContext): void {
     "vstikzit.toggleTikzEditor",
     toggleTikzEditor
   );
+
+  // Auto-open TikZ files in the custom editor
+  // TODO: this doesn't work well yet
+
+  // const onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(document => {
+  //   const fileName = document.fileName.replace(/\.git$/, "");
+  //   const isTikzFile = path.extname(fileName).toLowerCase() === ".tikz";
+  //   console.log(`Opened document: ${fileName}, isTikzFile: ${isTikzFile}`);
+  //   if (isTikzFile) {
+  //     if (TikzEditorProvider.documentWithUri(vscode.Uri.file(fileName)) === undefined) {
+  //       vscode.commands.executeCommand(
+  //         "vscode.openWith",
+  //         vscode.Uri.file(fileName),
+  //         "vstikzit.tikzEditor",
+  //         vscode.ViewColumn.One
+  //       );
+  //     }
+  //   }
+  // });
 
   context.subscriptions.push(registration, buildCommand, viewCommand, toggleCommand);
 }

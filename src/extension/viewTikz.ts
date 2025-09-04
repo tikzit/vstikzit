@@ -3,7 +3,7 @@ import * as path from "path";
 import TikzEditorProvider from "./TikzEditorProvider";
 
 async function viewCurrentTikzFigure(): Promise<void> {
-  const document = await TikzEditorProvider.currentDocument();
+  const document = TikzEditorProvider.currentDocument();
   const workspaceRoot = document?.uri
     ? vscode.workspace.getWorkspaceFolder(document?.uri)?.uri
     : undefined;
@@ -11,7 +11,7 @@ async function viewCurrentTikzFigure(): Promise<void> {
     return;
   }
 
-  const baseName = path.basename(document.fileName, ".tikz");
+  const baseName = path.basename(document.uri.fsPath, ".tikz");
   const pdfFile = baseName !== undefined ? baseName + ".pdf" : "tikzfigure.pdf";
   const pdfPath = vscode.Uri.joinPath(workspaceRoot, "tikzcache", pdfFile);
 
