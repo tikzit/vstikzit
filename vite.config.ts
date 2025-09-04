@@ -3,34 +3,45 @@ import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
 // https://vite.dev/config/
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      input: {
-        webview: resolve(__dirname, "src/gui/index.tsx"),
-        extension: resolve(__dirname, "src/extension/extension.ts"),
+export default defineConfig(({ mode }) => {
+  if (mode === "extension") {
+    // Extension-only build
+    return {
+      build: {
+        lib: {
+          entry: resolve(__dirname, "src/extension/extension.ts"),
+          name: "extension",
+          fileName: "extension",
+          formats: ["es"],
+        },
+        outDir: "dist",
+        emptyOutDir: false,
+        rollupOptions: {
+          external: ["vscode", "path", "child_process", "fs", "util", "events", "stream"],
+        },
+        target: "node16",
       },
-      output: {
-        dir: "dist",
-        entryFileNames: "[name].js",
-        format: "es", // ES modules format
-        chunkFileNames: "chunks/[name]-[hash].js",
+      plugins: [],
+    };
+  } else {
+    // Webview-only build (default)
+    return {
+      build: {
+        lib: {
+          entry: resolve(__dirname, "src/gui/index.tsx"),
+          name: "webview",
+          fileName: "webview",
+          formats: ["es"],
+        },
+        outDir: "dist",
+        emptyOutDir: false,
+        assetsInlineLimit: 16384,
       },
-      external: (id, importer) => {
-        // Only externalize vscode and Node.js built-ins for the extension bundle
-        if (importer?.includes("extension.ts")) {
-          if (id === "vscode") return true;
-          if (["path", "child_process", "fs", "util", "events", "stream"].includes(id)) return true;
-        }
-        return false;
+      assetsInclude: ["**/*.svg"],
+      plugins: [react()],
+      define: {
+        "process.env.NODE_ENV": '"production"',
       },
-    },
-    target: ["es2020", "node16"], // Support both browser and Node.js
-    assetsInlineLimit: 16384,
-  },
-  assetsInclude: ["**/*.svg"],
-  plugins: [react()],
-  define: {
-    "process.env.NODE_ENV": '"production"',
-  },
+    };
+  }
 });
