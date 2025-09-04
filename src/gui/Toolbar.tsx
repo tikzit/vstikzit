@@ -7,14 +7,15 @@ import refreshIcon from "../../images/refresh.svg";
 interface ToolbarProps {
   tool: GraphTool;
   onToolChanged: (tool: GraphTool) => void;
+  onRefreshClicked: () => void;
 }
 
-const Toolbar = ({ tool, onToolChanged }: ToolbarProps) => {
+const Toolbar = ({ tool, onToolChanged, onRefreshClicked }: ToolbarProps) => {
   const toolbarButtonStyle = (isSelected: boolean) => ({
     padding: "8px",
     margin: "2px",
-    border: isSelected ? "2px solid #007acc" : "1px solid #ccc",
-    backgroundColor: isSelected ? "#e6f3ff" : "#fff",
+    border: isSelected ? "2px solid #8839ef" : "1px solid #ccc",
+    backgroundColor: isSelected ? "#eee" : "#fff",
     cursor: "pointer",
     borderRadius: "4px",
     display: "inline-flex",
@@ -50,7 +51,7 @@ const Toolbar = ({ tool, onToolChanged }: ToolbarProps) => {
       >
         <img src={edgeIcon} alt="Edge" style={iconStyle} />
       </button>
-      <button style={toolbarButtonStyle(false)} title="Refresh Styles">
+      <button style={toolbarButtonStyle(false)} title="Refresh Styles" onClick={onRefreshClicked}>
         <img src={refreshIcon} alt="Refresh" style={iconStyle} />
       </button>
     </div>

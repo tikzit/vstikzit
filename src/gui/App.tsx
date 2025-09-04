@@ -57,10 +57,10 @@ const App = ({ initialContent, vscode }: AppProps) => {
           break;
         case "tikzStylesContent":
           if (message.content) {
-            console.log("parsing\n" + message.content);
-            const parsed = parseTikzStyles(message.content);
+            console.log("parsing\n" + message.content.source);
+            const parsed = parseTikzStyles(message.content.source);
             if (parsed.result !== undefined) {
-              const s = parsed.result.setFilename(message.filename).inheritDataFrom(tikzStyles);
+              const s = parsed.result.setFilename(message.content.filename).inheritDataFrom(tikzStyles);
               setTikzStyles(s);
             } else {
               console.log(
@@ -96,6 +96,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
       content: tikz,
     });
   };
+
+  const refreshTikzStyles = () => {
+    vscode.postMessage({
+      type: "refreshTikzStyles",
+    });
+  }
 
   const handleCurrentNodeLabelChanged = (label: string) => {
     if (selectedNodes.size === 1) {
@@ -192,6 +198,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
               setTool(t);
               document.getElementById("graph-editor")?.focus();
             }}
+            onRefreshClicked={refreshTikzStyles}
           />
           <GraphEditor
             tool={tool}

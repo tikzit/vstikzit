@@ -1,8 +1,8 @@
 \begin{tikzpicture}
 	\begin{pgfonlayer}{nodelayer}
 		\node [style=none] (0) at (-2.5, 0) {};
-		\node [style=Z phase dot] (1) at (-1, 0) {\,$\alpha' + \gamma$\,};
-		\node [style=X phase dot] (2) at (1, 0) {\,$\beta + \gamma$\,};
+		\node [style=Z phase dot] (1) at (-1, 0) {\,$\alpha + \gamma$\,};
+		\node [style=X dot] (2) at (1, 0) {};
 		\node [style=none] (3) at (2.5, 0) {};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}

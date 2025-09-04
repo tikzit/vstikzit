@@ -2,39 +2,11 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
 
-// Interfaces for message types
 interface WebviewMessage {
   type: string;
   content?: any;
 }
 
-interface UpdateFromGuiMessage extends WebviewMessage {
-  type: "updateFromGui";
-  content: string;
-}
-
-interface RefreshTikzStylesMessage extends WebviewMessage {
-  type: "refreshTikzStyles";
-}
-
-interface OpenCodeEditorMessage extends WebviewMessage {
-  type: "openCodeEditor";
-  content: {
-    line: number;
-    column: number;
-  };
-}
-
-interface UpdateToGuiMessage extends WebviewMessage {
-  type: "updateToGui";
-  content: string;
-}
-
-interface TikzStylesContentMessage extends WebviewMessage {
-  type: "tikzStylesContent";
-  content: string;
-  filename: string;
-}
 
 interface WebviewContent {
   styleFile: string;
@@ -109,7 +81,7 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
           webviewPanel.webview.postMessage({
             type: "updateToGui",
             content: document.getText(),
-          } as UpdateToGuiMessage);
+          });
         }
       }
     );
@@ -119,15 +91,13 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
       console.log(`Received message from webview: ${e.type}`, e);
       switch (e.type) {
         case "updateFromGui":
-          this.updateFromGui(document, (e as UpdateFromGuiMessage).content);
+          this.updateFromGui(document, e.content);
           return;
         case "refreshTikzStyles":
           this.refreshTikzStyles(webviewPanel.webview);
           return;
         case "openCodeEditor": {
-          const openEditorMsg = e as OpenCodeEditorMessage;
-          console.log("openCodeEditor message received with content:", openEditorMsg.content);
-          this.openCodeEditor(openEditorMsg.content.line, openEditorMsg.content.column);
+          this.openCodeEditor(e.content.line, e.content.column);
           return;
         }
       }
@@ -230,9 +200,11 @@ class TikZEditorProvider implements vscode.CustomTextEditorProvider {
     const [styleFile, styles] = await this.getTikzStyles();
     webview.postMessage({
       type: "tikzStylesContent",
-      content: styles,
-      filename: styleFile,
-    } as TikzStylesContentMessage);
+      content: {
+        filename: styleFile,
+        source: styles,
+      },
+    });
   }
 
   async openCodeEditor(line: number, column: number): Promise<void> {
