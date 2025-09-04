@@ -40,8 +40,13 @@
     "languages": [
       {
         "id": "latex",
-        "aliases": ["LaTeX", "latex"],
-        "extensions": [".tikz"],
+        "aliases": [
+          "LaTeX",
+          "latex"
+        ],
+        "extensions": [
+          ".tikz"
+        ],
         "configuration": ""
       }
     ],
@@ -59,11 +64,12 @@
     ]
   },
   "scripts": {
-    "watch": "vite build --watch",
+    "watch": "concurrently \"vite build --watch\" \"vite build --mode extension --watch\"",
+    "watch-webview": "vite build --watch",
+    "watch-extension": "vite build --mode extension --watch",
     "build": "vite build && vite build --mode extension",
     "build-webview": "vite build",
     "build-extension": "vite build --mode extension",
-    "build-with-tsc": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -83,6 +89,7 @@
     "@types/vscode": "^1.103.0",
     "@vitejs/plugin-react": "^5.0.0",
     "chai": "^6.0.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
