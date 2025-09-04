@@ -27,8 +27,14 @@ class Coord implements ValueObject {
     return ((this._x * 397) ^ this._y) | 0;
   }
 
-  public shift(dx: number, dy: number): Coord {
-    return new Coord(this._x + dx, this._y + dy);
+  public shift(dx: number, dy: number, precision?: number): Coord {
+    if (precision !== undefined) {
+      const x = Math.round((this._x + dx) * precision) / precision;
+      const y = Math.round((this._y + dy) * precision) / precision;
+      return new Coord(x, y);
+    } else {
+      return new Coord(this._x + dx, this._y + dy);
+    }
   }
 
   public snapToGrid(div: number): Coord {

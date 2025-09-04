@@ -420,6 +420,8 @@ const GraphEditor = ({
     if (event.getModifierState("Alt")) combo.push("alt");
     combo.push(event.key === "+" ? "Plus" : event.key);
 
+    const nudge = event.shiftKey ? 0.025 : 0.25;
+
     switch (combo.join("+")) {
       case "ctrl+alt+c":
         if (!selectedNodes.isEmpty()) {
@@ -465,7 +467,7 @@ const GraphEditor = ({
       case "ctrl+ArrowLeft":
         if (!selectedNodes.isEmpty()) {
           const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-0.25, 0)) : d
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-nudge, 0, 40)) : d
           );
           updateGraph(g, true);
         }
@@ -473,7 +475,7 @@ const GraphEditor = ({
       case "ctrl+ArrowRight":
         if (!selectedNodes.isEmpty()) {
           const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0.25, 0)) : d
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(nudge, 0, 40)) : d
           );
           updateGraph(g, true);
         }
@@ -481,7 +483,7 @@ const GraphEditor = ({
       case "ctrl+ArrowUp":
         if (!selectedNodes.isEmpty()) {
           const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, 0.25)) : d
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, nudge, 40)) : d
           );
           updateGraph(g, true);
         }
@@ -489,7 +491,7 @@ const GraphEditor = ({
       case "ctrl+ArrowDown":
         if (!selectedNodes.isEmpty()) {
           const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -0.25)) : d
+            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -nudge, 40)) : d
           );
           updateGraph(g, true);
         }
