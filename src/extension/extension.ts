@@ -1,14 +1,51 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
-// const vscode = require("vscode");
-// const path = require("path");
-// const spawn = require("child_process").spawn;
+
+// Interfaces for message types
+interface WebviewMessage {
+  type: string;
+  content?: any;
+}
+
+interface UpdateFromGuiMessage extends WebviewMessage {
+  type: "updateFromGui";
+  content: string;
+}
+
+interface RefreshTikzStylesMessage extends WebviewMessage {
+  type: "refreshTikzStyles";
+}
+
+interface OpenCodeEditorMessage extends WebviewMessage {
+  type: "openCodeEditor";
+  content: {
+    line: number;
+    column: number;
+  };
+}
+
+interface UpdateToGuiMessage extends WebviewMessage {
+  type: "updateToGui";
+  content: string;
+}
+
+interface TikzStylesContentMessage extends WebviewMessage {
+  type: "tikzStylesContent";
+  content: string;
+  filename: string;
+}
+
+interface WebviewContent {
+  styleFile: string;
+  styles: string;
+  document: string;
+}
 
 // Set to track all open TikZ documents
-const tikzDocuments = new Set();
+const tikzDocuments = new Set<vscode.TextDocument>();
 
-function activate(context) {
+function activate(context: vscode.ExtensionContext): void {
   // Register the custom text editor provider
   const provider = new TikZEditorProvider(context);
   const registration = vscode.window.registerCustomEditorProvider("vstikzit.tikzEditor", provider, {
@@ -31,13 +68,20 @@ function activate(context) {
   context.subscriptions.push(registration, buildCommand, viewCommand);
 }
 
-class TikZEditorProvider {
-  constructor(context) {
+class TikZEditorProvider implements vscode.CustomTextEditorProvider {
+  private context: vscode.ExtensionContext;
+  private isUpdatingFromGui: boolean;
+
+  constructor(context: vscode.ExtensionContext) {
     this.context = context;
     this.isUpdatingFromGui = false;
   }
 
-  async resolveCustomTextEditor(document, webviewPanel, _token) {
+  async resolveCustomTextEditor(
+    document: vscode.TextDocument,
+    webviewPanel: vscode.WebviewPanel,
+    _token: vscode.CancellationToken
+  ): Promise<void> {
     // Track this document
     tikzDocuments.add(document);
 
@@ -58,30 +102,34 @@ class TikZEditorProvider {
 
     // Post document changes (e.g. undo/redo) to the webview. We use the isUpdatingFromGui flag
     // to prevent a circular update.
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-      // console.log('Document changed, isUpdatingFromGui:', this.isUpdatingFromGui);
-      if (e.document.uri.toString() === document.uri.toString() && !this.isUpdatingFromGui) {
-        webviewPanel.webview.postMessage({
-          type: "updateToGui",
-          content: document.getText(),
-        });
+    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
+      (e: vscode.TextDocumentChangeEvent) => {
+        // console.log('Document changed, isUpdatingFromGui:', this.isUpdatingFromGui);
+        if (e.document.uri.toString() === document.uri.toString() && !this.isUpdatingFromGui) {
+          webviewPanel.webview.postMessage({
+            type: "updateToGui",
+            content: document.getText(),
+          } as UpdateToGuiMessage);
+        }
       }
-    });
+    );
 
     // Handle messages from the webview
-    webviewPanel.webview.onDidReceiveMessage(e => {
+    webviewPanel.webview.onDidReceiveMessage((e: WebviewMessage) => {
       console.log(`Received message from webview: ${e.type}`, e);
       switch (e.type) {
         case "updateFromGui":
-          this.updateFromGui(document, e.content);
+          this.updateFromGui(document, (e as UpdateFromGuiMessage).content);
           return;
         case "refreshTikzStyles":
           this.refreshTikzStyles(webviewPanel.webview);
           return;
-        case "openCodeEditor":
-          console.log("openCodeEditor message received with content:", e.content);
-          this.openCodeEditor(e.content.line, e.content.column);
+        case "openCodeEditor": {
+          const openEditorMsg = e as OpenCodeEditorMessage;
+          console.log("openCodeEditor message received with content:", openEditorMsg.content);
+          this.openCodeEditor(openEditorMsg.content.line, openEditorMsg.content.column);
           return;
+        }
       }
     });
 
@@ -93,7 +141,7 @@ class TikZEditorProvider {
     });
   }
 
-  async getHtmlForWebview(webview, content) {
+  async getHtmlForWebview(webview: vscode.Webview, content: WebviewContent): Promise<string> {
     // Get the local path to main script run in the webview
     const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -137,7 +185,7 @@ class TikZEditorProvider {
 			</html>`;
   }
 
-  async updateFromGui(document, content) {
+  async updateFromGui(document: vscode.TextDocument, content: string): Promise<boolean> {
     // console.log("got update from gui");
     this.isUpdatingFromGui = true;
     const edit = new vscode.WorkspaceEdit();
@@ -147,7 +195,7 @@ class TikZEditorProvider {
     return result;
   }
 
-  async getTikzStyles() {
+  async getTikzStyles(): Promise<[string, string]> {
     try {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -178,26 +226,35 @@ class TikZEditorProvider {
     }
   }
 
-  async refreshTikzStyles(webview) {
+  async refreshTikzStyles(webview: vscode.Webview): Promise<void> {
     const [styleFile, styles] = await this.getTikzStyles();
     webview.postMessage({
       type: "tikzStylesContent",
       content: styles,
       filename: styleFile,
-    });
+    } as TikzStylesContentMessage);
   }
 
-  async openCodeEditor(line, column) {
+  async openCodeEditor(line: number, column: number): Promise<void> {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
-    if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+    if (!activeTab?.input) {
       console.log("No active tab found");
       return;
     }
 
-    const documentUri = activeTab.input.uri;
+    // Type guard to check if input has uri property
+    const tabInput = activeTab.input as any;
+    if (!tabInput.uri) {
+      console.log("Active tab has no URI");
+      return;
+    }
 
-    const editor = await vscode.window.showTextDocument(documentUri, vscode.ViewColumn.Beside);
+    const documentUri = tabInput.uri as vscode.Uri;
+
+    const editor = await vscode.window.showTextDocument(documentUri, {
+      viewColumn: vscode.ViewColumn.Beside,
+    });
 
     // Force cursor positioning
     if (editor) {
@@ -211,7 +268,7 @@ class TikZEditorProvider {
   }
 }
 
-function getNonce() {
+function getNonce(): string {
   let text = "";
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   for (let i = 0; i < 32; i++) {
@@ -220,13 +277,13 @@ function getNonce() {
   return text;
 }
 
-async function prepareBuildDir(workspaceRoot) {
+async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
   let tikzIncludes = "";
 
   // create tikzcache folder in workspaceRoot, if it doesn't exist
   await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(workspaceRoot, "tikzcache"));
 
-  const cp = f => {
+  const cp = (f: string): Thenable<void> => {
     return vscode.workspace.fs.copy(
       vscode.Uri.joinPath(workspaceRoot, f),
       vscode.Uri.joinPath(workspaceRoot, "tikzcache", f),
@@ -263,11 +320,16 @@ async function prepareBuildDir(workspaceRoot) {
   return tikzIncludes;
 }
 
-async function buildTikz(workspaceRoot, fileName, source, tikzIncludes) {
+async function buildTikz(
+  workspaceRoot: vscode.Uri,
+  fileName: string,
+  source: string | null,
+  tikzIncludes: string
+): Promise<number> {
   const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
-  // if source is null, load it from the file at URI
+  // if source is null, we should not proceed (this case is not handled properly)
   if (!source) {
-    source = fs.readFileSync(uri, "utf8");
+    throw new Error("Source content is required");
   }
 
   let tex = "\\documentclass{article}\n";
@@ -315,18 +377,25 @@ async function buildTikz(workspaceRoot, fileName, source, tikzIncludes) {
   });
 }
 
-async function getDocAndWorkspace() {
+async function getDocAndWorkspace(): Promise<[vscode.TextDocument | null, vscode.Uri | null]> {
   // Find the document associated with the currently active tab
   const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
-  if (!activeTab || !activeTab.input || !activeTab.input.uri) {
+  if (!activeTab?.input) {
     vscode.window.showErrorMessage("No active TikZ editor found");
     return [null, null];
   }
 
-  const document = tikzDocuments
-    .keys()
-    .find(doc => doc.uri.toString() === activeTab.input.uri.toString());
+  // Type guard for tab input with uri
+  const tabInput = activeTab.input as any;
+  if (!tabInput.uri) {
+    vscode.window.showErrorMessage("No active TikZ editor found");
+    return [null, null];
+  }
+
+  const document = Array.from(tikzDocuments).find(
+    (doc: vscode.TextDocument) => doc.uri.toString() === tabInput.uri.toString()
+  );
 
   if (!document) {
     vscode.window.showErrorMessage("No active TikZ document found");
@@ -349,7 +418,7 @@ async function getDocAndWorkspace() {
   return [document, workspaceFolder.uri];
 }
 
-async function buildCurrentTikzFigure() {
+async function buildCurrentTikzFigure(): Promise<void> {
   const [document, workspaceRoot] = await getDocAndWorkspace();
   if (!document || !workspaceRoot) {
     return;
@@ -358,8 +427,8 @@ async function buildCurrentTikzFigure() {
   try {
     const tikzIncludes = await prepareBuildDir(workspaceRoot);
     buildTikz(workspaceRoot, document.fileName, document.getText(), tikzIncludes).then(
-      _ => vscode.window.showInformationMessage(`Success`),
-      errorCode => {
+      (_: number) => vscode.window.showInformationMessage(`Success`),
+      (errorCode: number) => {
         vscode.window.showErrorMessage(`pdflatex exited with code ${errorCode}`);
         const baseName = path.basename(document.fileName, ".tikz");
         const logFile = baseName !== undefined ? baseName + ".tmp.log" : "tikzfigure.tmp.log";
@@ -367,11 +436,12 @@ async function buildCurrentTikzFigure() {
       }
     );
   } catch (error) {
-    vscode.window.showErrorMessage(`Unexpected error: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`Unexpected error: ${errorMessage}`);
   }
 }
 
-async function viewCurrentTikzFigure() {
+async function viewCurrentTikzFigure(): Promise<void> {
   const [document, workspaceRoot] = await getDocAndWorkspace();
   if (!document || !workspaceRoot) {
     return;
@@ -386,11 +456,12 @@ async function viewCurrentTikzFigure() {
     await vscode.workspace.fs.stat(pdfPath);
     await vscode.commands.executeCommand("vscode.open", pdfPath, vscode.ViewColumn.Beside);
   } catch (error) {
-    vscode.window.showErrorMessage(`Failed to open PDF file: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`Failed to open PDF file: ${errorMessage}`);
   }
 }
 
-function deactivate() {}
+function deactivate(): void {}
 
 // module.exports = {
 //   activate,
