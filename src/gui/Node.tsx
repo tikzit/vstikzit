@@ -45,7 +45,7 @@ const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: No
           />
         </g>
       ) : (
-        <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={2} />
+        <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={sceneCoords.scale * 0.025} />
       )}
       {data.label !== "" && (
         <g>

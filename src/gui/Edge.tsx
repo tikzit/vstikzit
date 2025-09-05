@@ -54,7 +54,7 @@ const Edge = ({
   const basicBendMode = !data.hasKey("in") && !data.hasKey("out");
   const controlColor1 = basicBendMode ? "blue" : "rgb(0,100,0)";
   const controlColor2 = basicBendMode ? "rgba(100,100,255,0.4)" : "rgba(0,150,0,0.2)";
-  const strokeWidth = sceneCoords.scale * 0.05;
+  const strokeWidth = sceneCoords.scale * 0.035;
   const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";
 
   // map coords to screen
