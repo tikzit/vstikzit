@@ -1,32 +1,47 @@
 import * as vscode from "vscode";
 
 import TikzEditorProvider, { currentUri } from "./TikzEditorProvider";
+import TikzLinkProvider from "./TikzLinkProvider";
 import { buildCurrentTikzFigure } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
 
 function activate(context: vscode.ExtensionContext): void {
-  // Register the custom text editor provider
-  const provider = new TikzEditorProvider(context);
-  const registration = vscode.window.registerCustomEditorProvider("vstikzit.tikzEditor", provider, {
-    webviewOptions: {
-      retainContextWhenHidden: true,
-    },
-    supportsMultipleEditorsPerDocument: false,
-  });
-
-  const buildCommand = vscode.commands.registerCommand(
-    "vstikzit.buildCurrentTikzFigure",
-    buildCurrentTikzFigure
+  // register the custom tikz editor
+  context.subscriptions.push(
+    vscode.window.registerCustomEditorProvider(
+      "vstikzit.tikzEditor",
+      new TikzEditorProvider(context),
+      {
+        webviewOptions: {
+          retainContextWhenHidden: true,
+        },
+        supportsMultipleEditorsPerDocument: false,
+      }
+    )
   );
 
-  const viewCommand = vscode.commands.registerCommand(
-    "vstikzit.viewCurrentTikzFigure",
-    viewCurrentTikzFigure
+  // register the tikz link provider for LaTeX files
+  context.subscriptions.push(
+    vscode.languages.registerDocumentLinkProvider(
+      [
+        { language: "tex", scheme: "file" },
+        { pattern: "**/*.tex", scheme: "file" },
+        { pattern: "**/*.latex", scheme: "file" },
+      ],
+      new TikzLinkProvider()
+    )
   );
 
-  const toggleCommand = vscode.commands.registerCommand(
-    "vstikzit.toggleTikzEditor",
-    toggleTikzEditor
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", buildCurrentTikzFigure)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.viewCurrentTikzFigure", viewCurrentTikzFigure)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.toggleTikzEditor", toggleTikzEditor)
   );
 
   // Auto-open TikZ files in the custom editor
@@ -47,8 +62,6 @@ function activate(context: vscode.ExtensionContext): void {
   //     }
   //   }
   // });
-
-  context.subscriptions.push(registration, buildCommand, viewCommand, toggleCommand);
 }
 
 function toggleTikzEditor(): void {

@@ -5,13 +5,13 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "compile",
+			"script": "build",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": [],
-			"label": "npm: compile",
+			"label": "npm: build",
 			"detail": "vite"
 		}
 	]
