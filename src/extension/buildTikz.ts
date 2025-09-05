@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
 import TikzEditorProvider from "./TikzEditorProvider";
+import { stat } from "fs";
 
 async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
   let tikzIncludes = "";
@@ -77,12 +78,18 @@ async function buildTikz(
   source: string | undefined,
   tikzIncludes: string
 ): Promise<number> {
+  // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}`);
   const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
   // if source is null, load it from the file
   if (!source) {
-    source = await vscode.workspace.fs
-      .readFile(vscode.Uri.file(fileName))
-      .then(buffer => buffer.toString());
+    try {
+      source = await vscode.workspace.fs
+        .readFile(vscode.Uri.joinPath(workspaceRoot, "figures", fileName))
+        .then(buffer => buffer.toString());
+    } catch (error) {
+      console.error(`Error reading ${fileName}:`, error);
+      throw error;
+    }
   }
 
   let tex = "\\documentclass{article}\n";
@@ -203,7 +210,7 @@ async function getTikzFiguresToRebuild(workspaceRoot: vscode.Uri): Promise<strin
   return files;
 }
 
-async function syncTikzFigures(): Promise<void> {
+async function rebuildTikzFigures(): Promise<void> {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     return;
@@ -233,6 +240,8 @@ async function syncTikzFigures(): Promise<void> {
         )
       );
 
+      statusBarItem.dispose();
+
       if (errorFiles.length > 0) {
         let errorMessage = `Failed to build TikZ figures: ${errorFiles.slice(0, 3).join(", ")}`;
         if (errorFiles.length > 3) {
@@ -245,4 +254,25 @@ async function syncTikzFigures(): Promise<void> {
   }
 }
 
-export { buildCurrentTikzFigure, syncTikzFigures };
+let tikzFigureWatcher: vscode.FileSystemWatcher | undefined = undefined;
+
+async function syncTikzFigures(): Promise<void> {
+  await rebuildTikzFigures();
+
+  // listen for changes in any .tikz file in the figures folder and call rebuildTikzFigures when needed
+  stopSyncTikzFigures();
+  tikzFigureWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
+  tikzFigureWatcher.onDidChange(() => {
+    console.log("Detected change in .tikz file, rebuilding figures...");
+    rebuildTikzFigures();
+  });
+}
+
+async function stopSyncTikzFigures(): Promise<void> {
+  if (tikzFigureWatcher !== undefined) {
+    tikzFigureWatcher.dispose();
+    tikzFigureWatcher = undefined;
+  }
+}
+
+export { buildCurrentTikzFigure, syncTikzFigures, stopSyncTikzFigures };

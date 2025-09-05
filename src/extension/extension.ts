@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import TikzEditorProvider, { currentUri } from "./TikzEditorProvider";
 import TikzLinkProvider from "./TikzLinkProvider";
-import { buildCurrentTikzFigure, syncTikzFigures } from "./buildTikz";
+import { buildCurrentTikzFigure, stopSyncTikzFigures, syncTikzFigures } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
 
 function activate(context: vscode.ExtensionContext): void {
@@ -68,6 +68,8 @@ function openTikzEditor(): void {
   }
 }
 
-function deactivate(): void { }
+function deactivate(): void {
+  stopSyncTikzFigures();
+}
 
 export { activate, deactivate };
