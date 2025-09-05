@@ -45,44 +45,29 @@ function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("vstikzit.toggleTikzEditor", toggleTikzEditor)
+    vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor)
   );
-
-  // Auto-open TikZ files in the custom editor
-  // TODO: this doesn't work well yet
-
-  // const onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(document => {
-  //   const fileName = document.fileName.replace(/\.git$/, "");
-  //   const isTikzFile = path.extname(fileName).toLowerCase() === ".tikz";
-  //   console.log(`Opened document: ${fileName}, isTikzFile: ${isTikzFile}`);
-  //   if (isTikzFile) {
-  //     if (TikzEditorProvider.documentWithUri(vscode.Uri.file(fileName)) === undefined) {
-  //       vscode.commands.executeCommand(
-  //         "vscode.openWith",
-  //         vscode.Uri.file(fileName),
-  //         "vstikzit.tikzEditor",
-  //         vscode.ViewColumn.One
-  //       );
-  //     }
-  //   }
-  // });
 }
 
-function toggleTikzEditor(): void {
+function openTikzEditor(): void {
   if (vscode.window.activeTextEditor) {
-    vscode.commands.executeCommand(
-      "vscode.openWith",
-      vscode.window.activeTextEditor.document.uri,
-      "vstikzit.tikzEditor"
-    );
-  } else {
-    const uri = currentUri();
-    if (uri) {
-      vscode.window.showTextDocument(uri);
+    const uri = vscode.window.activeTextEditor.document.uri;
+    if (uri.fsPath.endsWith(".tikz")) {
+      if (vscode.window.activeTextEditor.document.isDirty === false) {
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+      }
+
+      vscode.commands.executeCommand(
+        "vscode.openWith",
+        uri,
+        "vstikzit.tikzEditor"
+      );
+    } else {
+      vscode.commands.executeCommand("editor.action.openLink");
     }
   }
 }
 
-function deactivate(): void {}
+function deactivate(): void { }
 
 export { activate, deactivate };

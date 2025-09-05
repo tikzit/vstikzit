@@ -10,7 +10,10 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:tex",
+    "onLanguage:latex"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -30,8 +33,8 @@
         "category": "TikZiT"
       },
       {
-        "command": "vstikzit.tikzEditor",
-        "title": "Toggle TikZ Editor",
+        "command": "vstikzit.openTikzEditor",
+        "title": "Open TikZ Editor",
         "category": "TikZiT"
       }
     ],
@@ -52,9 +55,9 @@
         "when": "resourceExtname == .tikz"
       },
       {
-        "command": "vstikzit.toggleTikzEditor",
+        "command": "vstikzit.openTikzEditor",
         "key": "ctrl+alt+t",
-        "when": "resourceExtname == .tikz"
+        "when": "resourceExtname == .tikz || resourceExtname == .tex"
       }
     ],
     "languages": [
@@ -65,7 +68,7 @@
           "latex"
         ],
         "extensions": [
-          ".tikz"
+          ".tikz", ".tex"
         ],
         "configuration": ""
       }
