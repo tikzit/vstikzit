@@ -46,6 +46,19 @@ async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
   return tikzIncludes;
 }
 
+async function cleanBuildDir(workspaceRoot: vscode.Uri): Promise<void> {
+  const files = await vscode.workspace.fs.readDirectory(
+    vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+  );
+  for (const f of files) {
+    if (f[0].endsWith(".sty") || f[0].endsWith(".tikzstyles") || f[0].endsWith(".tikzdefs")) {
+      await vscode.workspace.fs.delete(vscode.Uri.joinPath(workspaceRoot, "tikzcache", f[0]), {
+        useTrash: false,
+      });
+    }
+  }
+}
+
 async function buildTikz(
   workspaceRoot: vscode.Uri,
   fileName: string,
@@ -95,6 +108,9 @@ async function buildTikz(
         for (const ext of [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf"]) {
           await vscode.workspace.fs.delete(vscode.Uri.joinPath(tikzCacheFolder, baseName + ext));
         }
+
+        await cleanBuildDir(workspaceRoot);
+
         resolve(code);
       } else {
         reject(code);
@@ -114,8 +130,14 @@ async function buildCurrentTikzFigure(): Promise<void> {
 
   try {
     const tikzIncludes = await prepareBuildDir(workspaceRoot);
+    // create a status bar item with a spinning arrow to show progress
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    statusBarItem.text = "$(sync~spin) Building TikZ figure";
+    statusBarItem.show();
     buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes).then(
-      (_: number) => vscode.window.showInformationMessage(`Success`),
+      (_: number) => {
+        statusBarItem.dispose();
+      },
       (errorCode: number) => {
         vscode.window.showErrorMessage(`pdflatex exited with code ${errorCode}`);
         const baseName = path.basename(document.uri.fsPath, ".tikz");
@@ -127,6 +149,10 @@ async function buildCurrentTikzFigure(): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : String(error);
     vscode.window.showErrorMessage(`Unexpected error: ${errorMessage}`);
   }
+}
+
+async function syncTikzFigures(): Promise<void> {
+  // const workspaceFolders = vscode.workspace.workspaceFolders;
 }
 
 export { buildCurrentTikzFigure };
