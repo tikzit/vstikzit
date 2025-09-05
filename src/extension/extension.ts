@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import TikzEditorProvider, { currentUri } from "./TikzEditorProvider";
 import TikzLinkProvider from "./TikzLinkProvider";
-import { buildCurrentTikzFigure } from "./buildTikz";
+import { buildCurrentTikzFigure, syncTikzFigures } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
 
 function activate(context: vscode.ExtensionContext): void {
@@ -38,6 +38,10 @@ function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.viewCurrentTikzFigure", viewCurrentTikzFigure)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.syncTikzFigures", syncTikzFigures)
   );
 
   context.subscriptions.push(

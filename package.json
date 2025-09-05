@@ -25,6 +25,11 @@
         "category": "TikZiT"
       },
       {
+        "command": "vstikzit.syncTikzFigures",
+        "title": "Sync TikZ Figures",
+        "category": "TikZiT"
+      },
+      {
         "command": "vstikzit.tikzEditor",
         "title": "Toggle TikZ Editor",
         "category": "TikZiT"
@@ -39,6 +44,11 @@
       {
         "command": "vstikzit.viewCurrentTikzFigure",
         "key": "ctrl+alt+v",
+        "when": "resourceExtname == .tikz"
+      },
+      {
+        "command": "vstikzit.syncTikzFigures",
+        "key": "ctrl+alt+s",
         "when": "resourceExtname == .tikz"
       },
       {
