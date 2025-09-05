@@ -66,6 +66,8 @@ const GraphEditor = ({
   const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
   const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
 
+  const [smartTool, setSmartTool] = useState<boolean>(false);
+
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
     const editor = document.getElementById("graph-editor")!;
@@ -137,12 +139,24 @@ const GraphEditor = ({
     setMouseDownPos(p);
     setDraggingNodes(false);
 
-    // TODO: Right-click for "smart tool" should be implemented here
+    let currentTool = tool;
+    // if right click, activate smart tool temporarily
+    if (tool === "select" && event.button === 2) {
+      if (clickedNode.current !== undefined) {
+        currentTool = "edge";
+      } else {
+        currentTool = "vertex";
+      }
 
-    switch (tool) {
+      setSmartTool(true);
+      setTool(currentTool);
+    }
+
+    switch (currentTool) {
       case "select":
-        // not dragging a control point, handle click as usual
-        if (clickedNode.current !== undefined) {
+        if (clickedControlPoint.current !== undefined) {
+          setPrevGraph(graph);
+        } else if (clickedNode.current !== undefined) {
           // select a node single node and/or prepare to drag nodes
           if (event.shiftKey) {
             if (selectedNodes.contains(clickedNode.current)) {
@@ -401,6 +415,11 @@ const GraphEditor = ({
         break;
     }
 
+    if (smartTool) {
+      setTool("select");
+      setSmartTool(false);
+    }
+
     clickedNode.current = undefined;
     clickedEdge.current = undefined;
     clickedControlPoint.current = undefined;
@@ -560,6 +579,10 @@ const GraphEditor = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onKeyDown={handleKeyDown}
+        onContextMenu={(event) => {
+          // Prevent context menu when using smart tool with right-click
+          event.preventDefault();
+        }}
       >
         <g id="grid"></g>
         <g id="edgeLayer">
