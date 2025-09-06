@@ -211,6 +211,7 @@ class Graph implements ValueObject {
             if (!newPath) {
               g = g.updatePathData(pd.id, p => p.setEdges(edges));
             } else {
+              // TODO: update pathId of edges
               g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
             }
             newPath = true;
@@ -223,6 +224,7 @@ class Graph implements ValueObject {
         if (!newPath) {
           g = g.updatePathData(pd.id, p => p.setEdges(edges));
         } else {
+          // TODO: update pathId of edges
           g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
         }
         newPath = true;
