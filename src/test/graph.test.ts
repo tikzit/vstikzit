@@ -484,4 +484,350 @@ describe("Graph", () => {
       assert.ok(graph1.pathData.get(2)?.edges.equals(List.of(3)));
     });
   });
+
+  describe("Path splitting operations", () => {
+    it("should split a single-edge path (no change)", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+
+      const splitGraph = graph.splitPath(1);
+
+      // Splitting a single-edge path should result in no change
+      assert.strictEqual(splitGraph.numPaths, 1);
+      assert.strictEqual(splitGraph.numEdges, 1);
+      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+    });
+
+    it("should split a two-edge path into two single-edge paths", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2)));
+
+      const splitGraph = graph.splitPath(1);
+
+      assert.strictEqual(splitGraph.numPaths, 2);
+      assert.strictEqual(splitGraph.numEdges, 2);
+
+      // First path should contain only the first edge
+      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+
+      // Second path should contain only the second edge with a new path ID
+      const newPathId = splitGraph.pathData.keySeq().find(id => id !== 1)!;
+      assert.ok(splitGraph.pathData.get(newPathId)?.edges.equals(List.of(2)));
+      assert.strictEqual(splitGraph.edgeData.get(2)?.path, newPathId);
+
+      // Original path should no longer be a cycle
+      assert.strictEqual(splitGraph.pathData.get(1)?.isCycle, false);
+    });
+
+    it("should split a multi-edge path into individual single-edge paths", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addNodeWithData(new NodeData().setId(4));
+      graph = graph.addNodeWithData(new NodeData().setId(5));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3, 4)));
+
+      const splitGraph = graph.splitPath(1);
+
+      assert.strictEqual(splitGraph.numPaths, 4);
+      assert.strictEqual(splitGraph.numEdges, 4);
+
+      // First path should contain only the first edge
+      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+
+      // Each subsequent edge should be in its own path
+      const allPathIds = splitGraph.pathData.keySeq().toArray().sort();
+      assert.strictEqual(allPathIds.length, 4);
+
+      for (let i = 2; i <= 4; i++) {
+        const pathId = splitGraph.edgeData.get(i)?.path;
+        assert.ok(pathId !== undefined);
+        assert.ok(splitGraph.pathData.get(pathId!)?.edges.equals(List.of(i)));
+      }
+    });
+
+    it("should split a cyclic path correctly", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(1));
+      graph = graph.addPathWithData(
+        new PathData().setId(1).setEdges(List.of(1, 2, 3)).setIsCycle(true)
+      );
+
+      const splitGraph = graph.splitPath(1);
+
+      assert.strictEqual(splitGraph.numPaths, 3);
+      assert.strictEqual(splitGraph.numEdges, 3);
+
+      // Original path should no longer be a cycle after splitting
+      assert.strictEqual(splitGraph.pathData.get(1)?.isCycle, false);
+    });
+  });
+
+  describe("Path joining operations", () => {
+    it("should join two connecting paths (target to source)", () => {
+      let graph = new Graph();
+      // Create nodes 1 -> 2 -> 3 -> 4
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addNodeWithData(new NodeData().setId(4));
+
+      // Create two separate paths that connect: path1 (1->2) and path2 (2->3)
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+
+      const joinedGraph = graph.joinPaths([1, 2]);
+
+      assert.strictEqual(joinedGraph.numPaths, 1);
+      assert.strictEqual(joinedGraph.numEdges, 2);
+
+      // Path 1 should now contain both edges
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2)));
+      assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
+
+      // Both edges should belong to path 1
+      assert.strictEqual(joinedGraph.edgeData.get(1)?.path, 1);
+      assert.strictEqual(joinedGraph.edgeData.get(2)?.path, 1);
+    });
+
+    it("should join two connecting paths (source to target) with reversal", () => {
+      let graph = new Graph();
+      // Create nodes 1 -> 2 -> 3
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+
+      // Create two paths: path1 (2->3) and path2 (1->2)
+      // These connect at node 2, but path2 needs to be prepended to path1
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(1).setTarget(2).setPath(2));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+
+      const joinedGraph = graph.joinPaths([1, 2]);
+
+      assert.strictEqual(joinedGraph.numPaths, 1);
+      assert.strictEqual(joinedGraph.numEdges, 2);
+
+      // Path 1 should now contain both edges in correct order
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(2, 1)));
+      assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
+    });
+
+    it("should join paths that connect at their endpoints with reversal", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addNodeWithData(new NodeData().setId(4));
+
+      // Create two paths: path1 (1->2) and path2 (4->3)
+      // Both have target 2 and 3 respectively, so path2 needs to be reversed and appended
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+      graph = graph.addPathWithData(new PathData().setId(3).setEdges(List.of(3)));
+
+      // Join paths 1 and 3 (1->2 and 2->3)
+      const joinedGraph = graph.joinPaths([1, 3]);
+
+      assert.strictEqual(joinedGraph.numPaths, 2); // Path 2 remains separate
+      assert.strictEqual(joinedGraph.numEdges, 3);
+
+      // Path 1 should contain edges 1 and 3
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 3)));
+      assert.ok(joinedGraph.pathData.has(2)); // Path 2 should still exist
+      assert.ok(!joinedGraph.pathData.has(3)); // Path 3 should be removed
+    });
+
+    it("should not join paths that don't connect", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addNodeWithData(new NodeData().setId(4));
+
+      // Create two separate, non-connecting paths: path1 (1->2) and path2 (3->4)
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+
+      const originalGraph = graph;
+      const joinedGraph = graph.joinPaths([1, 2]);
+
+      // Graph should remain unchanged since paths don't connect
+      assert.ok(joinedGraph.equals(originalGraph));
+      assert.strictEqual(joinedGraph.numPaths, 2);
+      assert.strictEqual(joinedGraph.numEdges, 2);
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.ok(joinedGraph.pathData.get(2)?.edges.equals(List.of(2)));
+    });
+
+    it("should handle joining multiple paths in sequence", () => {
+      let graph = new Graph();
+      // Create a chain: 1 -> 2 -> 3 -> 4 -> 5
+      for (let i = 1; i <= 5; i++) {
+        graph = graph.addNodeWithData(new NodeData().setId(i));
+      }
+
+      // Create separate paths for each edge
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(4));
+
+      for (let i = 1; i <= 4; i++) {
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+      }
+
+      const joinedGraph = graph.joinPaths([1, 2, 3, 4]);
+
+      assert.strictEqual(joinedGraph.numPaths, 1);
+      assert.strictEqual(joinedGraph.numEdges, 4);
+
+      // All edges should be in path 1
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2, 3, 4)));
+      for (let i = 1; i <= 4; i++) {
+        assert.strictEqual(joinedGraph.edgeData.get(i)?.path, 1);
+      }
+
+      // Other paths should be removed
+      for (let i = 2; i <= 4; i++) {
+        assert.ok(!joinedGraph.pathData.has(i));
+      }
+    });
+
+    it("should create a cycle when joining paths that form a loop", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+
+      // Create a triangle: 1->2, 2->3, 3->1
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(3));
+
+      for (let i = 1; i <= 3; i++) {
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+      }
+
+      const joinedGraph = graph.joinPaths([1, 2, 3]);
+
+      assert.strictEqual(joinedGraph.numPaths, 1);
+      assert.strictEqual(joinedGraph.numEdges, 3);
+
+      // Should form a cycle
+      assert.strictEqual(joinedGraph.pathData.get(1)?.isCycle, true);
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)));
+    });
+
+    it("should handle joining with partially connecting paths", () => {
+      let graph = new Graph();
+      // Create nodes 1,2,3,4,5,6
+      for (let i = 1; i <= 6; i++) {
+        graph = graph.addNodeWithData(new NodeData().setId(i));
+      }
+
+      // Create paths: 1->2, 2->3, 5->6 (where 5->6 doesn't connect to the chain)
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(5).setTarget(6).setPath(3));
+
+      for (let i = 1; i <= 3; i++) {
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+      }
+
+      const joinedGraph = graph.joinPaths([1, 2, 3]);
+
+      // Only paths 1 and 2 should join; path 3 should remain separate
+      assert.strictEqual(joinedGraph.numPaths, 2);
+      assert.strictEqual(joinedGraph.numEdges, 3);
+
+      // Path 1 should contain edges 1 and 2
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2)));
+      // Path 3 should remain unchanged
+      assert.ok(joinedGraph.pathData.get(3)?.edges.equals(List.of(3)));
+      // Path 2 should be removed
+      assert.ok(!joinedGraph.pathData.has(2));
+    });
+
+    it("should return original graph when trying to join empty path list", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+
+      const joinedGraph = graph.joinPaths([]);
+
+      assert.ok(joinedGraph.equals(graph));
+    });
+
+    it("should return original graph when trying to join single path", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+
+      const joinedGraph = graph.joinPaths([1]);
+
+      assert.ok(joinedGraph.equals(graph));
+    });
+
+    it("should handle complex path reversal scenarios", () => {
+      let graph = new Graph();
+      // Create nodes for a more complex scenario
+      for (let i = 1; i <= 6; i++) {
+        graph = graph.addNodeWithData(new NodeData().setId(i));
+      }
+
+      // Create paths that require different types of reversals:
+      // path1: 1->2 (normal)
+      // path2: 4->3 (needs reversal to connect 2->3)
+      // path3: 5->4 (needs reversal to connect 3->4, but path2 already reversed)
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
+
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+      graph = graph.addPathWithData(new PathData().setId(3).setEdges(List.of(3)));
+
+      // Join paths 1 and 3 first (should work: 1->2, 2->3)
+      const joinedGraph = graph.joinPaths([1, 3]);
+
+      assert.strictEqual(joinedGraph.numPaths, 2);
+      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 3)));
+      assert.ok(joinedGraph.pathData.has(2)); // Path 2 should remain separate
+      assert.ok(!joinedGraph.pathData.has(3)); // Path 3 should be removed
+    });
+  });
 });
