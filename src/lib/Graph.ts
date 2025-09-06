@@ -276,7 +276,7 @@ class Graph implements ValueObject {
     const pd = this._pathData.get(pathId)!;
 
     if (pd.edges.size > 1) {
-      graph.updatePathData(pathId, p => p.setEdges(pd.edges.take(1)).setIsCycle(false));
+      graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.take(1)).setIsCycle(false));
       for (const e of pd.edges.slice(1)) {
         const newPathId = graph.freshPathId;
         graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges(List([e])));
@@ -327,25 +327,28 @@ class Graph implements ValueObject {
   public joinPaths(paths: Iterable<number>): Graph {
     let graph = this.copy();
 
-    let remaining = List(paths);
-    if (remaining.size === 0) {
+    let rest = List(paths);
+    if (rest.size === 0) {
       return this;
     }
+    const path = rest.first()!;
+    rest = rest.shift();
 
-    const path = remaining.first()!;
-    remaining = remaining.remove(path);
-    while (remaining.size > 0) {
-      const path1 = remaining.find(p => {
+    let pathSet = Set(rest);
+    while (pathSet.size > 0) {
+      const p = pathSet.find(p => {
         const g = graph.joinTwoPaths(path, p);
         if (g !== undefined) {
           graph = g;
-          remaining = remaining.remove(p);
           return true;
+        } else {
+          return false;
         }
-        return false;
       });
 
-      if (path1 === undefined) {
+      if (p !== undefined) {
+        pathSet = pathSet.remove(p);
+      } else {
         return this;
       }
     }
