@@ -87,15 +87,15 @@
     ]
   },
   "scripts": {
-    "watch": "concurrently \"vite build --watch\" \"vite build --mode extension --watch\"",
+    "watch": "concurrently \"vite build --watch\" \"vite build --mode extension --watch\" \"vite build --mode test --watch\"",
     "watch-webview": "vite build --watch",
     "watch-extension": "vite build --mode extension --watch",
+    "watch-test": "vite build --mode test --watch",
     "build": "vite build && vite build --mode extension",
     "build-webview": "vite build",
     "build-extension": "vite build --mode extension",
     "lint": "eslint .",
     "preview": "vite preview",
-    "pretest": "vite build --mode test",
     "test": "mocha dist/tests.js"
   },
   "dependencies": {

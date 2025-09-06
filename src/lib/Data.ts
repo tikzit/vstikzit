@@ -313,6 +313,12 @@ class EdgeData extends Data<EdgeData> implements ValueObject {
     }
     return d;
   }
+
+  public reverse(): EdgeData {
+    const d = new EdgeData(this);
+    [d._source, d._target] = [d._target, d._source];
+    return d;
+  }
 }
 
 class PathData implements ValueObject {

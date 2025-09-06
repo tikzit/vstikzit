@@ -178,6 +178,16 @@ class Graph implements ValueObject {
     }
   }
 
+  public pathSource(id: number): number {
+    const edge = this._edgeData.get(this._pathData.get(id)!.edges.first()!)!;
+    return edge.source;
+  }
+
+  public pathTarget(id: number): number {
+    const edge = this._edgeData.get(this._pathData.get(id)!.edges.last()!)!;
+    return edge.target;
+  }
+
   public removeNodes(nodes: Iterable<number>): Graph {
     const g = this.copy();
     const nodeSet = Set(nodes);
@@ -193,6 +203,12 @@ class Graph implements ValueObject {
     const edgeSet = Set(edges);
     g._edgeData = g._edgeData.filter(d => !edgeSet.contains(d.id));
     return g.removeDanglingPaths();
+  }
+
+  public removePath(pathId: number): Graph {
+    const g = this.copy();
+    g._pathData = g._pathData.remove(pathId);
+    return g;
   }
 
   // after removing edges, cut paths into multiple pieces where edges are missing
@@ -240,10 +256,105 @@ class Graph implements ValueObject {
         g._pathData = g._pathData.remove(pd.id);
       }
     }
-    g._pathData = g._pathData
-      .map(d => d.setEdges(d.edges.filter(e => g._edgeData.has(e))))
-      .filter(p => !p.edges.isEmpty());
     return g;
+  }
+
+  // reverse the direction of a path
+  public reversePath(pathId: number): Graph {
+    let graph = this.copy();
+    const pd = this._pathData.get(pathId)!;
+    graph.updatePathData(pathId, p => p.setEdges(pd.edges.reverse()));
+    for (const e of pd.edges) {
+      graph = graph.updateEdgeData(e, ed => ed.reverse());
+    }
+    return graph;
+  }
+
+  // splits a path with N edges into N paths with 1 edge each
+  public splitPath(pathId: number): Graph {
+    let graph = this.copy();
+    const pd = this._pathData.get(pathId)!;
+
+    if (pd.edges.size > 1) {
+      graph.updatePathData(pathId, p => p.setEdges(pd.edges.take(1)).setIsCycle(false));
+      for (const e of pd.edges.slice(1)) {
+        const newPathId = graph.freshPathId;
+        graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges(List([e])));
+        graph = graph.updateEdgeData(e, ed => ed.setPath(newPathId));
+      }
+    }
+
+    return graph;
+  }
+
+  // merge two paths that connect, reversing one of the paths if necessary
+  // Returns undefined if the paths cannot be merged and always preserves the first path ID
+  public mergePaths(path1: number, path2: number): Graph | undefined {
+    let graph = this.copy();
+    const pd1 = this._pathData.get(path1)!;
+    const pd2 = this._pathData.get(path2)!;
+
+    if (this.pathTarget(path1) === this.pathSource(path2)) {
+      // If path1's target is path2's source, connect path2 to the end of path1
+      graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
+      graph = graph.removePath(path2);
+    } else if (this.pathSource(path1) === this.pathTarget(path2)) {
+      // If path1's source is path2's target, connect path2 to the front of path1
+      graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
+      graph = graph.removePath(path2);
+    } else if (this.pathTarget(path1) === this.pathTarget(path2)) {
+      // If the paths share a target, reverse path2 and connect it to the end of path1
+      graph = graph.reversePath(path2);
+      graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
+      graph = graph.removePath(path2);
+    } else if (this.pathSource(path1) === this.pathSource(path2)) {
+      // If the paths share a source, reverse path2 and connect it to the front of path1
+      graph = graph.reversePath(path2);
+      graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
+      graph = graph.removePath(path2);
+    } else {
+      return undefined;
+    }
+
+    // update the path ID on all edges in path2
+    for (const e of pd2.edges) {
+      graph = graph.updateEdgeData(e, ed => ed.setPath(path1));
+    }
+
+    return graph;
+  }
+
+  // attempt to join a collection of paths into a single path, reversing paths if necessary
+  public joinPaths(paths: Iterable<number>): Graph {
+    let graph = this.copy();
+
+    let remaining = List(paths);
+    if (remaining.size === 0) {
+      return this;
+    }
+
+    const path = remaining.first()!;
+    remaining = remaining.remove(path);
+    while (remaining.size > 0) {
+      const path1 = remaining.find(p => {
+        const g = graph.mergePaths(path, p);
+        if (g !== undefined) {
+          graph = g;
+          remaining = remaining.remove(p);
+          return true;
+        }
+        return false;
+      });
+
+      if (path1 === undefined) {
+        return this;
+      }
+    }
+
+    if (graph.pathSource(path) === graph.pathTarget(path)) {
+      graph = graph.updatePathData(path, p => p.setIsCycle(true));
+    }
+    return graph;
   }
 
   public subgraphFromNodes(nodes: Iterable<number>): Graph {
