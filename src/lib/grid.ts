@@ -7,8 +7,8 @@ const drawGrid = (svg: HTMLElement, sceneCoords: SceneCoords) => {
   const height = sceneCoords.screenHeight;
 
   const axisColor = "#8839ef";
-  const majorColor = "#ccc";
-  const minorColor = "#ddd";
+  const majorColor = "#bbb";
+  const minorColor = "#e5e5e5";
 
   // create a group for the grid lines if it doesn't exist. Otherwise clear it
   const gridGroup = svg.querySelector("#grid")! as SVGGElement;
