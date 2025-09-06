@@ -287,36 +287,35 @@ class Graph implements ValueObject {
     return graph;
   }
 
-  // merge two paths that connect, reversing one of the paths if necessary
-  // Returns undefined if the paths cannot be merged and always preserves the first path ID
-  public mergePaths(path1: number, path2: number): Graph | undefined {
+  // join two paths that connect, reversing one of the paths if necessary
+  // Returns undefined if the paths cannot be joined and always preserves the first path ID
+  private joinTwoPaths(path1: number, path2: number): Graph | undefined {
     let graph = this.copy();
     const pd1 = this._pathData.get(path1)!;
     const pd2 = this._pathData.get(path2)!;
 
+    // there are four cases. Depending on how the paths connect, we may need to reverse
+    // path2 then either prepend or append its edges to path1
+
     if (this.pathTarget(path1) === this.pathSource(path2)) {
-      // If path1's target is path2's source, connect path2 to the end of path1
+      // I join two paths in the morning
       graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
-      graph = graph.removePath(path2);
     } else if (this.pathSource(path1) === this.pathTarget(path2)) {
-      // If path1's source is path2's target, connect path2 to the front of path1
+      // I join two paths at night
       graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
-      graph = graph.removePath(path2);
     } else if (this.pathTarget(path1) === this.pathTarget(path2)) {
-      // If the paths share a target, reverse path2 and connect it to the end of path1
+      // I join two paths in the afternoon
       graph = graph.reversePath(path2);
       graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
-      graph = graph.removePath(path2);
     } else if (this.pathSource(path1) === this.pathSource(path2)) {
-      // If the paths share a source, reverse path2 and connect it to the front of path1
+      // It makes me feel alright
       graph = graph.reversePath(path2);
       graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
-      graph = graph.removePath(path2);
     } else {
       return undefined;
     }
 
-    // update the path ID on all edges in path2
+    graph = graph.removePath(path2);
     for (const e of pd2.edges) {
       graph = graph.updateEdgeData(e, ed => ed.setPath(path1));
     }
@@ -337,7 +336,7 @@ class Graph implements ValueObject {
     remaining = remaining.remove(path);
     while (remaining.size > 0) {
       const path1 = remaining.find(p => {
-        const g = graph.mergePaths(path, p);
+        const g = graph.joinTwoPaths(path, p);
         if (g !== undefined) {
           graph = g;
           remaining = remaining.remove(p);
