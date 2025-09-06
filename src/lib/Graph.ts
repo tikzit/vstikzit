@@ -195,8 +195,43 @@ class Graph implements ValueObject {
     return g.removeDanglingPaths();
   }
 
+  // after removing edges, cut paths into multiple pieces where edges are missing
+  // and remove any empty paths
   private removeDanglingPaths(): Graph {
-    const g = this.copy();
+    let g = this.copy();
+
+    for (const pd of g._pathData.valueSeq()) {
+      let edges = List<number>();
+      let newPath = false;
+      for (const e of pd.edges) {
+        if (g._edgeData.has(e)) {
+          edges = edges.push(e);
+        } else {
+          if (edges.size > 0) {
+            if (!newPath) {
+              g = g.updatePathData(pd.id, p => p.setEdges(edges));
+            } else {
+              g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
+            }
+            newPath = true;
+            edges = List();
+          }
+        }
+      }
+
+      if (edges.size > 0) {
+        if (!newPath) {
+          g = g.updatePathData(pd.id, p => p.setEdges(edges));
+        } else {
+          g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
+        }
+        newPath = true;
+      }
+
+      if (!newPath) {
+        g._pathData = g._pathData.remove(pd.id);
+      }
+    }
     g._pathData = g._pathData
       .map(d => d.setEdges(d.edges.filter(e => g._edgeData.has(e))))
       .filter(p => !p.edges.isEmpty());
