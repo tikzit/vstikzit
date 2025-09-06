@@ -433,7 +433,35 @@ describe("Graph", () => {
       assert.strictEqual(graph1.numEdges, 0);
       assert.ok(!graph1.pathData.has(1));
     });
-    it("should split a path when removing an edge", () => {
+
+    it("should shorten a path when removing an edge at the beginning or end", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1));
+      graph = graph.addNodeWithData(new NodeData().setId(2));
+      graph = graph.addNodeWithData(new NodeData().setId(3));
+      graph = graph.addNodeWithData(new NodeData().setId(4));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3)));
+
+      assert.strictEqual(graph.numPaths, 1);
+      assert.strictEqual(graph.numEdges, 3);
+      assert.ok(graph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)));
+
+      const graph1 = graph.removeEdges([1]);
+      const graph2 = graph.removeEdges([3]);
+
+      assert.strictEqual(graph1.numPaths, 1);
+      assert.strictEqual(graph1.numEdges, 2);
+      assert.ok(graph1.pathData.get(1)?.edges.equals(List.of(2, 3)));
+
+      assert.strictEqual(graph2.numPaths, 1);
+      assert.strictEqual(graph2.numEdges, 2);
+      assert.ok(graph2.pathData.get(1)?.edges.equals(List.of(1, 2)));
+    });
+
+    it("should split a path when removing an edge in the middle", () => {
       let graph = new Graph();
       graph = graph.addNodeWithData(new NodeData().setId(1));
       graph = graph.addNodeWithData(new NodeData().setId(2));
