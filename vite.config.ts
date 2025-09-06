@@ -23,6 +23,22 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [],
     };
+  } else if (mode === "test") {
+    // unit test build
+    return {
+      build: {
+        lib: {
+          entry: resolve(__dirname, "src/test/main.test.ts"),
+          name: "tests",
+          fileName: "tests",
+          formats: ["es"],
+        },
+        outDir: "dist",
+        emptyOutDir: false,
+        target: "node16",
+      },
+      plugins: [],
+    };
   } else {
     // Webview-only build (default)
     return {

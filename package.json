@@ -94,7 +94,9 @@
     "build-webview": "vite build",
     "build-extension": "vite build --mode extension",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pretest": "vite build --mode test",
+    "test": "mocha dist/tests.js"
   },
   "dependencies": {
     "chevrotain": "^11.0.3",

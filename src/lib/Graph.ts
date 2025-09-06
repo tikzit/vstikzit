@@ -211,8 +211,11 @@ class Graph implements ValueObject {
             if (!newPath) {
               g = g.updatePathData(pd.id, p => p.setEdges(edges));
             } else {
-              // TODO: update pathId of edges
-              g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
+              const pathId = g.freshPathId;
+              g = g.addPathWithData(new PathData().setId(pathId).setEdges(edges));
+              edges.forEach(e => {
+                g = g.updateEdgeData(e, ed => ed.setPath(pathId));
+              });
             }
             newPath = true;
             edges = List();
@@ -224,8 +227,11 @@ class Graph implements ValueObject {
         if (!newPath) {
           g = g.updatePathData(pd.id, p => p.setEdges(edges));
         } else {
-          // TODO: update pathId of edges
-          g = g.addPathWithData(new PathData().setId(g.freshPathId).setEdges(edges));
+          const pathId = g.freshPathId;
+          g = g.addPathWithData(new PathData().setId(pathId).setEdges(edges));
+          edges.forEach(e => {
+            g = g.updateEdgeData(e, ed => ed.setPath(pathId));
+          });
         }
         newPath = true;
       }
