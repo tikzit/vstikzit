@@ -107,7 +107,11 @@ const StylePanel = ({
                   style={{ margin: "5px", borderWidth: 0 }}
                 >
                   {currentNodeStyle === name && <rect {...selectionProps} />}
-                  <Node data={node} style={style} sceneCoords={sceneCoords} />
+                  <Node
+                    data={node.setProperty("style", name)}
+                    tikzStyles={tikzStyles}
+                    sceneCoords={sceneCoords}
+                  />
                   <text {...labelProps}>{shortName}</text>
                 </svg>
               </a>
@@ -144,10 +148,10 @@ const StylePanel = ({
                 >
                   {currentEdgeStyle === name && <rect {...selectionProps} />}
                   <Edge
-                    data={edge}
+                    data={edge.setProperty("style", name)}
                     sourceData={enode1}
                     targetData={enode2}
-                    style={style}
+                    tikzStyles={tikzStyles}
                     sceneCoords={sceneCoords}
                   />
                   <text {...labelProps}>{shortName}</text>

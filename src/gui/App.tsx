@@ -1,6 +1,5 @@
 import { Set } from "immutable";
 import { useState, useEffect } from "react";
-// import Split from "react-split";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -60,7 +59,9 @@ const App = ({ initialContent, vscode }: AppProps) => {
             console.log("parsing\n" + message.content.source);
             const parsed = parseTikzStyles(message.content.source);
             if (parsed.result !== undefined) {
-              const s = parsed.result.setFilename(message.content.filename).inheritDataFrom(tikzStyles);
+              const s = parsed.result
+                .setFilename(message.content.filename)
+                .inheritDataFrom(tikzStyles);
               setTikzStyles(s);
             } else {
               console.log(
@@ -101,7 +102,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
     vscode.postMessage({
       type: "refreshTikzStyles",
     });
-  }
+  };
 
   const handleCurrentNodeLabelChanged = (label: string) => {
     if (selectedNodes.size === 1) {
