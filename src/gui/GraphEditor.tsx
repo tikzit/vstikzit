@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { List, Set } from "immutable";
 
 import Graph from "../lib/Graph";
@@ -11,6 +11,7 @@ import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
+import { getCommandFromShortcut } from "../lib/commands";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -433,21 +434,29 @@ const GraphEditor = ({
     setDraggingNodes(false);
   };
 
+  const moveSelectedNodes = (dx: number, dy: number) => {
+    if (!selectedNodes.isEmpty()) {
+      const g = graph.mapNodeData(d =>
+        selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
+      );
+      updateGraph(g, true);
+    }
+  };
+
   const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
     const combo = [];
-    if (event.getModifierState(CTRL)) combo.push("ctrl");
-    if (event.getModifierState("Alt")) combo.push("alt");
-    combo.push(event.key === "+" ? "Plus" : event.key);
+    if (event.getModifierState(CTRL)) combo.push("Ctrl");
+    if (event.getModifierState("Alt")) combo.push("Alt");
+    if (event.getModifierState("Shift")) combo.push("Shift");
+    combo.push(event.key === "+" ? "Plus" : event.key.toUpperCase());
 
-    const nudge = event.shiftKey ? 0.025 : 0.25;
-
-    switch (combo.join("+")) {
-      case "ctrl+alt+c":
+    switch (getCommandFromShortcut(combo.join("+"))?.name) {
+      case "vstikzit.copy":
         if (!selectedNodes.isEmpty()) {
           window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
         }
         break;
-      case "ctrl+alt+x":
+      case "vstikzit.cut":
         if (!selectedNodes.isEmpty()) {
           window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
           const g = graph.removeNodes(selectedNodes);
@@ -455,7 +464,7 @@ const GraphEditor = ({
           updateSelection(Set(), Set());
         }
         break;
-      case "ctrl+alt+v":
+      case "vstikzit.paste":
         {
           const pastedData = await window.navigator.clipboard.readText();
           const parsed = parseTikzPicture(pastedData);
@@ -476,63 +485,54 @@ const GraphEditor = ({
           }
         }
         break;
-      case "ctrl+J":
+      case "vstikzit.jumpToTikz":
         if (selectedNodes.size === 1) {
           jumpToNode(selectedNodes.first()!);
         } else if (selectedEdges.size === 1) {
           jumpToEdge(selectedEdges.first()!);
         }
         break;
-      case "ctrl+ArrowLeft":
-        if (!selectedNodes.isEmpty()) {
-          const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(-nudge, 0, 40)) : d
-          );
-          updateGraph(g, true);
-        }
+      case "vstikzit.moveLeft":
+        moveSelectedNodes(-0.25, 0);
         break;
-      case "ctrl+ArrowRight":
-        if (!selectedNodes.isEmpty()) {
-          const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(nudge, 0, 40)) : d
-          );
-          updateGraph(g, true);
-        }
+      case "vstikzit.moveRight":
+        moveSelectedNodes(0.25, 0);
         break;
-      case "ctrl+ArrowUp":
-        if (!selectedNodes.isEmpty()) {
-          const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, nudge, 40)) : d
-          );
-          updateGraph(g, true);
-        }
+      case "vstikzit.moveUp":
+        moveSelectedNodes(0, 0.25);
         break;
-      case "ctrl+ArrowDown":
-        if (!selectedNodes.isEmpty()) {
-          const g = graph.mapNodeData(d =>
-            selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(0, -nudge, 40)) : d
-          );
-          updateGraph(g, true);
-        }
+      case "vstikzit.moveDown":
+        moveSelectedNodes(0, -0.25);
         break;
-      case "s":
+      case "vstikzit.nudgeLeft":
+        moveSelectedNodes(-0.025, 0);
+        break;
+      case "vstikzit.nudgeRight":
+        moveSelectedNodes(0.025, 0);
+        break;
+      case "vstikzit.nudgeUp":
+        moveSelectedNodes(0, 0.025);
+        break;
+      case "vstikzit.nudgeDown":
+        moveSelectedNodes(0, -0.025);
+        break;
+      case "vstikzit.selectTool":
         setTool("select");
         break;
-      case "n":
+      case "vstikzit.nodeTool":
         setTool("vertex");
         break;
-      case "e":
+      case "vstikzit.edgeTool":
         setTool("edge");
         break;
-      case "Delete":
+      case "vstikzit.delete":
         {
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
           updateGraph(g, true);
           updateSelection(Set(), Set());
         }
         break;
-      case "-":
-      case "_":
+      case "vstikzit.zoomOut":
         {
           const coords = sceneCoords.zoomOut();
           const viewport = document.getElementById("graph-editor-viewport")!;
@@ -544,8 +544,7 @@ const GraphEditor = ({
           }
         }
         break;
-      case "=":
-      case "+":
+      case "vstikzit.zoomIn":
         {
           const coords = sceneCoords.zoomIn();
           if (coords.scale <= 1024) {
@@ -579,7 +578,7 @@ const GraphEditor = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onKeyDown={handleKeyDown}
-        onContextMenu={(event) => {
+        onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
           event.preventDefault();
         }}
