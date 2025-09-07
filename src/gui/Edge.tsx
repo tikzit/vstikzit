@@ -32,6 +32,13 @@ const Edge = ({
   let cpDist = computed[1];
   const bezier = computed[2];
 
+  let dashArray: string | undefined = undefined;
+  if (style.hasKey("dashed")) {
+    dashArray = `${0.1 * sceneCoords.scale} ${0.0333 * sceneCoords.scale}`;
+  } else if (style.hasKey("dotted")) {
+    dashArray = `${0.05 * sceneCoords.scale} ${0.0143 * sceneCoords.scale}`;
+  }
+
   let arrowTail: Coord[] | undefined = undefined;
   if (style.arrowTail !== "none") {
     const tt = tangent([c1, c2, cp1, cp2], 0.0, 0.1);
@@ -88,6 +95,7 @@ const Edge = ({
               d={`M${c1.x},${c1.y} C${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${c2.x},${c2.y}`}
               stroke={drawColor}
               strokeWidth={strokeWidth}
+              strokeDasharray={dashArray}
               fill="none"
             />
           </g>
@@ -109,6 +117,7 @@ const Edge = ({
               y2={c2.y}
               stroke={drawColor}
               strokeWidth={strokeWidth}
+              strokeDasharray={dashArray}
             />
           </g>
         )}

@@ -25,7 +25,12 @@ const StylePanel = ({
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
 }: StylePanelProps) => {
-  const sceneCoords = new SceneCoords(64, 0.35, 0.35, 0.25, 0.25);
+  const sceneCoords = new SceneCoords()
+    .setZoom(0)
+    .setLeft(0.35)
+    .setRight(0.35)
+    .setUp(0.25)
+    .setDown(0.25);
   const labelProps: SVGProps<SVGTextElement> = {
     x: 22,
     y: 38,

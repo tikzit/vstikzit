@@ -89,19 +89,21 @@ export function tangent(
 }
 
 // compute intersection of a ray exiting the origin at "angle" with a regular polygon
-// defined by "startAngle" and "sides" with circumradius 0.2
-function polygonOffset(angle: number, startAngle: number, sides: number): Coord {
+// defined by "startAngle" and "sides" with an inscribed radius of "r"
+function polygonOffset(angle: number, startAngle: number, sides: number, r: number): Coord {
   // find the angle of the nearest vertices on either side of "angle"
   const angleStep = (2 * Math.PI) / sides;
   const segment = Math.floor((angle - startAngle) / angleStep);
   const a0 = startAngle + segment * angleStep;
   const a1 = a0 + angleStep;
 
+  const outerR = 0.2 * (1 / Math.cos(Math.PI / sides));
+
   // compute vertices of the edge
-  const v0x = 0.2 * Math.cos(a0);
-  const v0y = 0.2 * Math.sin(a0);
-  const v1x = 0.2 * Math.cos(a1);
-  const v1y = 0.2 * Math.sin(a1);
+  const v0x = outerR * Math.cos(a0);
+  const v0y = outerR * Math.sin(a0);
+  const v1x = outerR * Math.cos(a1);
+  const v1y = outerR * Math.sin(a1);
 
   // compute intersection of the ray with the edge connecting v0 and v1
   // ray: (t * cos(angle), t * sin(angle)) for t >= 0
@@ -116,7 +118,7 @@ function polygonOffset(angle: number, startAngle: number, sides: number): Coord 
 
   // solve the system of equations
   const denominator = rayDx * edgeDy - rayDy * edgeDx;
-  const s = (rayDx * v0y - rayDy * v0x) / denominator;
+  const s = (rayDy * v0x - rayDx * v0y) / denominator;
   const t = (v0x + s * edgeDx) / rayDx;
 
   return new Coord(t * rayDx, t * rayDy);
@@ -178,11 +180,11 @@ export function computeControlPoints(
     const style = tikzStyles.style(sourceData.property("style"));
     if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
       // compute intersection with rectangle
-      const offset = polygonOffset(outAngle, Math.PI / 4, 4);
+      const offset = polygonOffset(outAngle, Math.PI / 4, 4, 0.225);
       c1 = c1.shift(offset.x, offset.y);
     } else {
       // default to circle
-      c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
+      c1 = c1.shift(Math.cos(outAngle) * 0.225, Math.sin(outAngle) * 0.225);
     }
   }
 
@@ -190,11 +192,11 @@ export function computeControlPoints(
     const style = tikzStyles.style(targetData.property("style"));
     if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
       // compute intersection with rectangle
-      const offset = polygonOffset(inAngle, Math.PI / 4, 4);
+      const offset = polygonOffset(inAngle, Math.PI / 4, 4, 0.225);
       c2 = c2.shift(offset.x, offset.y);
     } else {
       // default to circle
-      c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
+      c2 = c2.shift(Math.cos(inAngle) * 0.225, Math.sin(inAngle) * 0.225);
     }
   }
 

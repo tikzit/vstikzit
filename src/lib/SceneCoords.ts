@@ -1,23 +1,31 @@
 import { Coord } from "./Data";
 
+const scaleFactor = 64;
+
 class SceneCoords {
-  private _scale: number = 64;
+  private _zoom: number = 0;
   private _left: number = 40;
   private _right: number = 40;
   private _up: number = 40;
   private _down: number = 40;
 
-  constructor(scale?: number, left?: number, right?: number, up?: number, down?: number) {
-    this._scale = scale ?? 64;
-    this._left = left ?? 40;
-    this._right = right ?? 40;
-    this._up = up ?? 40;
-    this._down = down ?? 40;
+  constructor(coords?: SceneCoords) {
+    if (coords) {
+      this._zoom = coords._zoom;
+      this._left = coords._left;
+      this._right = coords._right;
+      this._up = coords._up;
+      this._down = coords._down;
+    }
   }
 
   // Getters
+  public get zoom(): number {
+    return this._zoom;
+  }
+
   public get scale(): number {
-    return this._scale;
+    return Math.round(Math.pow(1.25, this._zoom) * scaleFactor);
   }
 
   public get left(): number {
@@ -37,56 +45,66 @@ class SceneCoords {
   }
 
   // Setters that return new instances
-  public setScale(scale: number): SceneCoords {
-    return new SceneCoords(scale, this._left, this._right, this._up, this._down);
+  public setZoom(zoom: number): SceneCoords {
+    const coords = new SceneCoords(this);
+    coords._zoom = zoom;
+    return coords;
   }
 
   public setLeft(left: number): SceneCoords {
-    return new SceneCoords(this._scale, left, this._right, this._up, this._down);
+    const coords = new SceneCoords(this);
+    coords._left = left;
+    return coords;
   }
 
   public setRight(right: number): SceneCoords {
-    return new SceneCoords(this._scale, this._left, right, this._up, this._down);
+    const coords = new SceneCoords(this);
+    coords._right = right;
+    return coords;
   }
 
   public setUp(up: number): SceneCoords {
-    return new SceneCoords(this._scale, this._left, this._right, up, this._down);
+    const coords = new SceneCoords(this);
+    coords._up = up;
+    return coords;
   }
 
   public setDown(down: number): SceneCoords {
-    return new SceneCoords(this._scale, this._left, this._right, this._up, down);
+    const coords = new SceneCoords(this);
+    coords._down = down;
+    return coords;
   }
 
   public get screenWidth(): number {
-    return (this._left + this._right) * this._scale;
+    return (this._left + this._right) * this.scale;
   }
 
   public get screenHeight(): number {
-    return (this._up + this._down) * this._scale;
+    return (this._up + this._down) * this.scale;
   }
 
   public get originX(): number {
-    return this._left * this._scale;
+    return this._left * this.scale;
   }
 
   public get originY(): number {
-    return this._up * this._scale;
+    return this._up * this.scale;
   }
 
   public coordToScreen(c: Coord): Coord {
-    return new Coord(this.originX + this._scale * c.x, this.originY - this._scale * c.y);
+    return new Coord(this.originX + this.scale * c.x, this.originY - this.scale * c.y);
   }
 
   public coordFromScreen(c: Coord): Coord {
-    return new Coord((c.x - this.originX) / this._scale, (this.originY - c.y) / this._scale);
+    return new Coord((c.x - this.originX) / this.scale, (this.originY - c.y) / this.scale);
   }
 
   public zoomIn(): SceneCoords {
-    return this.setScale(this._scale * 1.25);
+    return this.setZoom(this._zoom + 1);
   }
 
   public zoomOut(): SceneCoords {
-    return this.setScale(this._scale / 1.25);
+    return this.setZoom(this._zoom - 1);
   }
 }
 
