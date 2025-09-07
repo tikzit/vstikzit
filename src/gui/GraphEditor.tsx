@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { List, Set } from "immutable";
 
 import Graph from "../lib/Graph";
@@ -8,7 +8,6 @@ import Node from "./Node";
 import Edge from "./Edge";
 import Styles from "../lib/Styles";
 import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
-import { StyleData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import { getCommandFromShortcut } from "../lib/commands";
@@ -31,6 +30,23 @@ interface GraphEditorProps {
   currentEdgeStyle: string;
 }
 
+interface UIState {
+  sceneCoords: SceneCoords;
+  smartTool: boolean;
+  prevGraph?: Graph;
+  mouseDownPos?: Coord;
+  selectionRect?: { x: number; y: number; width: number; height: number };
+  draggingNodes?: boolean;
+  edgeStartNode?: number;
+  edgeEndNode?: number;
+  addEdgeLineStart?: Coord;
+  addEdgeLineEnd?: Coord;
+}
+
+const uiStateReducer = (state: UIState, action: Partial<UIState>): UIState => {
+  return { ...state, ...action };
+};
+
 const GraphEditor = ({
   tool,
   onToolChanged: setTool,
@@ -47,6 +63,10 @@ const GraphEditor = ({
   currentEdgeStyle,
 }: GraphEditorProps) => {
   const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
+  const [state, dispatch] = useReducer(uiStateReducer, {
+    sceneCoords: new SceneCoords(),
+    smartTool: false,
+  });
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
 
   // internal editor state
@@ -59,15 +79,14 @@ const GraphEditor = ({
   const [draggingNodes, setDraggingNodes] = useState(false);
   const [edgeStartNode, setEdgeStartNode] = useState<number | undefined>(undefined);
   const [edgeEndNode, setEdgeEndNode] = useState<number | undefined>(undefined);
+  const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
+  const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
+  const [smartTool, setSmartTool] = useState<boolean>(false);
 
   // refs used to pass data from node/edge components to the graph editor
   const clickedNode = useRef<number | undefined>(undefined);
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
-  const [addEdgeLineStart, setAddEdgeLineStart] = useState<Coord | undefined>(undefined);
-  const [addEdgeLineEnd, setAddEdgeLineEnd] = useState<Coord | undefined>(undefined);
-
-  const [smartTool, setSmartTool] = useState<boolean>(false);
 
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
