@@ -3,6 +3,7 @@ import { Coord } from "./Data";
 const scaleFactor = 64;
 
 class SceneCoords {
+  private _scale: number = scaleFactor;
   private _zoom: number = 0;
   private _left: number = 40;
   private _right: number = 40;
@@ -25,7 +26,7 @@ class SceneCoords {
   }
 
   public get scale(): number {
-    return Math.round(Math.pow(1.25, this._zoom) * scaleFactor);
+    return this._scale;
   }
 
   public get left(): number {
@@ -48,6 +49,7 @@ class SceneCoords {
   public setZoom(zoom: number): SceneCoords {
     const coords = new SceneCoords(this);
     coords._zoom = zoom;
+    coords._scale = Math.round(Math.pow(1.25, zoom) * scaleFactor);
     return coords;
   }
 
