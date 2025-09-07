@@ -448,7 +448,13 @@ const GraphEditor = ({
     if (event.getModifierState(CTRL)) combo.push("Ctrl");
     if (event.getModifierState("Alt")) combo.push("Alt");
     if (event.getModifierState("Shift")) combo.push("Shift");
-    combo.push(event.key === "+" ? "Plus" : event.key.toUpperCase());
+    let key: string;
+    if (event.key.length === 1) {
+      key = event.key === "+" ? "Plus" : event.key.toUpperCase();
+    } else {
+      key = event.key;
+    }
+    combo.push(key);
 
     switch (getCommandFromShortcut(combo.join("+"))?.name) {
       case "vstikzit.copy":
@@ -585,38 +591,32 @@ const GraphEditor = ({
       >
         <g id="grid"></g>
         <g id="edgeLayer">
-          {graph.edgeData.entrySeq().map(([key, data]) => {
-            const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
-            return (
-              <Edge
-                key={key}
-                data={data}
-                sourceData={graph.nodeData.get(data.source)!}
-                targetData={graph.nodeData.get(data.target)!}
-                style={style}
-                selected={selectedEdges.has(key)}
-                onMouseDown={() => (clickedEdge.current = key)}
-                onControlPointMouseDown={i => (clickedControlPoint.current = [key, i])}
-                sceneCoords={sceneCoords}
-              />
-            );
-          })}
+          {graph.edgeData.entrySeq().map(([key, data]) => (
+            <Edge
+              key={key}
+              data={data}
+              sourceData={graph.nodeData.get(data.source)!}
+              targetData={graph.nodeData.get(data.target)!}
+              tikzStyles={tikzStyles}
+              selected={selectedEdges.has(key)}
+              onMouseDown={() => (clickedEdge.current = key)}
+              onControlPointMouseDown={i => (clickedControlPoint.current = [key, i])}
+              sceneCoords={sceneCoords}
+            />
+          ))}
         </g>
         <g id="nodeLayer">
-          {graph.nodeData.entrySeq().map(([key, data]) => {
-            const style = tikzStyles.style(data.property("style") ?? "") ?? new StyleData();
-            return (
-              <Node
-                key={key}
-                data={data}
-                style={style}
-                selected={selectedNodes.has(key)}
-                highlight={edgeStartNode === key || edgeEndNode === key}
-                onMouseDown={() => (clickedNode.current = key)}
-                sceneCoords={sceneCoords}
-              />
-            );
-          })}
+          {graph.nodeData.entrySeq().map(([key, data]) => (
+            <Node
+              key={key}
+              data={data}
+              tikzStyles={tikzStyles}
+              selected={selectedNodes.has(key)}
+              highlight={edgeStartNode === key || edgeEndNode === key}
+              onMouseDown={() => (clickedNode.current = key)}
+              sceneCoords={sceneCoords}
+            />
+          ))}
         </g>
         <g id="selectionLayer">
           {selectionRect && (

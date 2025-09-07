@@ -1,4 +1,5 @@
 import { Coord, EdgeData, NodeData } from "./Data";
+import Styles from "./Styles";
 
 function almostZero(f: number): boolean {
   return f >= -0.000001 && f <= 0.000001;
@@ -87,7 +88,42 @@ export function tangent(
   return new Coord(dx, dy);
 }
 
+// compute intersection of a ray exiting the origin at "angle" with a regular polygon
+// defined by "startAngle" and "sides" with circumradius 0.2
+function polygonOffset(angle: number, startAngle: number, sides: number): Coord {
+  // find the angle of the nearest vertices on either side of "angle"
+  const angleStep = (2 * Math.PI) / sides;
+  const segment = Math.floor((angle - startAngle) / angleStep);
+  const a0 = startAngle + segment * angleStep;
+  const a1 = a0 + angleStep;
+
+  // compute vertices of the edge
+  const v0x = 0.2 * Math.cos(a0);
+  const v0y = 0.2 * Math.sin(a0);
+  const v1x = 0.2 * Math.cos(a1);
+  const v1y = 0.2 * Math.sin(a1);
+
+  // compute intersection of the ray with the edge connecting v0 and v1
+  // ray: (t * cos(angle), t * sin(angle)) for t >= 0
+  // edge: v0 + s * (v1 - v0) for s in [0, 1]
+  // solve: t * cos(angle) = v0x + s * (v1x - v0x)
+  //        t * sin(angle) = v0y + s * (v1y - v0y)
+
+  const rayDx = Math.cos(angle);
+  const rayDy = Math.sin(angle);
+  const edgeDx = v1x - v0x;
+  const edgeDy = v1y - v0y;
+
+  // solve the system of equations
+  const denominator = rayDx * edgeDy - rayDy * edgeDx;
+  const s = (rayDx * v0y - rayDy * v0x) / denominator;
+  const t = (v0x + s * edgeDx) / rayDx;
+
+  return new Coord(t * rayDx, t * rayDy);
+}
+
 export function computeControlPoints(
+  tikzStyles: Styles,
   sourceData: NodeData,
   targetData: NodeData,
   edgeData: EdgeData
@@ -139,11 +175,27 @@ export function computeControlPoints(
   const cp2 = c2.shift(cpDist * Math.cos(inAngle), cpDist * Math.sin(inAngle));
 
   if ((sourceData.property("style") ?? "none") !== "none") {
-    c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
+    const style = tikzStyles.style(sourceData.property("style"));
+    if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
+      // compute intersection with rectangle
+      const offset = polygonOffset(outAngle, Math.PI / 4, 4);
+      c1 = c1.shift(offset.x, offset.y);
+    } else {
+      // default to circle
+      c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
+    }
   }
 
   if ((targetData.property("style") ?? "none") !== "none") {
-    c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
+    const style = tikzStyles.style(targetData.property("style"));
+    if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
+      // compute intersection with rectangle
+      const offset = polygonOffset(inAngle, Math.PI / 4, 4);
+      c2 = c2.shift(offset.x, offset.y);
+    } else {
+      // default to circle
+      c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
+    }
   }
 
   return [[c1, c2, cp1, cp2], cpDist, bezier];

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Coord, EdgeData, NodeData } from "../lib/Data";
-import { StyleData } from "../lib/Data";
+import { Coord, EdgeData, NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
 import { computeControlPoints, tangent } from "../lib/curve";
+import Styles from "../lib/Styles";
 
 interface EdgeProps {
   data: EdgeData;
   sourceData: NodeData;
   targetData: NodeData;
-  style: StyleData;
+  tikzStyles: Styles;
   selected?: boolean;
   onMouseDown?: () => void;
   onControlPointMouseDown?: (cp: 1 | 2) => void;
@@ -20,13 +20,14 @@ const Edge = ({
   data,
   sourceData,
   targetData,
-  style,
+  tikzStyles,
   selected,
   onMouseDown,
   onControlPointMouseDown,
   sceneCoords,
 }: EdgeProps) => {
-  const computed = computeControlPoints(sourceData, targetData, data);
+  const style = tikzStyles.style(data.property("style"));
+  const computed = computeControlPoints(tikzStyles, sourceData, targetData, data);
   let [c1, c2, cp1, cp2] = computed[0];
   let cpDist = computed[1];
   const bezier = computed[2];

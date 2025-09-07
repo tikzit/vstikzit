@@ -18,8 +18,12 @@ class Styles {
     return this._filename;
   }
 
-  public style(name: string): StyleData {
-    return this._styleData.get(name) ?? new StyleData();
+  public style(name: string | undefined): StyleData {
+    if (name === undefined) {
+      return new StyleData();
+    } else {
+      return this._styleData.get(name) ?? new StyleData();
+    }
   }
 
   public addStyle(style: StyleData) {

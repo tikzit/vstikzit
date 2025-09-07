@@ -1,26 +1,28 @@
 import { useEffect, useRef, useState } from "react";
-import { NodeData } from "../lib/Data";
+import { NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { formatLabel } from "../lib/labels";
 import { colorToHex } from "../lib/color";
-import { StyleData } from "../lib/Data";
+import Styles from "../lib/Styles";
 
 interface NodeProps {
   data: NodeData;
-  style: StyleData;
+  tikzStyles: Styles;
   selected?: boolean;
   highlight?: boolean;
   onMouseDown?: () => void;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: NodeProps) => {
+const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords }: NodeProps) => {
+  const style = tikzStyles.style(data.property("style"));
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
 
   const labelRef = useRef<SVGTextElement>(null);
   const [labelWidth, setLabelWidth] = useState<number>(0);
 
+  const shape = style.property("tikzit shape") ?? style.property("shape") ?? "circle";
   const fillColor = colorToHex(style.property("tikzit fill") ?? style.property("fill")) ?? "white";
   const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";
   useEffect(() => {
@@ -44,6 +46,16 @@ const Node = ({ data, style, selected, highlight, onMouseDown, sceneCoords }: No
             strokeWidth={sceneCoords.scale * 0.035}
           />
         </g>
+      ) : shape === "rectangle" ? (
+        <rect
+          x={-r}
+          y={-r}
+          width={2 * r}
+          height={2 * r}
+          fill={fillColor}
+          stroke={drawColor}
+          strokeWidth={sceneCoords.scale * 0.025}
+        />
       ) : (
         <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={sceneCoords.scale * 0.025} />
       )}
