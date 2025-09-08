@@ -11,7 +11,6 @@ import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import { getCommandFromShortcut } from "../lib/commands";
-import { use } from "chai";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -75,13 +74,13 @@ const GraphEditor = ({
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
   // path selection is calculated from selected edges or nodes
-  const selectedPaths = useCallback(() => new Set(
+  const selectedPaths = new Set(
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
       : Array.from(graph.edgeData.values())
         .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
         .map(d => d.path)
-  ), [selectedEdges, selectedNodes, graph]);
+  );
 
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
@@ -421,14 +420,16 @@ const GraphEditor = ({
         break;
       case "edge":
         if (uiState.edgeStartNode !== undefined && uiState.edgeEndNode !== undefined) {
+          const pathId = graph.freshPathId;
           let edge = new EdgeData()
             .setId(graph.freshEdgeId)
             .setSource(uiState.edgeStartNode)
-            .setTarget(uiState.edgeEndNode);
+            .setTarget(uiState.edgeEndNode)
+            .setPath(pathId);
           if (currentEdgeStyle !== "none") {
             edge = edge.setProperty("style", currentEdgeStyle);
           }
-          const path = new PathData().setId(graph.freshPathId).setEdges([edge.id]);
+          const path = new PathData().setId(pathId).setEdges([edge.id]);
           updateGraph(graph.addEdgeWithData(edge).addPathWithData(path), true);
         }
         break;
@@ -584,8 +585,9 @@ const GraphEditor = ({
         break;
       case "vstikzit.joinPaths":
         {
-          if (selectedPaths().size > 1) {
-            const g = graph.joinPaths(selectedPaths());
+          console.log("joining", selectedPaths);
+          if (selectedPaths.size > 1) {
+            const g = graph.joinPaths(selectedPaths);
             if (!g.equals(graph)) {
               updateGraph(g, true);
             }
@@ -595,7 +597,7 @@ const GraphEditor = ({
       case "vstikzit.splitPaths":
         {
           let g = graph;
-          for (const p of selectedPaths()) {
+          for (const p of selectedPaths) {
             g = g.splitPath(p);
           }
 
