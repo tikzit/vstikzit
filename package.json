@@ -3,6 +3,10 @@
   "type": "module",
   "displayName": "TikZiT for VS Code",
   "description": "TikZiT-like GUI for editing tikz files in VS Code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tikzit/vstikzit.git"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.103.0"
@@ -68,7 +72,8 @@
           "latex"
         ],
         "extensions": [
-          ".tikz", ".tex"
+          ".tikz",
+          ".tex"
         ],
         "configuration": ""
       }
@@ -113,6 +118,7 @@
     "@types/react-dom": "^19.1.7",
     "@types/vscode": "^1.103.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "@vscode/vsce": "^3.6.0",
     "chai": "^6.0.1",
     "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
