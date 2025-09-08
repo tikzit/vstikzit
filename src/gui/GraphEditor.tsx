@@ -79,10 +79,10 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? selectedEdges
       : Set(
-          graph.edgeData
-            .filter(e => selectedNodes.has(e.source) && selectedNodes.has(e.target))
-            .keys()
-        )
+        Array.from(graph.edgeData.entries())
+          .filter(([_, d]) => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(([k, _]) => k)
+      )
   ).map(e => graph.edgeData.get(e)!.path);
 
   useEffect(() => {
@@ -319,7 +319,7 @@ const GraphEditor = ({
       case "edge":
         if (uiState.edgeStartNode !== undefined) {
           const p1 = sceneCoords.coordFromScreen(p);
-          const n = graph.nodeData.find(
+          const n = Array.from(graph.nodeData.values()).find(
             d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
           )?.id;
           updateUIState({ edgeEndNode: n });
@@ -427,7 +427,7 @@ const GraphEditor = ({
           if (currentEdgeStyle !== "none") {
             edge = edge.setProperty("style", currentEdgeStyle);
           }
-          const path = new PathData().setId(graph.freshPathId).setEdges(List([edge.id]));
+          const path = new PathData().setId(graph.freshPathId).setEdges([edge.id]);
           updateGraph(graph.addEdgeWithData(edge).addPathWithData(path), true);
         }
         break;
@@ -487,12 +487,12 @@ const GraphEditor = ({
           const parsed = parseTikzPicture(pastedData);
           if (parsed.result !== undefined) {
             let g = parsed.result;
-            let n = g.nodeData.first();
-            while (
-              graph.nodeData.find(d => n !== undefined && d.coord.equals(n.coord)) !== undefined
-            ) {
-              g = g.shiftGraph(0.5, -0.5);
-              n = g.nodeData.first();
+            const nodes = g.nodes;
+            if (nodes.length !== 0) {
+              const n = nodes[0];
+              while (Array.from(graph.nodeData.values()).find(d => g.nodeData.get(n)!.coord.equals(d.coord))) {
+                g = g.shiftGraph(0.5, -0.5);
+              }
             }
 
             const g1 = graph.insertGraph(g);
@@ -638,7 +638,7 @@ const GraphEditor = ({
       >
         <g id="grid"></g>
         <g id="edgeLayer">
-          {graph.edgeData.entrySeq().map(([key, data]) => (
+          {Array.from(graph.edgeData.entries()).map(([key, data]) => (
             <Edge
               key={key}
               data={data}
@@ -653,7 +653,7 @@ const GraphEditor = ({
           ))}
         </g>
         <g id="nodeLayer">
-          {graph.nodeData.entrySeq().map(([key, data]) => (
+          {Array.from(graph.nodeData.entries()).map(([key, data]) => (
             <Node
               key={key}
               data={data}
