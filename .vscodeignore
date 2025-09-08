@@ -1,4 +1,10 @@
+node_modules/
+src/
+example/
+.vscode/
+.git/
+images/
 *
-!dist
 !package.json
 !README.md
+!LICENSE
