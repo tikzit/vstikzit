@@ -445,7 +445,12 @@ const GraphEditor = ({
   };
 
 
-  const handleKeyDown = useCallback(async (event: KeyboardEvent) => {
+  const handleKeyDown = async (event: KeyboardEvent) => {
+    // ignore key events if focus is in an input field
+    if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
+      return;
+    }
+
     const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     const combo = [];
     if (event.getModifierState(CTRL)) combo.push("Ctrl");
@@ -614,17 +619,7 @@ const GraphEditor = ({
       event.preventDefault();
       event.stopPropagation();
     }
-  }, [
-    graph, updateGraph,
-    selectedNodes, selectedEdges, selectedPaths, updateSelection,
-    sceneCoords, updateSceneCoords,
-    setTool, jumpToEdge, jumpToNode
-  ]);
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  };
 
   return (
     <div
@@ -644,6 +639,8 @@ const GraphEditor = ({
           backgroundColor: "white",
           // outline: "none", // Remove default focus outline
         }}
+        tabindex={0}
+        onKeyDown={handleKeyDown}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

@@ -42,7 +42,7 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
             r={r}
             fill="rgba(0,0,0,0)"
             stroke="#aaa"
-            stroke-dasharray="4 4"
+            stroke-dasharray={`${0.0625 * sceneCoords.scale} ${0.0625 * sceneCoords.scale}`}
             stroke-width={sceneCoords.scale * 0.035}
           />
         </g>

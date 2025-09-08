@@ -69,7 +69,7 @@ const StylePanel = ({
         <input
           id="label-field"
           value={currentNodeLabel ?? ""}
-          onChange={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
+          onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
           onKeyDown={e => {
             if (e.key === "Enter") {
               document.getElementById("graph-editor")?.focus();
