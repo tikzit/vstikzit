@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { formatLabel } from "../lib/labels";
@@ -42,8 +42,8 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
             r={r}
             fill="rgba(0,0,0,0)"
             stroke="#aaa"
-            strokeDasharray="4 4"
-            strokeWidth={sceneCoords.scale * 0.035}
+            stroke-dasharray="4 4"
+            stroke-width={sceneCoords.scale * 0.035}
           />
         </g>
       ) : shape === "rectangle" ? (
@@ -54,10 +54,10 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
           height={2 * r}
           fill={fillColor}
           stroke={drawColor}
-          strokeWidth={sceneCoords.scale * 0.025}
+          stroke-width={sceneCoords.scale * 0.025}
         />
       ) : (
-        <circle r={r} fill={fillColor} stroke={drawColor} strokeWidth={sceneCoords.scale * 0.025} />
+        <circle r={r} fill={fillColor} stroke={drawColor} stroke-width={sceneCoords.scale * 0.025} />
       )}
       {data.label !== "" && (
         <g>
@@ -68,17 +68,17 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
             height={24}
             fill="#fe6"
             stroke="#f00"
-            strokeDasharray="4 4"
+            stroke-dasharray="4 4"
             opacity={0.6}
           />
           <text
             ref={labelRef}
             x={0}
             y={0}
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fontFamily="monospace"
-            fontWeight="bold"
+            text-anchor="middle"
+            alignment-baseline="middle"
+            font-family="monospace"
+            font-weight="bold"
             style={{ cursor: "default" }}
           >
             {formatLabel(data.label)}
@@ -86,7 +86,7 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
         </g>
       )}
       {selected && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
-      {highlight && <circle r={r} stroke="rgb(100, 0, 200)" fill="none" strokeWidth={4} />}
+      {highlight && <circle r={r} stroke="rgb(100, 0, 200)" fill="none" stroke-width={4} />}
     </g>
   );
 };

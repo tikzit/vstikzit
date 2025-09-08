@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import preact from "@preact/preset-vite";
 import { resolve } from "path";
 
 // https://vite.dev/config/
@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => {
         assetsInlineLimit: 16384,
       },
       assetsInclude: ["**/*.svg"],
-      plugins: [react()],
+      plugins: [preact()],
       define: {
         "process.env.NODE_ENV": '"production"',
       },

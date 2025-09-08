@@ -1,4 +1,4 @@
-import { createRoot } from "react-dom/client";
+import { render } from "preact";
 import App from "./App";
 
 // VSCode WebView API types (should be available globally in webview context)
@@ -9,9 +9,8 @@ const container = document.getElementById("root")!;
 
 try {
   const initialContent = JSON.parse(initialContentText);
-  const root = createRoot(container);
-  root.render(<App initialContent={initialContent} vscode={vscode} />);
+  render(<App initialContent={initialContent} vscode={vscode} />, container);
 } catch (error) {
-  console.error("Error rendering React app:", error);
+  console.error("Error rendering Preact app:", error);
   container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
 }

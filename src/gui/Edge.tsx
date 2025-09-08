@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "preact/hooks";
 import { Coord, EdgeData, NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
@@ -87,15 +87,15 @@ const Edge = ({
             <path
               d={`M${c1.x},${c1.y} C${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${c2.x},${c2.y}`}
               stroke="rgb(150, 200, 255)"
-              strokeWidth={strokeWidth * 3}
+              stroke-width={strokeWidth * 3}
               fill="none"
               opacity={highlightOpacity}
             />
             <path
               d={`M${c1.x},${c1.y} C${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${c2.x},${c2.y}`}
               stroke={drawColor}
-              strokeWidth={strokeWidth}
-              strokeDasharray={dashArray}
+              stroke-width={strokeWidth}
+              stroke-dasharray={dashArray}
               fill="none"
             />
           </g>
@@ -107,7 +107,7 @@ const Edge = ({
               x2={c2.x}
               y2={c2.y}
               stroke="rgb(150, 200, 255)"
-              strokeWidth={strokeWidth * 3}
+              stroke-width={strokeWidth * 3}
               opacity={highlightOpacity}
             />
             <line
@@ -116,8 +116,8 @@ const Edge = ({
               x2={c2.x}
               y2={c2.y}
               stroke={drawColor}
-              strokeWidth={strokeWidth}
-              strokeDasharray={dashArray}
+              stroke-width={strokeWidth}
+              stroke-dasharray={dashArray}
             />
           </g>
         )}
@@ -125,7 +125,7 @@ const Edge = ({
           <path
             d={`M${arrowHead[0].x},${arrowHead[0].y} L${arrowHead[1].x},${arrowHead[1].y} L${arrowHead[2].x},${arrowHead[2].y}`}
             stroke={drawColor}
-            strokeWidth={strokeWidth}
+            stroke-width={strokeWidth}
             fill="none"
           />
         )}
@@ -133,7 +133,7 @@ const Edge = ({
           <path
             d={`M${arrowTail[0].x},${arrowTail[0].y} L${arrowTail[1].x},${arrowTail[1].y} L${arrowTail[2].x},${arrowTail[2].y}`}
             stroke={drawColor}
-            strokeWidth={strokeWidth}
+            stroke-width={strokeWidth}
             fill="none"
           />
         )}
@@ -146,7 +146,7 @@ const Edge = ({
             r={cpDist}
             fill="none"
             stroke={controlColor2}
-            strokeWidth={2}
+            stroke-width={2}
           />
           <line
             x1={nodeCoord1.x}
@@ -154,7 +154,7 @@ const Edge = ({
             x2={cp1.x}
             y2={cp1.y}
             stroke={controlColor1}
-            strokeWidth={2}
+            stroke-width={2}
           />
           <circle
             cx={cp1.x}
@@ -162,7 +162,7 @@ const Edge = ({
             r={0.1 * sceneCoords.scale}
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
-            strokeWidth={2}
+            stroke-width={2}
             onMouseDown={() => onControlPointMouseDown?.(1)}
           />
           <circle
@@ -171,7 +171,7 @@ const Edge = ({
             r={cpDist}
             fill="none"
             stroke={controlColor2}
-            strokeWidth={2}
+            stroke-width={2}
           />
           <line
             x1={nodeCoord2.x}
@@ -179,7 +179,7 @@ const Edge = ({
             x2={cp2.x}
             y2={cp2.y}
             stroke={controlColor1}
-            strokeWidth={2}
+            stroke-width={2}
           />
           <circle
             cx={cp2.x}
@@ -187,7 +187,7 @@ const Edge = ({
             r={0.1 * sceneCoords.scale}
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
-            strokeWidth={2}
+            stroke-width={2}
             onMouseDown={() => onControlPointMouseDown?.(2)}
           />
         </g>

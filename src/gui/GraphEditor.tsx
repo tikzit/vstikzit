@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "preact/hooks";
+import { JSX } from "preact";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -10,6 +11,7 @@ import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import { getCommandFromShortcut } from "../lib/commands";
+import { use } from "chai";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -64,7 +66,6 @@ const GraphEditor = ({
   currentNodeStyle,
   currentEdgeStyle,
 }: GraphEditorProps) => {
-  const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
 
@@ -74,13 +75,13 @@ const GraphEditor = ({
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
   // path selection is calculated from selected edges or nodes
-  const selectedPaths = new Set(
+  const selectedPaths = useCallback(() => new Set(
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
       : Array.from(graph.edgeData.values())
         .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
         .map(d => d.path)
-  );
+  ), [selectedEdges, selectedNodes, graph]);
 
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
@@ -121,14 +122,14 @@ const GraphEditor = ({
     drawGrid(editor, sceneCoords);
   }, [sceneCoords]);
 
-  const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
+  const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     return new Coord(x, y);
   };
 
-  const updateSceneCoords = (coords: SceneCoords) => {
+  const updateSceneCoords = useCallback((coords: SceneCoords) => {
     const viewport = document.getElementById("graph-editor-viewport")!;
     const c0 = new Coord(
       viewport.scrollLeft + viewport.clientWidth / 2,
@@ -138,9 +139,9 @@ const GraphEditor = ({
     viewport.scrollLeft += c1.x - c0.x;
     viewport.scrollTop += c1.y - c0.y;
     setSceneCoords(coords);
-  };
+  }, [sceneCoords, setSceneCoords]);
 
-  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -220,7 +221,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseMove = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
@@ -345,7 +346,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseUp = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
@@ -443,16 +444,9 @@ const GraphEditor = ({
     updateUIState("reset");
   };
 
-  const moveSelectedNodes = (dx: number, dy: number) => {
-    if (selectedNodes.size !== 0) {
-      const g = graph.mapNodeData(d =>
-        selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
-      );
-      updateGraph(g, true);
-    }
-  };
 
-  const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
+  const handleKeyDown = useCallback(async (event: KeyboardEvent) => {
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     const combo = [];
     if (event.getModifierState(CTRL)) combo.push("Ctrl");
     if (event.getModifierState("Alt")) combo.push("Alt");
@@ -466,6 +460,15 @@ const GraphEditor = ({
     combo.push(key);
 
     let capture = true;
+
+    const moveSelectedNodes = (dx: number, dy: number) => {
+      if (selectedNodes.size !== 0) {
+        const g = graph.mapNodeData(d =>
+          selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
+        );
+        updateGraph(g, true);
+      }
+    };
 
     switch (getCommandFromShortcut(combo.join("+"))?.name) {
       case "vstikzit.copy":
@@ -576,8 +579,8 @@ const GraphEditor = ({
         break;
       case "vstikzit.joinPaths":
         {
-          if (selectedPaths.size > 1) {
-            const g = graph.joinPaths(selectedPaths);
+          if (selectedPaths().size > 1) {
+            const g = graph.joinPaths(selectedPaths());
             if (!g.equals(graph)) {
               updateGraph(g, true);
             }
@@ -587,7 +590,7 @@ const GraphEditor = ({
       case "vstikzit.splitPaths":
         {
           let g = graph;
-          for (const p of selectedPaths) {
+          for (const p of selectedPaths()) {
             g = g.splitPath(p);
           }
 
@@ -611,7 +614,17 @@ const GraphEditor = ({
       event.preventDefault();
       event.stopPropagation();
     }
-  };
+  }, [
+    graph, updateGraph,
+    selectedNodes, selectedEdges, selectedPaths, updateSelection,
+    sceneCoords, updateSceneCoords,
+    setTool, jumpToEdge, jumpToNode
+  ]);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div
@@ -631,11 +644,9 @@ const GraphEditor = ({
           backgroundColor: "white",
           // outline: "none", // Remove default focus outline
         }}
-        tabIndex={0}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onKeyDown={handleKeyDown}
         onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
           event.preventDefault();
@@ -676,7 +687,7 @@ const GraphEditor = ({
               {...uiState.selectionRect}
               fill="rgba(150, 150, 200, 0.2)"
               stroke="rgba(150, 150, 200, 1)"
-              strokeDasharray="5,2"
+              stroke-dasharray="5,2"
             />
           )}
         </g>
@@ -688,7 +699,7 @@ const GraphEditor = ({
               x2={uiState.addEdgeLineEnd.x}
               y2={uiState.addEdgeLineEnd.y}
               stroke="rgb(100, 0, 200)"
-              strokeWidth={4}
+              stroke-width={4}
             />
           )}
         </g>
