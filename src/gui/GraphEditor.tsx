@@ -585,7 +585,6 @@ const GraphEditor = ({
         break;
       case "vstikzit.joinPaths":
         {
-          console.log("joining", selectedPaths);
           if (selectedPaths.size > 1) {
             const g = graph.joinPaths(selectedPaths);
             if (!g.equals(graph)) {
