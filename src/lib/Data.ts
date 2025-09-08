@@ -131,19 +131,19 @@ class Data<T extends Data<T>> {
 
   public setProperty(key: string, value: any): T {
     const d = new (this.constructor as any)(this);
-    d._map = d._map.set(key, value.toString());
+    d._map.set(key, value.toString());
     return d;
   }
 
   public setAtom(key: string): T {
     const d = new (this.constructor as any)(this);
-    d._map = d._map.set(key, undefined);
+    d._map.set(key, undefined);
     return d;
   }
 
   public unset(key: string): T {
     const d = new (this.constructor as any)(this);
-    d._map = d._map.delete(key);
+    d._map.delete(key);
     return d;
   }
 
