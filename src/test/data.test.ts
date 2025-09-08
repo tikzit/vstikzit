@@ -1,6 +1,5 @@
 import { assert } from "chai";
-import { NodeData, Coord } from "../lib/Data";
-import { OrderedMap } from "immutable";
+import { NodeData, Coord, mapEquals } from "../lib/Data";
 
 describe("NodeData", () => {
   it("should create a NodeData instance", () => {
@@ -21,11 +20,11 @@ describe("NodeData", () => {
     assert.ok(node1.equals(node2));
   });
 
-  it("should behave like a ValueObject for immutable container equality", () => {
+  it("should give correct map equality", () => {
     const node1 = new NodeData().setLabel("Label").setCoord(new Coord(1, 2));
     const node2 = new NodeData().setLabel("Label").setCoord(new Coord(1, 2));
-    const container1 = OrderedMap<string, NodeData>().set("node1", node1);
-    const container2 = OrderedMap<string, NodeData>().set("node1", node2);
-    assert.ok(container1.equals(container2));
+    const container1 = new Map<string, NodeData>().set("node1", node1);
+    const container2 = new Map<string, NodeData>().set("node1", node2);
+    assert.ok(mapEquals(container1, container2));
   });
 });

@@ -2,7 +2,10 @@
 
 import { isValidPropertyVal } from "./TikzParser";
 
-function mapEquals<K, V>(m1: Map<K, V>, m2: Map<K, V>): boolean {
+function mapEquals<K, V>(m1: Map<K, V> | undefined, m2: Map<K, V> | undefined): boolean {
+  if (m1 === undefined || m2 === undefined) {
+    return m1 === m2;
+  }
   if (m1.size !== m2.size) {
     return false;
   }
@@ -19,9 +22,9 @@ function mapEquals<K, V>(m1: Map<K, V>, m2: Map<K, V>): boolean {
   return true;
 }
 
-function arrayEquals<T>(a1: T[], a2: T[]): boolean {
-  if (a1.length !== a2.length) {
-    return false;
+function arrayEquals<T>(a1: T[] | undefined, a2: T[] | undefined): boolean {
+  if (a1 === undefined || a2 === undefined) {
+    return a1 === a2;
   }
   for (let i = 0; i < a1.length; i++) {
     const v1 = a1[i];

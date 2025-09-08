@@ -74,8 +74,8 @@ describe("Graph parser", () => {
     assert.strictEqual(g.edgeData.get(1)?.target, 2);
     assert.strictEqual(g.edgeData.get(2)?.source, 2);
     assert.strictEqual(g.edgeData.get(2)?.target, 3);
-    assert.strictEqual(g.pathData.get(0)?.edges.size, 1);
-    assert.strictEqual(g.pathData.get(1)?.edges.size, 2);
+    assert.strictEqual(g.pathData.get(0)?.edges.length, 1);
+    assert.strictEqual(g.pathData.get(1)?.edges.length, 2);
     assert.strictEqual(strip(g.tikz()), strip(input));
   });
 

@@ -1,7 +1,6 @@
 import { assert } from "chai";
-import { List } from "immutable";
 import Graph from "../lib/Graph";
-import { NodeData, EdgeData, PathData, Coord } from "../lib/Data";
+import { NodeData, EdgeData, PathData, Coord, arrayEquals } from "../lib/Data";
 
 describe("Graph", () => {
   describe("Node operations", () => {
@@ -103,7 +102,7 @@ describe("Graph", () => {
       const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
       const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const path = new PathData().setId(1).setEdges(List.of(1));
+      const path = new PathData().setId(1).setEdges([1]);
 
       const newGraph = graph
         .addNodeWithData(node1)
@@ -121,7 +120,7 @@ describe("Graph", () => {
       const graph = new Graph();
       const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const selfLoop = new EdgeData().setId(1).setSource(1).setTarget(1).setPath(1);
-      const path = new PathData().setId(1).setEdges(List.of(1));
+      const path = new PathData().setId(1).setEdges([1]);
 
       const newGraph = graph.addNodeWithData(node).addEdgeWithData(selfLoop).addPathWithData(path);
 
@@ -138,8 +137,8 @@ describe("Graph", () => {
 
       const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
       const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
-      const path2 = new PathData().setId(2).setEdges(List.of(2));
+      const path1 = new PathData().setId(1).setEdges([1]);
+      const path2 = new PathData().setId(2).setEdges([2]);
 
       const newGraph = graph
         .addNodeWithData(node1)
@@ -163,8 +162,8 @@ describe("Graph", () => {
 
       const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
       const edge2 = new EdgeData().setId(2).setSource(2).setTarget(1).setPath(2);
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
-      const path2 = new PathData().setId(2).setEdges(List.of(2));
+      const path1 = new PathData().setId(1).setEdges([1]);
+      const path2 = new PathData().setId(2).setEdges([2]);
 
       const graphWithEdges = graph
         .addNodeWithData(node1)
@@ -191,9 +190,9 @@ describe("Graph", () => {
       const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
       const edge3 = new EdgeData().setId(3).setSource(1).setTarget(3).setPath(3);
 
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
-      const path2 = new PathData().setId(2).setEdges(List.of(2));
-      const path3 = new PathData().setId(3).setEdges(List.of(3));
+      const path1 = new PathData().setId(1).setEdges([1]);
+      const path2 = new PathData().setId(2).setEdges([2]);
+      const path3 = new PathData().setId(3).setEdges([3]);
 
       const graphWithAll = graph
         .addNodeWithData(node1)
@@ -222,7 +221,7 @@ describe("Graph", () => {
       const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
       const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const path = new PathData().setId(1).setEdges(List.of(1));
+      const path = new PathData().setId(1).setEdges([1]);
 
       const graphWithEdge = graph
         .addNodeWithData(node1)
@@ -242,8 +241,8 @@ describe("Graph", () => {
       const graph = new Graph();
       const edge1 = new EdgeData().setId(5).setSource(1).setTarget(2).setPath(1);
       const edge2 = new EdgeData().setId(15).setSource(2).setTarget(1).setPath(2);
-      const path1 = new PathData().setId(1).setEdges(List.of(5));
-      const path2 = new PathData().setId(2).setEdges(List.of(15));
+      const path1 = new PathData().setId(1).setEdges([5]);
+      const path2 = new PathData().setId(2).setEdges([15]);
 
       const graphWithEdges = graph
         .addEdgeWithData(edge1)
@@ -302,8 +301,8 @@ describe("Graph", () => {
 
       const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
       const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
-      const path2 = new PathData().setId(2).setEdges(List.of(2));
+      const path1 = new PathData().setId(1).setEdges([1]);
+      const path2 = new PathData().setId(2).setEdges([2]);
 
       const fullGraph = graph
         .addNodeWithData(node1)
@@ -338,7 +337,7 @@ describe("Graph", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
       const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
+      const path1 = new PathData().setId(1).setEdges([1]);
 
       const graph1 = new Graph()
         .addNodeWithData(node1)
@@ -349,7 +348,7 @@ describe("Graph", () => {
       const node3 = new NodeData().setId(3);
       const node4 = new NodeData().setId(4);
       const edge2 = new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2);
-      const path2 = new PathData().setId(2).setEdges(List.of(2));
+      const path2 = new PathData().setId(2).setEdges([2]);
 
       const graph2 = new Graph()
         .addNodeWithData(node3)
@@ -376,7 +375,7 @@ describe("Graph", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
       const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const path1 = new PathData().setId(1).setEdges(List.of(1));
+      const path1 = new PathData().setId(1).setEdges([1]);
 
       const graph1 = new Graph()
         .addNodeWithData(node1)
@@ -421,11 +420,11 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(graph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)));
+      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([1, 2, 3]);
 
@@ -443,22 +442,22 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(graph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)));
+      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([1]);
       const graph2 = graph.removeEdges([3]);
 
       assert.strictEqual(graph1.numPaths, 1);
       assert.strictEqual(graph1.numEdges, 2);
-      assert.ok(graph1.pathData.get(1)?.edges.equals(List.of(2, 3)));
+      assert.ok(arrayEquals(graph1.pathData.get(1)?.edges, [2, 3]));
 
       assert.strictEqual(graph2.numPaths, 1);
       assert.strictEqual(graph2.numEdges, 2);
-      assert.ok(graph2.pathData.get(1)?.edges.equals(List.of(1, 2)));
+      assert.ok(arrayEquals(graph2.pathData.get(1)?.edges, [1, 2]));
     });
 
     it("should split a path when removing an edge in the middle", () => {
@@ -470,18 +469,18 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(graph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)));
+      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([2]);
 
       assert.strictEqual(graph1.numPaths, 2);
       assert.strictEqual(graph1.numEdges, 2);
-      assert.ok(graph1.pathData.get(1)?.edges.equals(List.of(1)));
-      assert.ok(graph1.pathData.get(2)?.edges.equals(List.of(3)));
+      assert.ok(arrayEquals(graph1.pathData.get(1)?.edges, [1]));
+      assert.ok(arrayEquals(graph1.pathData.get(2)?.edges, [3]));
     });
   });
 
@@ -491,14 +490,14 @@ describe("Graph", () => {
       graph = graph.addNodeWithData(new NodeData().setId(1));
       graph = graph.addNodeWithData(new NodeData().setId(2));
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const splitGraph = graph.splitPath(1);
 
       // Splitting a single-edge path should result in no change
       assert.strictEqual(splitGraph.numPaths, 1);
       assert.strictEqual(splitGraph.numEdges, 1);
-      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
       assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
     });
 
@@ -509,7 +508,7 @@ describe("Graph", () => {
       graph = graph.addNodeWithData(new NodeData().setId(3));
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2]));
 
       const splitGraph = graph.splitPath(1);
 
@@ -517,12 +516,12 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 2);
 
       // First path should contain only the first edge
-      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
       assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
 
       // Second path should contain only the second edge with a new path ID
-      const newPathId = splitGraph.pathData.keySeq().find(id => id !== 1)!;
-      assert.ok(splitGraph.pathData.get(newPathId)?.edges.equals(List.of(2)));
+      const newPathId = Array.from(splitGraph.pathData.keys()).find(id => id !== 1)!;
+      assert.ok(arrayEquals(splitGraph.pathData.get(newPathId)?.edges, [2]));
       assert.strictEqual(splitGraph.edgeData.get(2)?.path, newPathId);
 
       // Original path should no longer be a cycle
@@ -540,7 +539,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1, 2, 3, 4)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3, 4]));
 
       const splitGraph = graph.splitPath(1);
 
@@ -548,17 +547,16 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 4);
 
       // First path should contain only the first edge
-      assert.ok(splitGraph.pathData.get(1)?.edges.equals(List.of(1)));
+      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
       assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
 
       // Each subsequent edge should be in its own path
-      const allPathIds = splitGraph.pathData.keySeq().toArray().sort();
-      assert.strictEqual(allPathIds.length, 4);
+      assert.strictEqual(splitGraph.pathData.size, 4);
 
       for (let i = 2; i <= 4; i++) {
         const pathId = splitGraph.edgeData.get(i)?.path;
         assert.ok(pathId !== undefined);
-        assert.ok(splitGraph.pathData.get(pathId!)?.edges.equals(List.of(i)));
+        assert.ok(arrayEquals(splitGraph.pathData.get(pathId!)?.edges, [i]));
       }
     });
 
@@ -571,7 +569,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(1));
       graph = graph.addPathWithData(
-        new PathData().setId(1).setEdges(List.of(1, 2, 3)).setIsCycle(true)
+        new PathData().setId(1).setEdges([1, 2, 3]).setIsCycle(true)
       );
 
       const splitGraph = graph.splitPath(1);
@@ -596,8 +594,8 @@ describe("Graph", () => {
       // Create two separate paths that connect: path1 (1->2) and path2 (2->3)
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
-      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
       const joinedGraph = graph.joinPaths([1, 2]);
 
@@ -605,7 +603,7 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 2);
 
       // Path 1 should now contain both edges
-      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2)));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2]));
       assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
 
       // Both edges should belong to path 1
@@ -624,8 +622,8 @@ describe("Graph", () => {
       // These connect at node 2, but path2 needs to be prepended to path1
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(1).setTarget(2).setPath(2));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
-      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
       const joinedGraph = graph.joinPaths([1, 2]);
 
@@ -633,7 +631,7 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 2);
 
       // Path 1 should now contain both edges in correct order
-      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(2, 1)));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [2, 1]));
       assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
     });
 
@@ -649,9 +647,9 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
-      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
-      graph = graph.addPathWithData(new PathData().setId(3).setEdges(List.of(3)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
+      graph = graph.addPathWithData(new PathData().setId(3).setEdges([3]));
 
       // Join paths 1 and 3 (1->2 and 2->3)
       const joinedGraph = graph.joinPaths([1, 3]);
@@ -660,7 +658,7 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 3);
 
       // Path 1 should contain edges 1 and 3
-      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 3)));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 3]));
       assert.ok(joinedGraph.pathData.has(2)); // Path 2 should still exist
       assert.ok(!joinedGraph.pathData.has(3)); // Path 3 should be removed
     });
@@ -675,8 +673,8 @@ describe("Graph", () => {
       // Create two separate, non-connecting paths: path1 (1->2) and path2 (3->4)
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
-      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
       const originalGraph = graph;
       const joinedGraph = graph.joinPaths([1, 2]);
@@ -685,8 +683,8 @@ describe("Graph", () => {
       assert.ok(joinedGraph.equals(originalGraph));
       assert.strictEqual(joinedGraph.numPaths, 2);
       assert.strictEqual(joinedGraph.numEdges, 2);
-      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1)));
-      assert.ok(joinedGraph.pathData.get(2)?.edges.equals(List.of(2)));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1]));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(2)?.edges, [2]));
     });
 
     it("should handle joining multiple paths in sequence", () => {
@@ -703,7 +701,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(4));
 
       for (let i = 1; i <= 4; i++) {
-        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
       }
 
       const joinedGraph = graph.joinPaths([1, 2, 3, 4]);
@@ -712,7 +710,7 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 4);
 
       // All edges should be in path 1
-      assert.ok(joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2, 3, 4)));
+      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2, 3, 4]));
       for (let i = 1; i <= 4; i++) {
         assert.strictEqual(joinedGraph.edgeData.get(i)?.path, 1);
       }
@@ -735,7 +733,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(3));
 
       for (let i = 1; i <= 3; i++) {
-        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
       }
 
       const joinedGraph = graph.joinPaths([1, 2, 3]);
@@ -750,7 +748,7 @@ describe("Graph", () => {
         "Joined path should be a cycle"
       );
       assert.ok(
-        joinedGraph.pathData.get(1)?.edges.equals(List.of(1, 2, 3)),
+        arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2, 3]),
         "Joined path should contain all edges"
       );
     });
@@ -768,7 +766,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(4).setTarget(5).setPath(3));
 
       for (let i = 1; i <= 3; i++) {
-        graph = graph.addPathWithData(new PathData().setId(i).setEdges(List.of(i)));
+        graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
       }
 
       const joinedGraph = graph.joinPaths([1, 2, 3]);
@@ -782,7 +780,7 @@ describe("Graph", () => {
       graph = graph.addNodeWithData(new NodeData().setId(1));
       graph = graph.addNodeWithData(new NodeData().setId(2));
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const joinedGraph = graph.joinPaths([]);
 
@@ -794,7 +792,7 @@ describe("Graph", () => {
       graph = graph.addNodeWithData(new NodeData().setId(1));
       graph = graph.addNodeWithData(new NodeData().setId(2));
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const joinedGraph = graph.joinPaths([1]);
 
@@ -816,9 +814,9 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
 
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges(List.of(1)));
-      graph = graph.addPathWithData(new PathData().setId(2).setEdges(List.of(2)));
-      graph = graph.addPathWithData(new PathData().setId(3).setEdges(List.of(3)));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
+      graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
+      graph = graph.addPathWithData(new PathData().setId(3).setEdges([3]));
 
       // Join paths 1 and 3 first (should work: 1->2, 2->3)
       const joinedGraph = graph.joinPaths([1, 3]);
@@ -828,13 +826,13 @@ describe("Graph", () => {
       // Check that path 1 now contains both edges
       const path1Data = joinedGraph.pathData.get(1);
       assert.ok(path1Data, "Path 1 should exist after joining");
-      assert.ok(path1Data.edges.equals(List.of(1, 3)), "Path 1 should contain edges 1 and 3");
+      assert.ok(arrayEquals(path1Data.edges, [1, 3]), "Path 1 should contain edges 1 and 3");
 
       // Path 2 should remain separate and unchanged
       assert.ok(joinedGraph.pathData.has(2), "Path 2 should remain separate");
       const path2Data = joinedGraph.pathData.get(2);
       assert.ok(path2Data, "Path 2 should exist");
-      assert.ok(path2Data.edges.equals(List.of(2)), "Path 2 should still contain only edge 2");
+      assert.ok(arrayEquals(path2Data.edges, [2]), "Path 2 should still contain only edge 2");
 
       // Path 3 should be removed
       assert.ok(!joinedGraph.pathData.has(3), "Path 3 should be removed");
