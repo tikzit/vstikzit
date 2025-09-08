@@ -25,6 +25,8 @@ const commands: Command[] = [
   { name: "vstikzit.nudgeRight", shortcuts: ["Ctrl+Shift+ArrowRight"], description: "Nudge right" },
   { name: "vstikzit.nudgeUp", shortcuts: ["Ctrl+Shift+ArrowUp"], description: "Nudge up" },
   { name: "vstikzit.nudgeDown", shortcuts: ["Ctrl+Shift+ArrowDown"], description: "Nudge down" },
+  { name: "vstikzit.joinPaths", shortcuts: ["Ctrl+Alt+P"], description: "Join paths" },
+  { name: "vstikzit.splitPaths", shortcuts: ["Ctrl+Alt+Shift+P"], description: "Split paths" },
 ];
 
 const getCommandFromShortcut = (shortcut: string): Command | undefined => {

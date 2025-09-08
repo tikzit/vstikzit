@@ -74,6 +74,17 @@ const GraphEditor = ({
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
+  // path selection is calculated from selected edges or nodes
+  const selectedPaths = (
+    selectedEdges.size > 0
+      ? selectedEdges
+      : Set(
+          graph.edgeData
+            .filter(e => selectedNodes.has(e.source) && selectedNodes.has(e.target))
+            .keys()
+        )
+  ).map(e => graph.edgeData.get(e)!.path);
+
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
     const editor = document.getElementById("graph-editor")!;
@@ -454,6 +465,8 @@ const GraphEditor = ({
     }
     combo.push(key);
 
+    let capture = true;
+
     switch (getCommandFromShortcut(combo.join("+"))?.name) {
       case "vstikzit.copy":
         if (!selectedNodes.isEmpty()) {
@@ -556,6 +569,42 @@ const GraphEditor = ({
           }
         }
         break;
+      case "vstikzit.joinPaths":
+        {
+          if (selectedPaths.size > 1) {
+            const g = graph.joinPaths(selectedPaths);
+            if (!g.equals(graph)) {
+              updateGraph(g, true);
+            }
+          }
+        }
+        break;
+      case "vstikzit.splitPaths":
+        {
+          let g = graph;
+          for (const p of selectedPaths) {
+            g = g.splitPath(p);
+          }
+
+          if (!g.equals(graph)) {
+            updateGraph(g, true);
+          }
+        }
+        break;
+      case "vstikzit.selectAll":
+        updateSelection(Set(graph.nodeData.keys()), Set());
+        break;
+      case "vstikzit.deselectAll":
+        updateSelection(Set(), Set());
+        break;
+      default:
+        capture = false;
+        break;
+    }
+
+    if (capture) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   };
 

@@ -291,8 +291,12 @@ class Graph implements ValueObject {
   // Returns undefined if the paths cannot be joined and always preserves the first path ID
   private joinTwoPaths(path1: number, path2: number): Graph | undefined {
     let graph = this.copy();
-    const pd1 = this._pathData.get(path1)!;
-    const pd2 = this._pathData.get(path2)!;
+    const pd1 = this._pathData.get(path1);
+    const pd2 = this._pathData.get(path2);
+
+    if (pd1 === undefined || pd2 === undefined) {
+      return undefined;
+    }
 
     // there are four cases. Depending on how the paths connect, we may need to reverse
     // path2 then either prepend or append its edges to path1
