@@ -42,7 +42,7 @@ interface UIState {
   addEdgeLineEnd?: Coord;
 }
 
-const uiStateReducer = (state: UIState, action: Partial<UIState> | "reset"): UIState => {
+const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
   if (action === "reset") {
     return {};
   } else {
