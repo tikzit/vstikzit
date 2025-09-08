@@ -96,7 +96,7 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle messages from the webview
     webviewPanel.webview.onDidReceiveMessage((e: WebviewMessage) => {
-      console.log(`Received message from webview: ${e.type}`, e);
+      // console.log(`Received message from webview: ${e.type}`, e);
       switch (e.type) {
         case "updateFromGui":
           this.updateFromGui(document, e.content);
@@ -219,14 +219,12 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
     if (!activeTab?.input) {
-      console.log("No active tab found");
       return;
     }
 
     // Type guard to check if input has uri property
     const tabInput = activeTab.input as any;
     if (!tabInput.uri) {
-      console.log("Active tab has no URI");
       return;
     }
 
