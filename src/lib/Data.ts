@@ -1,8 +1,43 @@
-import { OrderedMap, List, ValueObject } from "immutable";
+// import { Map, List, ValueObject } from "immutable";
 
 import { isValidPropertyVal } from "./TikzParser";
 
-class Coord implements ValueObject {
+function mapEquals<K, V>(m1: Map<K, V>, m2: Map<K, V>): boolean {
+  if (m1.size !== m2.size) {
+    return false;
+  }
+  for (const [k, v] of m1.entries()) {
+    // if "v" has an "equals" method, use it
+    if (v && typeof (v as any).equals === "function") {
+      if (!m2.has(k) || !(m2.get(k) as any).equals(v)) {
+        return false;
+      }
+    } else if (!m2.has(k) || m2.get(k) !== v) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function arrayEquals<T>(a1: T[], a2: T[]): boolean {
+  if (a1.length !== a2.length) {
+    return false;
+  }
+  for (let i = 0; i < a1.length; i++) {
+    const v1 = a1[i];
+    const v2 = a2[i];
+    if (v1 && typeof (v1 as any).equals === "function") {
+      if (!(v2 && (v2 as any).equals(v1))) {
+        return false;
+      }
+    } else if (v1 !== v2) {
+      return false;
+    }
+  }
+  return true;
+}
+
+class Coord {
   private _x: number;
   private _y: number;
 
@@ -48,19 +83,19 @@ function wrapPropertyVal(val: string): string {
 
 class Data<T extends Data<T>> {
   protected _id: number;
-  protected _map: OrderedMap<string, string | undefined>;
+  protected _map: Map<string, string | undefined>;
 
   constructor(data?: T) {
     this._id = data?._id ?? -1;
-    this._map = data?._map ?? OrderedMap<string, string | undefined>();
+    if (data !== undefined) {
+      this._map = new Map<string, string | undefined>(data._map);
+    } else {
+      this._map = new Map<string, string | undefined>();
+    }
   }
 
   public equals(other: T): boolean {
-    return this._id === other._id && this._map.equals(other._map);
-  }
-
-  public hashCode(): number {
-    return (this._map.hashCode() * 37 + this._id) | 0;
+    return this._id === other._id && mapEquals(this._map, other._map);
   }
 
   public get id(): number {
@@ -110,7 +145,7 @@ class Data<T extends Data<T>> {
   }
 
   public toString(): string {
-    if (this._map.isEmpty()) {
+    if (this._map.size === 0) {
       return "";
     } else {
       let s = "[";
@@ -146,7 +181,7 @@ class GraphData extends Data<GraphData> {
   }
 }
 
-class NodeData extends Data<NodeData> implements ValueObject {
+class NodeData extends Data<NodeData> {
   private _coord: Coord;
   private _label: string;
 
@@ -181,7 +216,7 @@ class NodeData extends Data<NodeData> implements ValueObject {
   }
 }
 
-class EdgeData extends Data<EdgeData> implements ValueObject {
+class EdgeData extends Data<EdgeData> {
   private _source: number;
   private _target: number;
   private _path: number;
@@ -321,32 +356,28 @@ class EdgeData extends Data<EdgeData> implements ValueObject {
   }
 }
 
-class PathData implements ValueObject {
+class PathData {
   private _id: number;
-  private _edges: List<number>;
+  private _edges: number[];
   private _isCycle: boolean;
 
   constructor(data?: PathData) {
     this._id = data?._id ?? -1;
-    this._edges = data?._edges ?? List();
+    this._edges = data?._edges ?? [];
     this._isCycle = data?._isCycle ?? false;
   }
 
   public equals(other: PathData): boolean {
     return (
-      this._id === other._id && this._edges.equals(other._edges) && this._isCycle === other._isCycle
+      this._id === other._id && arrayEquals(this._edges, other._edges) && this._isCycle === other._isCycle
     );
-  }
-
-  public hashCode(): number {
-    return ((this._id * 397) ^ this._edges.hashCode() ^ (this._isCycle ? 1 : 0)) | 0;
   }
 
   public get id(): number {
     return this._id;
   }
 
-  public get edges(): List<number> {
+  public get edges(): number[] {
     return this._edges;
   }
 
@@ -360,7 +391,7 @@ class PathData implements ValueObject {
     return p;
   }
 
-  public setEdges(edges: List<number>): PathData {
+  public setEdges(edges: number[]): PathData {
     const p = new PathData(this);
     p._edges = edges;
     return p;
@@ -374,7 +405,7 @@ class PathData implements ValueObject {
 
   public addEdge(edge: number): PathData {
     const p = new PathData(this);
-    p._edges = p._edges.push(edge);
+    p._edges = [...p._edges, edge];
     return p;
   }
 
@@ -448,4 +479,4 @@ class StyleData extends Data<StyleData> {
   }
 }
 
-export { GraphData, NodeData, EdgeData, PathData, Coord, StyleData };
+export { mapEquals, arrayEquals, GraphData, NodeData, EdgeData, PathData, Coord, StyleData };

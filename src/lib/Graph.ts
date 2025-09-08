@@ -1,20 +1,19 @@
-import { List, OrderedMap, Seq, Set, ValueObject } from "immutable";
-import { NodeData, EdgeData, PathData, GraphData } from "./Data";
+import { NodeData, EdgeData, PathData, GraphData, mapEquals } from "./Data";
 
-class Graph implements ValueObject {
+class Graph {
   private _graphData: GraphData = new GraphData();
-  private _nodeData: OrderedMap<number, NodeData>;
-  private _pathData: OrderedMap<number, PathData>;
-  private _edgeData: OrderedMap<number, EdgeData>;
+  private _nodeData: Map<number, NodeData>;
+  private _pathData: Map<number, PathData>;
+  private _edgeData: Map<number, EdgeData>;
   private maxNodeId: number;
   private maxEdgeId: number;
   private maxPathId: number;
 
   constructor(graph?: Graph) {
     this._graphData = graph?._graphData ?? new GraphData();
-    this._nodeData = graph?._nodeData ?? OrderedMap<number, NodeData>();
-    this._edgeData = graph?._edgeData ?? OrderedMap<number, EdgeData>();
-    this._pathData = graph?._pathData ?? OrderedMap<number, PathData>();
+    this._nodeData = graph !== undefined ? new Map(graph._nodeData) : new Map();
+    this._edgeData = graph !== undefined ? new Map(graph._edgeData) : new Map();
+    this._pathData = graph !== undefined ? new Map(graph._pathData) : new Map();
     this.maxNodeId = graph?.maxNodeId ?? -1;
     this.maxEdgeId = graph?.maxEdgeId ?? -1;
     this.maxPathId = graph?.maxPathId ?? -1;
@@ -28,28 +27,28 @@ class Graph implements ValueObject {
     return this._graphData;
   }
 
-  public get nodeData(): OrderedMap<number, NodeData> {
+  public get nodeData(): Map<number, NodeData> {
     return this._nodeData;
   }
 
-  public get edgeData(): OrderedMap<number, EdgeData> {
+  public get edgeData(): Map<number, EdgeData> {
     return this._edgeData;
   }
 
-  public get pathData(): OrderedMap<number, PathData> {
+  public get pathData(): Map<number, PathData> {
     return this._pathData;
   }
 
-  public get nodes(): Seq.Indexed<number> {
-    return this._nodeData.keySeq();
+  public get nodes(): number[] {
+    return Array.from(this._nodeData.keys());
   }
 
-  public get paths(): Seq.Indexed<number> {
-    return this._pathData.keySeq();
+  public get paths(): number[] {
+    return Array.from(this._pathData.keys());
   }
 
-  public get edges(): Seq.Indexed<number> {
-    return this._edgeData.keySeq();
+  public get edges(): number[] {
+    return Array.from(this._edgeData.keys());
   }
 
   public get numNodes(): number {
@@ -72,7 +71,7 @@ class Graph implements ValueObject {
 
   public addNodeWithData(d: NodeData): Graph {
     const g = this.copy();
-    g._nodeData = g._nodeData.set(d.id, d);
+    g._nodeData.set(d.id, d);
     if (d.id > g.maxNodeId) {
       g.maxNodeId = d.id;
     }
@@ -81,7 +80,7 @@ class Graph implements ValueObject {
 
   public addEdgeWithData(d: EdgeData): Graph {
     const g = this.copy();
-    g._edgeData = g._edgeData.set(d.id, d);
+    g._edgeData.set(d.id, d);
     if (d.id > g.maxEdgeId) {
       g.maxEdgeId = d.id;
     }
@@ -90,7 +89,7 @@ class Graph implements ValueObject {
 
   public addPathWithData(d: PathData): Graph {
     const g = this.copy();
-    g._pathData = g._pathData.set(d.id, d);
+    g._pathData.set(d.id, d);
     if (d.id > g.maxPathId) {
       g.maxPathId = d.id;
     }
@@ -101,7 +100,7 @@ class Graph implements ValueObject {
     const node = this._nodeData.get(id);
     if (node) {
       const g = this.copy();
-      g._nodeData = g._nodeData.set(id, fn(node));
+      g._nodeData.set(id, fn(node));
       return g;
     } else {
       return this;
@@ -110,13 +109,16 @@ class Graph implements ValueObject {
 
   public setNodeData(id: number, data: NodeData): Graph {
     const g = this.copy();
-    g._nodeData = g._nodeData.set(id, data);
+    g._nodeData.set(id, data);
     return g;
   }
 
   public mapNodeData(fn: (data: NodeData) => NodeData): Graph {
     const g = this.copy();
-    g._nodeData = g._nodeData.map(fn);
+    const keys = Array.from(g._nodeData.keys());
+    for (const key of keys) {
+      g._nodeData.set(key, fn(g._nodeData.get(key)!));
+    }
     return g;
   }
 
@@ -124,7 +126,7 @@ class Graph implements ValueObject {
     const edge = this._edgeData.get(id);
     if (edge) {
       const g = this.copy();
-      g._edgeData = g._edgeData.set(id, fn(edge));
+      g._edgeData.set(id, fn(edge));
       return g;
     } else {
       return this;
@@ -133,13 +135,16 @@ class Graph implements ValueObject {
 
   public setEdgeData(id: number, data: EdgeData): Graph {
     const g = this.copy();
-    g._edgeData = g._edgeData.set(id, data);
+    g._edgeData.set(id, data);
     return g;
   }
 
   public mapEdgeData(fn: (data: EdgeData) => EdgeData): Graph {
     const g = this.copy();
-    g._edgeData = g._edgeData.map(fn);
+    const keys = Array.from(g._edgeData.keys());
+    for (const key of keys) {
+      g._edgeData.set(key, fn(g._edgeData.get(key)!));
+    }
     return g;
   }
 
@@ -147,7 +152,7 @@ class Graph implements ValueObject {
     const path = this._pathData.get(id);
     if (path) {
       const g = this.copy();
-      g._pathData = g._pathData.set(id, fn(path));
+      g._pathData.set(id, fn(path));
       return g;
     } else {
       return this;
@@ -156,7 +161,7 @@ class Graph implements ValueObject {
 
   public setPathData(id: number, data: PathData): Graph {
     const g = this.copy();
-    g._pathData = g._pathData.set(id, data);
+    g._pathData.set(id, data);
     return g;
   }
 
@@ -179,35 +184,43 @@ class Graph implements ValueObject {
   }
 
   public pathSource(id: number): number {
-    const edge = this._edgeData.get(this._pathData.get(id)!.edges.first()!)!;
+    const edge = this._edgeData.get(this._pathData.get(id)!.edges[0])!;
     return edge.source;
   }
 
   public pathTarget(id: number): number {
-    const edge = this._edgeData.get(this._pathData.get(id)!.edges.last()!)!;
+    const edge = this._edgeData.get(this._pathData.get(id)!.edges[this._pathData.get(id)!.edges.length - 1])!;
     return edge.target;
   }
 
   public removeNodes(nodes: Iterable<number>): Graph {
     const g = this.copy();
-    const nodeSet = Set(nodes);
-    g._nodeData = g._nodeData.filter(d => !nodeSet.contains(d.id));
-    g._edgeData = g._edgeData.filter(
-      d => !nodeSet.contains(d.source) && !nodeSet.contains(d.target)
-    );
+    const nodeSet = new Set(nodes);
+    for (const n of nodeSet) {
+      g._nodeData.delete(n);
+    }
+
+    for (const ed of g._edgeData.values()) {
+      if (nodeSet.has(ed.source) || nodeSet.has(ed.target)) {
+        g._edgeData.delete(ed.id);
+      }
+    }
+
     return g.removeDanglingPaths();
   }
 
   public removeEdges(edges: Iterable<number>): Graph {
     const g = this.copy();
-    const edgeSet = Set(edges);
-    g._edgeData = g._edgeData.filter(d => !edgeSet.contains(d.id));
+    const remove = Array.from(edges);
+    for (const e of remove) {
+      g._edgeData.delete(e);
+    }
     return g.removeDanglingPaths();
   }
 
   public removePath(pathId: number): Graph {
     const g = this.copy();
-    g._pathData = g._pathData.remove(pathId);
+    g._pathData.delete(pathId);
     return g;
   }
 
@@ -215,15 +228,16 @@ class Graph implements ValueObject {
   // and remove any empty paths
   private removeDanglingPaths(): Graph {
     let g = this.copy();
+    const paths = Array.from(g._pathData.values());
 
-    for (const pd of g._pathData.valueSeq()) {
-      let edges = List<number>();
+    for (const pd of paths) {
+      let edges: number[] = [];
       let newPath = false;
       for (const e of pd.edges) {
         if (g._edgeData.has(e)) {
-          edges = edges.push(e);
+          edges.push(e);
         } else {
-          if (edges.size > 0) {
+          if (edges.length > 0) {
             if (!newPath) {
               g = g.updatePathData(pd.id, p => p.setEdges(edges));
             } else {
@@ -234,12 +248,12 @@ class Graph implements ValueObject {
               });
             }
             newPath = true;
-            edges = List();
+            edges = [];
           }
         }
       }
 
-      if (edges.size > 0) {
+      if (edges.length > 0) {
         if (!newPath) {
           g = g.updatePathData(pd.id, p => p.setEdges(edges));
         } else {
@@ -253,7 +267,7 @@ class Graph implements ValueObject {
       }
 
       if (!newPath) {
-        g._pathData = g._pathData.remove(pd.id);
+        g = g.removePath(pd.id);
       }
     }
     return g;
@@ -275,11 +289,11 @@ class Graph implements ValueObject {
     let graph = this.copy();
     const pd = this._pathData.get(pathId)!;
 
-    if (pd.edges.size > 1) {
-      graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.take(1)).setIsCycle(false));
+    if (pd.edges.length > 1) {
+      graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.slice(0, 1)).setIsCycle(false));
       for (const e of pd.edges.slice(1)) {
         const newPathId = graph.freshPathId;
-        graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges(List([e])));
+        graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges([e]));
         graph = graph.updateEdgeData(e, ed => ed.setPath(newPathId));
       }
     }
@@ -331,16 +345,15 @@ class Graph implements ValueObject {
   public joinPaths(paths: Iterable<number>): Graph {
     let graph = this.copy();
 
-    let rest = List(paths);
-    if (rest.size === 0) {
+    let otherPaths = Array.from(paths);
+    if (otherPaths.length === 0) {
       return this;
     }
-    const path = rest.first()!;
-    rest = rest.shift();
+    const path = otherPaths[0];
+    otherPaths = otherPaths.slice(1);
 
-    let pathSet = Set(rest);
-    while (pathSet.size > 0) {
-      const p = pathSet.find(p => {
+    while (otherPaths.length > 0) {
+      const p = otherPaths.find(p => {
         const g = graph.joinTwoPaths(path, p);
         if (g !== undefined) {
           graph = g;
@@ -351,7 +364,7 @@ class Graph implements ValueObject {
       });
 
       if (p !== undefined) {
-        pathSet = pathSet.remove(p);
+        otherPaths = otherPaths.filter(q => q !== p);
       } else {
         return this;
       }
@@ -364,8 +377,8 @@ class Graph implements ValueObject {
   }
 
   public subgraphFromNodes(nodes: Iterable<number>): Graph {
-    const nodeSet = Set(nodes);
-    const nodeComp = this._nodeData.keySeq().filter(key => !nodeSet.contains(key));
+    const nodeSet = new Set(nodes);
+    const nodeComp = this.nodes.filter(key => !nodeSet.has(key));
     return this.removeNodes(nodeComp);
   }
 
@@ -425,37 +438,42 @@ class Graph implements ValueObject {
     g.maxNodeId = this.maxNodeId;
     g.maxEdgeId = this.maxEdgeId;
     g.maxPathId = this.maxPathId;
-    g._nodeData = this._nodeData.map(d => {
-      const d1 = other._nodeData.get(d.id);
-      return d1 !== undefined && d.equals(d1) ? d1 : d;
-    });
-    g._edgeData = this._edgeData.map(d => {
-      const d1 = other._edgeData.get(d.id);
-      return d1 !== undefined && d.equals(d1) ? d1 : d;
-    });
-    g._pathData = this._pathData.map(d => {
-      const d1 = other._pathData.get(d.id);
-      return d1 !== undefined && d.equals(d1) ? d1 : d;
-    });
+    let keys = Array.from(this._nodeData.keys());
+    for (const key of keys) {
+      const d = other._nodeData.get(key)!;
+      if (this._nodeData.get(key)?.equals(d)) {
+        g._nodeData.set(key, d);
+      }
+    }
+
+    keys = Array.from(this._edgeData.keys());
+    for (const key of keys) {
+      const d = other._edgeData.get(key)!;
+      if (this._edgeData.get(key)?.equals(d)) {
+        g._edgeData.set(key, d);
+      }
+    }
+
+    keys = Array.from(this._pathData.keys());
+    for (const key of keys) {
+      const d = other._pathData.get(key)!;
+      if (this._pathData.get(key)?.equals(d)) {
+        g._pathData.set(key, d);
+      }
+    }
+
     return g;
   }
 
   public equals(other: Graph): boolean {
     return (
-      this._nodeData.equals(other._nodeData) &&
-      this._edgeData.equals(other._edgeData) &&
-      this._pathData.equals(other._pathData) &&
+      mapEquals(this._nodeData, other._nodeData) &&
+      mapEquals(this._edgeData, other._edgeData) &&
+      mapEquals(this._pathData, other._pathData) &&
       this.maxNodeId === other.maxNodeId &&
       this.maxEdgeId === other.maxEdgeId &&
       this.maxPathId === other.maxPathId
     );
-  }
-
-  public hashCode(): number {
-    let hash = this.nodeData.hashCode();
-    hash = hash * 31 + this.edgeData.hashCode();
-    hash = hash * 31 + this.pathData.hashCode();
-    return hash;
   }
 
   public tikzWithPosition(
@@ -487,11 +505,11 @@ class Graph implements ValueObject {
     result += "\t\\end{pgfonlayer}\n";
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
     for (const pd of this.pathData.values()) {
-      let d = this.edgeData.get(pd.edges.get(0)!)!;
+      let d = this.edgeData.get(pd.edges[0])!;
       const dt = d.tikz();
       result += `\t\t\\draw ${dt}`;
 
-      if (edge !== undefined && pd.edges.contains(edge)) {
+      if (edge !== undefined && pd.edges.find(e => e === edge)) {
         // return the position of the end of the edge property list
         const lines = result.split("\n");
         position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
