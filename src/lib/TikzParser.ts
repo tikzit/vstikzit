@@ -435,9 +435,9 @@ class TikzParser extends EmbeddedActionsParser {
 
           this.ACTION(() => {
             const d = this.d as EdgeData;
-            if (this.currentPath && this.currentPath.edges.size > 0) {
+            if (this.currentPath && this.currentPath.edges.length > 0) {
               this.currentPath = this.currentPath.setIsCycle(true);
-              const firstEdge = this.currentPath.edges.get(0)!;
+              const firstEdge = this.currentPath.edges[0];
               this.d = d.setTarget(this.graph?.edgeData.get(firstEdge)?.source ?? -1);
             } else {
               throw new ParseError(
@@ -549,10 +549,10 @@ function parseTikz(
     return parseStyles
       ? { result: parser.styles, errors: [] }
       : {
-          result: parser.graph,
-          nodeTikzPositions: parser.nodeTikzPositions,
-          errors: [],
-        };
+        result: parser.graph,
+        nodeTikzPositions: parser.nodeTikzPositions,
+        errors: [],
+      };
   } catch (e) {
     if (e instanceof ParseError) {
       return {

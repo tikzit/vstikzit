@@ -19,10 +19,6 @@ class Graph {
     this.maxPathId = graph?.maxPathId ?? -1;
   }
 
-  private copy(): Graph {
-    return new Graph(this);
-  }
-
   public get graphData(): GraphData {
     return this._graphData;
   }
@@ -64,13 +60,13 @@ class Graph {
   }
 
   public setGraphData(d: GraphData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._graphData = d;
     return g;
   }
 
   public addNodeWithData(d: NodeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._nodeData.set(d.id, d);
     if (d.id > g.maxNodeId) {
       g.maxNodeId = d.id;
@@ -79,7 +75,7 @@ class Graph {
   }
 
   public addEdgeWithData(d: EdgeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._edgeData.set(d.id, d);
     if (d.id > g.maxEdgeId) {
       g.maxEdgeId = d.id;
@@ -88,7 +84,7 @@ class Graph {
   }
 
   public addPathWithData(d: PathData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._pathData.set(d.id, d);
     if (d.id > g.maxPathId) {
       g.maxPathId = d.id;
@@ -99,7 +95,7 @@ class Graph {
   public updateNodeData(id: number, fn: (data: NodeData) => NodeData): Graph {
     const node = this._nodeData.get(id);
     if (node) {
-      const g = this.copy();
+      const g = new Graph(this);
       g._nodeData.set(id, fn(node));
       return g;
     } else {
@@ -108,13 +104,13 @@ class Graph {
   }
 
   public setNodeData(id: number, data: NodeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._nodeData.set(id, data);
     return g;
   }
 
   public mapNodeData(fn: (data: NodeData) => NodeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     const keys = Array.from(g._nodeData.keys());
     for (const key of keys) {
       g._nodeData.set(key, fn(g._nodeData.get(key)!));
@@ -125,7 +121,7 @@ class Graph {
   public updateEdgeData(id: number, fn: (data: EdgeData) => EdgeData): Graph {
     const edge = this._edgeData.get(id);
     if (edge) {
-      const g = this.copy();
+      const g = new Graph(this);
       g._edgeData.set(id, fn(edge));
       return g;
     } else {
@@ -134,13 +130,13 @@ class Graph {
   }
 
   public setEdgeData(id: number, data: EdgeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._edgeData.set(id, data);
     return g;
   }
 
   public mapEdgeData(fn: (data: EdgeData) => EdgeData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     const keys = Array.from(g._edgeData.keys());
     for (const key of keys) {
       g._edgeData.set(key, fn(g._edgeData.get(key)!));
@@ -151,7 +147,7 @@ class Graph {
   public updatePathData(id: number, fn: (data: PathData) => PathData): Graph {
     const path = this._pathData.get(id);
     if (path) {
-      const g = this.copy();
+      const g = new Graph(this);
       g._pathData.set(id, fn(path));
       return g;
     } else {
@@ -160,7 +156,7 @@ class Graph {
   }
 
   public setPathData(id: number, data: PathData): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._pathData.set(id, data);
     return g;
   }
@@ -194,7 +190,7 @@ class Graph {
   }
 
   public removeNodes(nodes: Iterable<number>): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     const nodeSet = new Set(nodes);
     for (const n of nodeSet) {
       g._nodeData.delete(n);
@@ -210,7 +206,7 @@ class Graph {
   }
 
   public removeEdges(edges: Iterable<number>): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     const remove = Array.from(edges);
     for (const e of remove) {
       g._edgeData.delete(e);
@@ -219,7 +215,7 @@ class Graph {
   }
 
   public removePath(pathId: number): Graph {
-    const g = this.copy();
+    const g = new Graph(this);
     g._pathData.delete(pathId);
     return g;
   }
@@ -227,7 +223,7 @@ class Graph {
   // after removing edges, cut paths into multiple pieces where edges are missing
   // and remove any empty paths
   private removeDanglingPaths(): Graph {
-    let g = this.copy();
+    let g = new Graph(this);
     const paths = Array.from(g._pathData.values());
 
     for (const pd of paths) {
@@ -275,7 +271,7 @@ class Graph {
 
   // reverse the direction of a path
   public reversePath(pathId: number): Graph {
-    let graph = this.copy();
+    let graph = new Graph(this);
     const pd = this._pathData.get(pathId)!;
     graph.updatePathData(pathId, p => p.setEdges(pd.edges.reverse()));
     for (const e of pd.edges) {
@@ -286,7 +282,7 @@ class Graph {
 
   // splits a path with N edges into N paths with 1 edge each
   public splitPath(pathId: number): Graph {
-    let graph = this.copy();
+    let graph = new Graph(this);
     const pd = this._pathData.get(pathId)!;
 
     if (pd.edges.length > 1) {
@@ -304,7 +300,7 @@ class Graph {
   // join two paths that connect, reversing one of the paths if necessary
   // Returns undefined if the paths cannot be joined and always preserves the first path ID
   private joinTwoPaths(path1: number, path2: number): Graph | undefined {
-    let graph = this.copy();
+    let graph = new Graph(this);
     const pd1 = this._pathData.get(path1);
     const pd2 = this._pathData.get(path2);
 
@@ -343,7 +339,7 @@ class Graph {
 
   // attempt to join a collection of paths into a single path, reversing paths if necessary
   public joinPaths(paths: Iterable<number>): Graph {
-    let graph = this.copy();
+    let graph = new Graph(this);
 
     let otherPaths = Array.from(paths);
     if (otherPaths.length === 0) {
@@ -384,7 +380,7 @@ class Graph {
 
   // insert the other graph, setting fresh IDs where necessary
   public insertGraph(other: Graph): Graph {
-    let g = this.copy();
+    let g = new Graph(this);
     const ntab: { [key: number]: number } = {};
     const etab: { [key: number]: number } = {};
     const ptab: { [key: number]: number } = {};
@@ -434,7 +430,7 @@ class Graph {
    * has been re-parsed.
    */
   public inheritDataFrom(other: Graph): Graph {
-    const g = new Graph();
+    const g = new Graph(this);
     g.maxNodeId = this.maxNodeId;
     g.maxEdgeId = this.maxEdgeId;
     g.maxPathId = this.maxPathId;

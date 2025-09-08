@@ -1,5 +1,4 @@
 import { useEffect, useReducer, useRef, useState } from "react";
-import { List, Set } from "immutable";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -75,15 +74,13 @@ const GraphEditor = ({
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
   // path selection is calculated from selected edges or nodes
-  const selectedPaths = (
+  const selectedPaths = new Set(
     selectedEdges.size > 0
-      ? selectedEdges
-      : Set(
-        Array.from(graph.edgeData.entries())
-          .filter(([_, d]) => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(([k, _]) => k)
-      )
-  ).map(e => graph.edgeData.get(e)!.path);
+      ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
+      : Array.from(graph.edgeData.values())
+        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+        .map(d => d.path)
+  );
 
   useEffect(() => {
     // Grab focus initially and when the editor tab gains focus
@@ -175,15 +172,19 @@ const GraphEditor = ({
         } else if (clickedNode.current !== undefined) {
           // select a node single node and/or prepare to drag nodes
           if (event.shiftKey) {
-            if (selectedNodes.contains(clickedNode.current)) {
-              updateSelection(selectedNodes.remove(clickedNode.current), selectedEdges);
+            if (selectedNodes.has(clickedNode.current)) {
+              const sel = new Set(selectedNodes);
+              sel.delete(clickedNode.current);
+              updateSelection(sel, selectedEdges);
             } else {
-              updateSelection(selectedNodes.add(clickedNode.current), selectedEdges);
+              const sel = new Set(selectedNodes);
+              sel.add(clickedNode.current);
+              updateSelection(sel, selectedEdges);
             }
           } else {
             updateUIState({ prevGraph: graph, draggingNodes: true });
-            if (!selectedNodes.contains(clickedNode.current)) {
-              updateSelection(Set([clickedNode.current]), Set());
+            if (!selectedNodes.has(clickedNode.current)) {
+              updateSelection(new Set([clickedNode.current]), new Set());
             }
           }
         } else if (clickedEdge.current !== undefined) {
@@ -191,11 +192,11 @@ const GraphEditor = ({
           if (event.shiftKey) {
             updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
           } else {
-            updateSelection(Set(), Set([clickedEdge.current]));
+            updateSelection(new Set(), new Set([clickedEdge.current]));
           }
         } else {
           if (!event.shiftKey) {
-            updateSelection(Set(), Set());
+            updateSelection(new Set(), new Set());
           }
 
           // start rubber band selection
@@ -244,7 +245,7 @@ const GraphEditor = ({
           const dy = Math.round((c2.y - c1.y) * 4) / 4;
           updateGraph(
             uiState.prevGraph.mapNodeData(d =>
-              selectedNodes.contains(d.id) ? d.setCoord(d.coord.shift(dx, dy)) : d
+              selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy)) : d
             ),
             false
           );
@@ -382,20 +383,19 @@ const GraphEditor = ({
             updateGraph(graph.setEdgeData(d.id, d), true);
           }
         } else if (uiState.selectionRect !== undefined) {
-          const sel = selectedNodes.withMutations(set => {
-            for (const d of graph.nodeData.values()) {
-              const c = sceneCoords.coordToScreen(d.coord);
-              // if c is in selectionRect
-              if (
-                c.x > uiState.selectionRect!.x &&
-                c.x < uiState.selectionRect!.x + uiState.selectionRect!.width &&
-                c.y > uiState.selectionRect!.y &&
-                c.y < uiState.selectionRect!.y + uiState.selectionRect!.height
-              ) {
-                set.add(d.id);
-              }
+          const sel = new Set(selectedNodes);
+          for (const d of graph.nodeData.values()) {
+            const c = sceneCoords.coordToScreen(d.coord);
+            // if c is in selectionRect
+            if (
+              c.x > uiState.selectionRect!.x &&
+              c.x < uiState.selectionRect!.x + uiState.selectionRect!.width &&
+              c.y > uiState.selectionRect!.y &&
+              c.y < uiState.selectionRect!.y + uiState.selectionRect!.height
+            ) {
+              sel.add(d.id);
             }
-          });
+          }
 
           updateSelection(sel, selectedEdges);
         } else if (uiState.draggingNodes) {
@@ -444,7 +444,7 @@ const GraphEditor = ({
   };
 
   const moveSelectedNodes = (dx: number, dy: number) => {
-    if (!selectedNodes.isEmpty()) {
+    if (selectedNodes.size !== 0) {
       const g = graph.mapNodeData(d =>
         selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
       );
@@ -469,16 +469,16 @@ const GraphEditor = ({
 
     switch (getCommandFromShortcut(combo.join("+"))?.name) {
       case "vstikzit.copy":
-        if (!selectedNodes.isEmpty()) {
+        if (selectedNodes.size !== 0) {
           window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
         }
         break;
       case "vstikzit.cut":
-        if (!selectedNodes.isEmpty()) {
+        if (selectedNodes.size !== 0) {
           window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
           const g = graph.removeNodes(selectedNodes);
           updateGraph(g, true);
-          updateSelection(Set(), Set());
+          updateSelection(new Set(), new Set());
         }
         break;
       case "vstikzit.paste":
@@ -496,17 +496,22 @@ const GraphEditor = ({
             }
 
             const g1 = graph.insertGraph(g);
-            const sel = Set(g1.nodeData.keys()).subtract(graph.nodeData.keys());
+            const sel = new Set(g1.nodeData.keys());
+            for (const n of graph.nodeData.keys()) {
+              sel.delete(n);
+            }
             updateGraph(g1, true);
-            updateSelection(sel, Set());
+            updateSelection(sel, new Set());
           }
         }
         break;
       case "vstikzit.jumpToTikz":
         if (selectedNodes.size === 1) {
-          jumpToNode(selectedNodes.first()!);
+          const [n] = selectedNodes;
+          jumpToNode(n);
         } else if (selectedEdges.size === 1) {
-          jumpToEdge(selectedEdges.first()!);
+          const [e] = selectedEdges;
+          jumpToEdge(e);
         }
         break;
       case "vstikzit.moveLeft":
@@ -546,7 +551,7 @@ const GraphEditor = ({
         {
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
           updateGraph(g, true);
-          updateSelection(Set(), Set());
+          updateSelection(new Set(), new Set());
         }
         break;
       case "vstikzit.zoomOut":
@@ -592,10 +597,10 @@ const GraphEditor = ({
         }
         break;
       case "vstikzit.selectAll":
-        updateSelection(Set(graph.nodeData.keys()), Set());
+        updateSelection(new Set(graph.nodeData.keys()), new Set());
         break;
       case "vstikzit.deselectAll":
-        updateSelection(Set(), Set());
+        updateSelection(new Set(), new Set());
         break;
       default:
         capture = false;

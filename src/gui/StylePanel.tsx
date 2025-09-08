@@ -92,7 +92,7 @@ const StylePanel = ({
             marginBottom: "10px",
           }}
         >
-          {tikzStyles.styleData.entrySeq().map(([name, style]) => {
+          {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
             if (style.isEdgeStyle) {
               return null;
             }
@@ -132,7 +132,7 @@ const StylePanel = ({
             color: "#000",
           }}
         >
-          {tikzStyles.styleData.entrySeq().map(([name, style]) => {
+          {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
             if (name !== "none" && !style.isEdgeStyle) {
               return null;
             }

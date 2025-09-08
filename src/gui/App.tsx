@@ -1,4 +1,3 @@
-import { Set } from "immutable";
 import { useState, useEffect } from "react";
 
 import GraphEditor from "./GraphEditor";
@@ -33,8 +32,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
 
-  const [selectedNodes, setSelectedNodes] = useState<Set<number>>(Set());
-  const [selectedEdges, setSelectedEdges] = useState<Set<number>>(Set());
+  const [selectedNodes, setSelectedNodes] = useState<Set<number>>(new Set());
+  const [selectedEdges, setSelectedEdges] = useState<Set<number>>(new Set());
 
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     (parseTikzStyles(initialContent.styles).result ?? new Styles()).setFilename(
@@ -66,7 +65,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {
@@ -85,8 +84,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
     const parsed = parseTikzPicture(tikz);
     if (parsed.result !== undefined) {
       const g = parsed.result.inheritDataFrom(graph);
-      setSelectedNodes(sel => sel.filter(id => g.nodeData.has(id)));
-      setSelectedEdges(sel => sel.filter(id => g.edgeData.has(id)));
+      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.nodeData.has(id))));
+      setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.edgeData.has(id))));
       setGraph(g);
     }
   };
@@ -109,7 +108,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
       setCurrentNodeLabel(label);
 
       if (isValidDelimString("{" + label + "}")) {
-        const n = selectedNodes.first()!;
+        const [n] = selectedNodes;
         const g = graph.updateNodeData(n, d => d.setLabel(label));
         handleGraphChange(g, true);
       }
@@ -163,7 +162,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
     setSelectedEdges(selectedEdges);
 
     if (selectedNodes.size === 1) {
-      setCurrentNodeLabel(graph.nodeData.get(selectedNodes.first()!)?.label);
+      const [n] = selectedNodes;
+      setCurrentNodeLabel(graph.nodeData.get(n)?.label);
     } else {
       setCurrentNodeLabel(undefined);
     }

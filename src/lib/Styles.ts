@@ -1,16 +1,15 @@
-import { OrderedMap } from "immutable";
 import { StyleData } from "./Data";
 
 class Styles {
-  private _styleData: OrderedMap<string, StyleData>;
+  private _styleData: Map<string, StyleData>;
   private _filename: string = "";
 
   constructor(styles?: Styles) {
-    this._styleData = styles?._styleData ?? OrderedMap<string, StyleData>();
+    this._styleData = styles !== undefined ? new Map(styles._styleData) : new Map();
     this._filename = styles?._filename ?? "";
   }
 
-  public get styleData(): OrderedMap<string, StyleData> {
+  public get styleData(): Map<string, StyleData> {
     return this._styleData;
   }
 
@@ -28,7 +27,7 @@ class Styles {
 
   public addStyle(style: StyleData) {
     const s = new Styles(this);
-    s._styleData = s._styleData.set(style.name, style);
+    s._styleData.set(style.name, style);
     return s;
   }
 
@@ -58,12 +57,14 @@ class Styles {
    * has been re-parsed.
    */
   public inheritDataFrom(other: Styles): Styles {
-    const s = new Styles();
-    s._filename = this._filename;
-    s._styleData = this._styleData.map(d => {
-      const d1 = other._styleData.get(d.name);
-      return d1 !== undefined && d.equals(d1) ? d1 : d;
-    });
+    const s = new Styles(this);
+    const keys = Array.from(this._styleData.keys());
+    for (const key of keys) {
+      const d = other._styleData.get(key)!;
+      if (this._styleData.get(key)?.equals(d)) {
+        s._styleData.set(key, d);
+      }
+    }
     return s;
   }
 }
