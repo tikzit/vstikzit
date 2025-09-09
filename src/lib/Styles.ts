@@ -67,6 +67,10 @@ class Styles {
     }
     return s;
   }
+
+  public get firstStyle(): string | undefined {
+    return Array.from(this._styleData.keys()).find((s) => s !== "none");
+  }
 }
 
 export default Styles;

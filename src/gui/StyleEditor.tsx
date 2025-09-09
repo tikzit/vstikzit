@@ -14,10 +14,13 @@ interface StyleEditorProps {
 }
 
 const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
-  const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
-  const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     parseTikzStyles(initialContent.document).result ?? new Styles());
+  const [currentStyle, setCurrentStyle] = useState<string>(tikzStyles.firstStyle ?? "");
+
+  const currentStyleData = tikzStyles.style(currentStyle);
+  const currentNodeStyle = currentStyleData.isEdgeStyle ? undefined : currentStyle;
+  const currentEdgeStyle = currentStyleData.isEdgeStyle ? currentStyle : undefined;
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -30,8 +33,9 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
           onCurrentNodeLabelChanged={() => { }}
-          onNodeStyleChanged={setCurrentNodeStyle}
-          onEdgeStyleChanged={setCurrentEdgeStyle}
+          onNodeStyleChanged={setCurrentStyle}
+          onEdgeStyleChanged={setCurrentStyle}
+          editMode={true}
         />
       </Splitpane>
       <style>

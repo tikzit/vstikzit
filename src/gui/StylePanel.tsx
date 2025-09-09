@@ -9,11 +9,12 @@ import { JSX } from "preact";
 interface StylePanelProps {
   tikzStyles: Styles;
   currentNodeLabel: string | undefined;
-  currentNodeStyle: string;
-  currentEdgeStyle: string;
+  currentNodeStyle: string | undefined;
+  currentEdgeStyle: string | undefined;
   onCurrentNodeLabelChanged: (label: string) => void;
   onNodeStyleChanged: (style: string, apply: boolean) => void;
   onEdgeStyleChanged: (style: string, apply: boolean) => void;
+  editMode: boolean;
 }
 
 const StylePanel = ({
@@ -24,6 +25,7 @@ const StylePanel = ({
   onCurrentNodeLabelChanged: setCurrentNodeLabel,
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
+  editMode
 }: StylePanelProps) => {
   const sceneCoords = new SceneCoords()
     .setZoom(0)
@@ -63,24 +65,26 @@ const StylePanel = ({
         overflow: "hidden",
       }}
     >
-      <div
-        style={{ marginBottom: "2px", marginTop: "2px", marginLeft: "0px", marginRight: "15px" }}
-      >
-        <input
-          id="label-field"
-          value={currentNodeLabel ?? ""}
-          onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
-          onKeyDown={e => {
-            if (e.key === "Enter") {
-              document.getElementById("graph-editor")?.focus();
-            }
-          }}
-          disabled={currentNodeLabel === undefined}
-          className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
-        />
-      </div>
+      {!editMode && <>
+        <div
+          style={{ marginBottom: "2px", marginTop: "2px", marginLeft: "0px", marginRight: "15px" }}
+        >
+          <input
+            id="label-field"
+            value={currentNodeLabel ?? ""}
+            onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                document.getElementById("graph-editor")?.focus();
+              }
+            }}
+            disabled={currentNodeLabel === undefined}
+            className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
+          />
+        </div>
+        <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
+      </>}
 
-      <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
       <div style={{ overflow: "hidden", height: "calc(100% - 80px)", width: "100%" }}>
         <div
           id="node-styles"
@@ -93,7 +97,7 @@ const StylePanel = ({
           }}
         >
           {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
-            if (style.isEdgeStyle) {
+            if (style.isEdgeStyle || (editMode && name === "none")) {
               return null;
             }
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
@@ -133,7 +137,7 @@ const StylePanel = ({
           }}
         >
           {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
-            if (name !== "none" && !style.isEdgeStyle) {
+            if ((name !== "none" && !style.isEdgeStyle) || (editMode && name === "none")) {
               return null;
             }
             const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
