@@ -88,6 +88,16 @@
           }
         ],
         "priority": "default"
+      },
+      {
+        "viewType": "vstikzit.tikzStylesEditor",
+        "displayName": "TikZ Style Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.tikzstyles"
+          }
+        ],
+        "priority": "default"
       }
     ]
   },

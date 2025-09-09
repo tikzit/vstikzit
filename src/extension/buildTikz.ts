@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
-import TikzEditorProvider from "./TikzEditorProvider";
+import { TikzEditorProvider } from "./editors";
 import { stat } from "fs";
 
 async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
@@ -115,7 +115,7 @@ async function buildTikz(
 
   return new Promise((resolve, reject) => {
     pdflatex.on("close", async code => {
-      console.log(`pdflatex process exited with code ${code}`);
+      // console.log(`pdflatex process exited with code ${code}`);
       if (code === 0) {
         // copy the contents of FILE.tmp.pdf into FILE.pdf
         const pdfContent = await vscode.workspace.fs.readFile(
@@ -138,6 +138,7 @@ async function buildTikz(
 
 async function buildCurrentTikzFigure(): Promise<void> {
   const document = TikzEditorProvider.currentDocument();
+  // console.log("Building current TikZ figure...", document?.uri.fsPath);
   const workspaceRoot = document?.uri
     ? vscode.workspace.getWorkspaceFolder(document?.uri)?.uri
     : undefined;
@@ -263,7 +264,7 @@ async function syncTikzFigures(): Promise<void> {
   stopSyncTikzFigures();
   tikzFigureWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
   tikzFigureWatcher.onDidChange(() => {
-    console.log("Detected change in .tikz file, rebuilding figures...");
+    // console.log("Detected change in .tikz file, rebuilding figures...");
     rebuildTikzFigures();
   });
 }

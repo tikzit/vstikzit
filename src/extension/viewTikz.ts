@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import TikzEditorProvider from "./TikzEditorProvider";
+import { TikzEditorProvider } from "./editors";
 
 async function viewCurrentTikzFigure(): Promise<void> {
   const document = TikzEditorProvider.currentDocument();

@@ -26,19 +26,14 @@ interface WebviewMessage {
   content?: any;
 }
 
-interface WebviewContent {
-  styleFile: string;
-  styles: string;
-  document: string;
-}
-
-class TikzEditorProvider implements vscode.CustomTextEditorProvider {
-  private static tikzDocuments = new Set<vscode.TextDocument>();
+class BaseEditorProvider {
+  private static openDocuments = new Set<vscode.TextDocument>();
   private context: vscode.ExtensionContext;
-  private isUpdatingFromGui: boolean;
+  private isUpdatingFromGui: boolean = false;
+  protected entryPoint: string = "unknown";
 
   static documentWithUri(uri: vscode.Uri): vscode.TextDocument | undefined {
-    return Array.from(TikzEditorProvider.tikzDocuments).find(
+    return Array.from(BaseEditorProvider.openDocuments).find(
       doc => doc.uri.toString() === uri.toString()
     );
   }
@@ -50,12 +45,15 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
       return undefined;
     }
 
-    return TikzEditorProvider.documentWithUri(uri);
+    return BaseEditorProvider.documentWithUri(uri);
   }
 
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
-    this.isUpdatingFromGui = false;
+  }
+
+  protected async initialContent(document: vscode.TextDocument): Promise<string> {
+    return JSON.stringify({ document: document.getText() });
   }
 
   async resolveCustomTextEditor(
@@ -63,22 +61,16 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
-    TikzEditorProvider.tikzDocuments.add(document);
+    BaseEditorProvider.openDocuments.add(document);
 
     // Setup webview options
     webviewPanel.webview.options = {
       enableScripts: true,
     };
 
-    const [styleFile, styles] = await this.getTikzStyles();
-    const content = {
-      styleFile: styleFile,
-      styles: styles,
-      document: document.getText(),
-    };
-
     // Set up the initial webview content
-    webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview, content);
+    const contentJson = await this.initialContent(document);
+    webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview, contentJson);
 
     // Post document changes (e.g. undo/redo) to the webview. We use the isUpdatingFromGui flag
     // to prevent a circular update.
@@ -115,11 +107,11 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
       // Remove from tracking set
-      TikzEditorProvider.tikzDocuments.delete(document);
+      BaseEditorProvider.openDocuments.delete(document);
     });
   }
 
-  async getHtmlForWebview(webview: vscode.Webview, content: WebviewContent): Promise<string> {
+  async getHtmlForWebview(webview: vscode.Webview, contentJson: string): Promise<string> {
     // Get the local path to main script run in the webview
     const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -157,8 +149,13 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
 			</head>
 			<body>
 				<div id="root"></div>
-				<script id="initial-content" type="application/json">${JSON.stringify(content)}</script>
-				<script nonce="${nonce}" src="${scriptUri}" type="module"></script>
+				<script id="initial-content" type="application/json">${contentJson}</script>
+        <script nonce="${nonce}" type="module">
+        import { ${this.entryPoint} } from "${scriptUri}";
+        window.addEventListener('load', () => {
+          ${this.entryPoint}();
+        });
+        </script>
 			</body>
 			</html>`;
   }
@@ -246,4 +243,28 @@ class TikzEditorProvider implements vscode.CustomTextEditorProvider {
   }
 }
 
-export { currentUri, TikzEditorProvider as default };
+class TikzEditorProvider extends BaseEditorProvider implements vscode.CustomTextEditorProvider {
+  constructor(context: vscode.ExtensionContext) {
+    super(context);
+    this.entryPoint = "renderTikzEditor";
+  }
+
+  protected async initialContent(document: vscode.TextDocument): Promise<string> {
+    const [styleFile, styles] = await this.getTikzStyles();
+    const content = {
+      styleFile: styleFile,
+      styles: styles,
+      document: document.getText(),
+    };
+    return JSON.stringify(content);
+  }
+}
+
+class StyleEditorProvider extends BaseEditorProvider implements vscode.CustomTextEditorProvider {
+  constructor(context: vscode.ExtensionContext) {
+    super(context);
+    this.entryPoint = "renderStyleEditor";
+  }
+}
+
+export { currentUri, TikzEditorProvider, StyleEditorProvider };

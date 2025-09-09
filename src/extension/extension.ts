@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import TikzEditorProvider, { currentUri } from "./TikzEditorProvider";
+import { StyleEditorProvider, TikzEditorProvider, currentUri } from "./editors";
 import TikzLinkProvider from "./TikzLinkProvider";
 import { buildCurrentTikzFigure, stopSyncTikzFigures, syncTikzFigures } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
@@ -11,6 +11,19 @@ function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerCustomEditorProvider(
       "vstikzit.tikzEditor",
       new TikzEditorProvider(context),
+      {
+        webviewOptions: {
+          retainContextWhenHidden: true,
+        },
+        supportsMultipleEditorsPerDocument: false,
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.window.registerCustomEditorProvider(
+      "vstikzit.tikzStylesEditor",
+      new StyleEditorProvider(context),
       {
         webviewOptions: {
           retainContextWhenHidden: true,
