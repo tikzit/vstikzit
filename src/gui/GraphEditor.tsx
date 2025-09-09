@@ -80,8 +80,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
       : Array.from(graph.edgeData.values())
-          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(d => d.path)
+        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+        .map(d => d.path)
   );
 
   useEffect(() => {
@@ -641,7 +641,10 @@ const GraphEditor = ({
         overflowY: "scroll",
       }}
     >
-      <Help visible={!!uiState.helpVisible} onClose={() => updateUIState({ helpVisible: false })} />
+      <Help visible={!!uiState.helpVisible} onClose={() => {
+        updateUIState({ helpVisible: false });
+        document.getElementById("graph-editor")?.focus();
+      }} />
       <svg
         id="graph-editor"
         style={{
