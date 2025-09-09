@@ -25,10 +25,27 @@ class Styles {
     }
   }
 
+  public hasStyle(name: string): boolean {
+    return this._styleData.has(name);
+  }
+
+  public deleteStyle(name: string) {
+    if (!this._styleData.has(name)) {
+      return this;
+    }
+    const s = new Styles(this);
+    s._styleData.delete(name);
+    return s;
+  }
+
   public addStyle(style: StyleData) {
     const s = new Styles(this);
     s._styleData.set(style.name, style);
     return s;
+  }
+
+  public updateStyle(style: StyleData) {
+    return this.addStyle(style);
   }
 
   public setFilename(filename: string) {
@@ -69,7 +86,7 @@ class Styles {
   }
 
   public get firstStyle(): string | undefined {
-    return Array.from(this._styleData.keys()).find((s) => s !== "none");
+    return Array.from(this._styleData.keys()).find(s => s !== "none");
   }
 }
 

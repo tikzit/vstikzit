@@ -16,3 +16,40 @@ input.error {
   border-color: red !important;
   outline: 1px solid red !important;
 }
+
+button {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-family: var(--vscode-font-family);
+  cursor: pointer;
+  height: 30px;
+}
+
+button:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+button:disabled {
+  background-color: var(--vscode-button-disabledBackground);
+  color: var(--vscode-button-disabledForeground);
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: var(--vscode-button-disabledBackground);
+}
+
+select {
+  width: 100%;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: var(--vscode-editor-font-size);
+  font-family: var(--vscode-editor-font-family);
+  height: 30px;
+}
