@@ -116,6 +116,10 @@ class BaseEditorProvider {
     const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
+    // Get the local path to the CSS file
+    const cssPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.css");
+    const cssUri = webview.asWebviewUri(cssPathOnDisk);
+
     // Use a nonce to only allow specific scripts to be run
     const nonce = getNonce();
 
@@ -131,6 +135,7 @@ class BaseEditorProvider {
         font-src ${webview.cspSource};
         worker-src 'self' data: blob:;">
 				<title>TikZ Editor</title>
+				<link rel="stylesheet" href="${cssUri}">
 				<style>
 					body {
 						margin: 0;

@@ -1,0 +1,18 @@
+input {
+  width: 100%;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: var(--vscode-editor-font-size);
+  font-family: var(--vscode-editor-font-family);
+}
+input::selection {
+  background-color: var(--vscode-editor-selectionBackground);
+  color: var(--vscode-editor-selectionForeground);
+}
+input.error {
+  border-color: red !important;
+  outline: 1px solid red !important;
+}

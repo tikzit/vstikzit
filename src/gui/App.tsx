@@ -8,6 +8,7 @@ import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
+import "./gui.css";
 
 interface IContent {
   document: string;
@@ -65,7 +66,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {
@@ -229,29 +230,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
           editMode={false}
         />
       </Splitpane>
-      <style>
-        {`
-        input {
-          width: 100%;
-          background-color: var(--vscode-input-background);
-          color: var(--vscode-input-foreground);
-          border: 1px solid var(--vscode-input-border);
-          border-radius: 2px;
-          padding: 4px 8px;
-          font-size: var(--vscode-editor-font-size);
-          font-family: var(--vscode-editor-font-family);
-          selection-color: var(--vscode-editor-selection-background);
-        }
-        input::selection {
-          background-color: var(--vscode-editor-selectionBackground);
-          color: var(--vscode-editor-selectionForeground);
-        }
-        input.error {
-          border-color: red !important;
-          outline: 1px solid red !important;
-        }
-      `}
-      </style>
     </div>
   );
 };
