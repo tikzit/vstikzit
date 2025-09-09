@@ -5,6 +5,7 @@ interface Command {
 }
 
 const commands: Command[] = [
+  { name: "vstikzit.showHelp", shortcuts: ["Shift+?"], description: "Show help" },
   { name: "vstikzit.selectTool", shortcuts: ["S"], description: "Select tool" },
   { name: "vstikzit.nodeTool", shortcuts: ["N"], description: "Node tool" },
   { name: "vstikzit.edgeTool", shortcuts: ["E"], description: "Edge tool" },

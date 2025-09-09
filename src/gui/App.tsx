@@ -65,7 +65,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {

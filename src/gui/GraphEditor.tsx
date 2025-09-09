@@ -10,6 +10,7 @@ import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import { getCommandFromShortcut } from "../lib/commands";
+import Help from "./Help";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -39,6 +40,7 @@ interface UIState {
   edgeEndNode?: number;
   addEdgeLineStart?: Coord;
   addEdgeLineEnd?: Coord;
+  helpVisible?: boolean;
 }
 
 const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
@@ -78,8 +80,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
       : Array.from(graph.edgeData.values())
-        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-        .map(d => d.path)
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
   );
 
   useEffect(() => {
@@ -490,7 +492,11 @@ const GraphEditor = ({
             const nodes = g.nodes;
             if (nodes.length !== 0) {
               const n = nodes[0];
-              while (Array.from(graph.nodeData.values()).find(d => g.nodeData.get(n)!.coord.equals(d.coord))) {
+              while (
+                Array.from(graph.nodeData.values()).find(d =>
+                  g.nodeData.get(n)!.coord.equals(d.coord)
+                )
+              ) {
                 g = g.shiftGraph(0.5, -0.5);
               }
             }
@@ -602,6 +608,9 @@ const GraphEditor = ({
       case "vstikzit.deselectAll":
         updateSelection(new Set(), new Set());
         break;
+      case "vstikzit.showHelp":
+        updateUIState({ helpVisible: true });
+        break;
       default:
         capture = false;
         break;
@@ -623,6 +632,7 @@ const GraphEditor = ({
         overflowY: "scroll",
       }}
     >
+      <Help visible={!!uiState.helpVisible} onClose={() => updateUIState({ helpVisible: false })} />
       <svg
         id="graph-editor"
         style={{
