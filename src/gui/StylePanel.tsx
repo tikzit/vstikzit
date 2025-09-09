@@ -4,7 +4,7 @@ import Styles from "../lib/Styles";
 import Node from "./Node";
 import Edge from "./Edge";
 import { isValidDelimString } from "../lib/TikzParser";
-import { SVGProps } from "react";
+import { JSX } from "preact";
 
 interface StylePanelProps {
   tikzStyles: Styles;
@@ -31,13 +31,13 @@ const StylePanel = ({
     .setRight(0.35)
     .setUp(0.25)
     .setDown(0.25);
-  const labelProps: SVGProps<SVGTextElement> = {
+  const labelProps: JSX.SVGAttributes<SVGTextElement> = {
     x: 22,
     y: 38,
-    textAnchor: "middle",
-    alignmentBaseline: "middle",
-    fontSize: "10px",
-    fontStyle: "italic",
+    "text-anchor": "middle",
+    "alignment-baseline": "middle",
+    "font-size": "10px",
+    "font-style": "italic",
   };
   const selectionProps = {
     x: 1,
@@ -46,7 +46,7 @@ const StylePanel = ({
     height: 43,
     fill: "rgba(150, 200, 255, 0.4)",
     stroke: "rgba(150, 200, 255, 0.8)",
-    strokeWidth: 1,
+    "stroke-width": 1,
   };
 
   // dummy node and edge data used for drawing the controls
@@ -69,7 +69,7 @@ const StylePanel = ({
         <input
           id="label-field"
           value={currentNodeLabel ?? ""}
-          onChange={e => setCurrentNodeLabel(e.target.value)}
+          onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
           onKeyDown={e => {
             if (e.key === "Enter") {
               document.getElementById("graph-editor")?.focus();
@@ -101,7 +101,7 @@ const StylePanel = ({
               <a
                 key={name}
                 href="#"
-                draggable="false"
+                draggable={false}
                 title={name}
                 onClick={e => setNodeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}
@@ -141,7 +141,7 @@ const StylePanel = ({
               <a
                 key={name}
                 href="#"
-                draggable="false"
+                draggable={false}
                 title={name}
                 onClick={e => setEdgeStyle(name, e.detail > 1)}
                 style={{ outline: "none" }}

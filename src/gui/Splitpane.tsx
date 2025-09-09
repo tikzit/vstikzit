@@ -1,7 +1,8 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "preact/hooks";
+import { ComponentChildren, JSX } from "preact";
 
 interface SplitpaneProps {
-  children: [React.ReactNode, React.ReactNode];
+  children: [ComponentChildren, ComponentChildren];
   splitRatio?: number; // percentage (0-100)
   orientation?: "horizontal" | "vertical";
 }
@@ -12,7 +13,7 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
   const splitpaneRef = useRef<HTMLDivElement>(null);
   const separatorRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: JSX.TargetedMouseEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(true);
   }, []);

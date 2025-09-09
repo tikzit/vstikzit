@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "preact/hooks";
+import { JSX } from "preact";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -66,7 +67,6 @@ const GraphEditor = ({
   currentNodeStyle,
   currentEdgeStyle,
 }: GraphEditorProps) => {
-  const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
 
@@ -123,14 +123,14 @@ const GraphEditor = ({
     drawGrid(editor, sceneCoords);
   }, [sceneCoords]);
 
-  const mousePositionToCoord = (event: React.MouseEvent<SVGSVGElement>): Coord => {
+  const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     return new Coord(x, y);
   };
 
-  const updateSceneCoords = (coords: SceneCoords) => {
+  const updateSceneCoords = useCallback((coords: SceneCoords) => {
     const viewport = document.getElementById("graph-editor-viewport")!;
     const c0 = new Coord(
       viewport.scrollLeft + viewport.clientWidth / 2,
@@ -140,9 +140,9 @@ const GraphEditor = ({
     viewport.scrollLeft += c1.x - c0.x;
     viewport.scrollTop += c1.y - c0.y;
     setSceneCoords(coords);
-  };
+  }, [sceneCoords, setSceneCoords]);
 
-  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -222,7 +222,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseMove = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
@@ -347,7 +347,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseUp = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
@@ -422,14 +422,16 @@ const GraphEditor = ({
         break;
       case "edge":
         if (uiState.edgeStartNode !== undefined && uiState.edgeEndNode !== undefined) {
+          const pathId = graph.freshPathId;
           let edge = new EdgeData()
             .setId(graph.freshEdgeId)
             .setSource(uiState.edgeStartNode)
-            .setTarget(uiState.edgeEndNode);
+            .setTarget(uiState.edgeEndNode)
+            .setPath(pathId);
           if (currentEdgeStyle !== "none") {
             edge = edge.setProperty("style", currentEdgeStyle);
           }
-          const path = new PathData().setId(graph.freshPathId).setEdges([edge.id]);
+          const path = new PathData().setId(pathId).setEdges([edge.id]);
           updateGraph(graph.addEdgeWithData(edge).addPathWithData(path), true);
         }
         break;
@@ -445,16 +447,14 @@ const GraphEditor = ({
     updateUIState("reset");
   };
 
-  const moveSelectedNodes = (dx: number, dy: number) => {
-    if (selectedNodes.size !== 0) {
-      const g = graph.mapNodeData(d =>
-        selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
-      );
-      updateGraph(g, true);
-    }
-  };
 
-  const handleKeyDown = async (event: React.KeyboardEvent<SVGSVGElement>) => {
+  const handleKeyDown = async (event: KeyboardEvent) => {
+    // ignore key events if focus is in an input field
+    if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
+      return;
+    }
+
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     const combo = [];
     if (event.getModifierState(CTRL)) combo.push("Ctrl");
     if (event.getModifierState("Alt")) combo.push("Alt");
@@ -468,6 +468,15 @@ const GraphEditor = ({
     combo.push(key);
 
     let capture = true;
+
+    const moveSelectedNodes = (dx: number, dy: number) => {
+      if (selectedNodes.size !== 0) {
+        const g = graph.mapNodeData(d =>
+          selectedNodes.has(d.id) ? d.setCoord(d.coord.shift(dx, dy, 40)) : d
+        );
+        updateGraph(g, true);
+      }
+    };
 
     switch (getCommandFromShortcut(combo.join("+"))?.name) {
       case "vstikzit.copy":
@@ -641,11 +650,11 @@ const GraphEditor = ({
           backgroundColor: "white",
           // outline: "none", // Remove default focus outline
         }}
-        tabIndex={0}
+        tabindex={0}
+        onKeyDown={handleKeyDown}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onKeyDown={handleKeyDown}
         onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
           event.preventDefault();
@@ -686,7 +695,7 @@ const GraphEditor = ({
               {...uiState.selectionRect}
               fill="rgba(150, 150, 200, 0.2)"
               stroke="rgba(150, 150, 200, 1)"
-              strokeDasharray="5,2"
+              stroke-dasharray="5,2"
             />
           )}
         </g>
@@ -698,7 +707,7 @@ const GraphEditor = ({
               x2={uiState.addEdgeLineEnd.x}
               y2={uiState.addEdgeLineEnd.y}
               stroke="rgb(100, 0, 200)"
-              strokeWidth={4}
+              stroke-width={4}
             />
           )}
         </g>

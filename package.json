@@ -103,32 +103,29 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "mocha dist/tests.js",
-    "package": "rm dist/* && vite build && vite build --mode extension && vsce package"
+    "package": "rm dist/* && vite build && vite build --mode extension && vsce package",
+    "analyze": "vite-bundle-analyzer"
   },
   "dependencies": {
+    "@preact/preset-vite": "^2.10.2",
     "chevrotain": "^11.0.3",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "preact": "^10.27.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
     "@types/vscode": "^1.103.0",
-    "@vitejs/plugin-react": "^5.0.0",
     "@vscode/vsce": "^3.6.0",
     "chai": "^6.0.1",
     "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "mocha": "^11.7.2",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.42.0",
-    "vite": "^7.1.4"
+    "vite": "^7.1.5",
+    "vite-bundle-analyzer": "^1.2.3"
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "preact/hooks";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -104,6 +104,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   const handleCurrentNodeLabelChanged = (label: string) => {
+    console.log("label changed to", label);
     if (selectedNodes.size === 1) {
       setCurrentNodeLabel(label);
 
