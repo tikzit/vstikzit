@@ -136,26 +136,33 @@ class Styles {
     return this.styles.find(s => s.name !== "none")?.name;
   }
 
-  public moveStyleUp(name: string): Styles {
+
+  private moveStyle(name: string, shift: number): Styles {
     const s = new Styles(this);
     const i = s._nodeStyles.findIndex(style => style.name === name);
-    if (i > 0) {
-      const temp = s._nodeStyles[i - 1];
-      s._nodeStyles[i - 1] = s._nodeStyles[i];
-      s._nodeStyles[i] = temp;
+    if (i !== -1) {
+      if (i + shift >= 0 && i + shift < s._nodeStyles.length) {
+        const temp = s._nodeStyles[i + shift];
+        s._nodeStyles[i + shift] = s._nodeStyles[i];
+        s._nodeStyles[i] = temp;
+      }
+    } else {
+      const j = s._edgeStyles.findIndex(style => style.name === name);
+      if (j !== -1 && j + shift >= 0 && j + shift < s._edgeStyles.length) {
+        const temp = s._edgeStyles[j + shift];
+        s._edgeStyles[j + shift] = s._edgeStyles[j];
+        s._edgeStyles[j] = temp;
+      }
     }
     return s;
   }
 
+  public moveStyleUp(name: string): Styles {
+    return this.moveStyle(name, -1);
+  }
+
   public moveStyleDown(name: string): Styles {
-    const s = new Styles(this);
-    const i = s._nodeStyles.findIndex(style => style.name === name);
-    if (i !== -1 && i < s._nodeStyles.length - 1) {
-      const temp = s._nodeStyles[i + 1];
-      s._nodeStyles[i + 1] = s._nodeStyles[i];
-      s._nodeStyles[i] = temp;
-    }
-    return s;
+    return this.moveStyle(name, 1);
   }
 
   public get freshStyleName(): string {

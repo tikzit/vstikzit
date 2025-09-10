@@ -88,7 +88,7 @@ const ColorPicker = ({
         className={`color-swatch ${disabled ? "disabled" : ""}`}
         onClick={handleSwatchClick}
         style={{
-          backgroundColor: value === undefined ? "white" : displayColor,
+          backgroundColor: value === undefined ? "var(--vscode-input-background)" : displayColor,
           border: "2px solid var(--vscode-input-border)",
           borderRadius: "4px",
           width: "30px",
@@ -117,7 +117,7 @@ const ColorPicker = ({
               y1="5"
               x2="25"
               y2="20"
-              stroke="gray"
+              stroke="var(--vscode-foreground)"
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -126,7 +126,7 @@ const ColorPicker = ({
               y1="5"
               x2="5"
               y2="20"
-              stroke="gray"
+              stroke="var(--vscode-foreground)"
               strokeWidth="2"
               strokeLinecap="round"
             />

@@ -126,34 +126,56 @@ const Style = ({ data, onChange }: StyleProps) => {
           </td>
         </tr>
         {data.isEdgeStyle && (
-          <tr>
-            <td className="form-label">arrowheads</td>
-            <td>
-              <select
-                style={{ width: "50px" }}
-                onChange={e => {
-                  const v = (e.target as HTMLSelectElement).value as "none" | "pointer" | "flat";
-                  onChange(data.setArrowTail(v));
-                }}
-              >
-                <option value="none" selected={data.arrowTail === "none"}></option>
-                <option value="pointer" selected={data.arrowTail === "pointer"}>&lt;</option>
-                <option value="flat" selected={data.arrowTail === "flat"}>|</option>
-              </select>
-              &nbsp;-&nbsp;
-              <select
-                style={{ width: "50px" }}
-                onChange={e => {
-                  const v = (e.target as HTMLSelectElement).value as "none" | "pointer" | "flat";
-                  onChange(data.setArrowHead(v));
-                }}
-              >
-                <option value="none" selected={data.arrowHead === "none"}></option>
-                <option value="pointer" selected={data.arrowHead === "pointer"}>&gt;</option>
-                <option value="flat" selected={data.arrowHead === "flat"}>|</option>
-              </select>
-            </td>
-          </tr>
+          <>
+            <tr>
+              <td className="form-label">arrowheads</td>
+              <td>
+                <select
+                  style={{ width: "50px" }}
+                  onChange={e => {
+                    const v = (e.target as HTMLSelectElement).value as "none" | "pointer" | "flat";
+                    onChange(data.setArrowTail(v));
+                  }}
+                >
+                  <option value="none" selected={data.arrowTail === "none"}></option>
+                  <option value="pointer" selected={data.arrowTail === "pointer"}>&lt;</option>
+                  <option value="flat" selected={data.arrowTail === "flat"}>|</option>
+                </select>
+                &nbsp;-&nbsp;
+                <select
+                  style={{ width: "50px" }}
+                  onChange={e => {
+                    const v = (e.target as HTMLSelectElement).value as "none" | "pointer" | "flat";
+                    onChange(data.setArrowHead(v));
+                  }}
+                >
+                  <option value="none" selected={data.arrowHead === "none"}></option>
+                  <option value="pointer" selected={data.arrowHead === "pointer"}>&gt;</option>
+                  <option value="flat" selected={data.arrowHead === "flat"}>|</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td className="form-label">dash</td>
+              <td>
+                <select
+                  style={{ width: "100%", marginTop: "8px" }}
+                  onChange={e => {
+                    const v = (e.target as HTMLSelectElement).value as "none" | "dashed" | "dotted";
+                    let d = data.unset("dashed").unset("dotted");
+                    if (v !== "none") {
+                      d = d.setAtom(v);
+                    }
+                    onChange(d);
+                  }}
+                >
+                  <option value="none" selected={!data.hasKey("dashed") && !data.hasKey("dotted")}></option>
+                  <option value="dashed" selected={data.hasKey("dashed")}>dashed</option>
+                  <option value="dotted" selected={data.hasKey("dotted")}>dotted</option>
+                </select>
+              </td>
+            </tr>
+          </>
         )}
       </table>
     </div>
