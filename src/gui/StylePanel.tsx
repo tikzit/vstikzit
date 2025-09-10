@@ -25,7 +25,7 @@ const StylePanel = ({
   onCurrentNodeLabelChanged: setCurrentNodeLabel,
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
-  editMode
+  editMode,
 }: StylePanelProps) => {
   const sceneCoords = new SceneCoords()
     .setZoom(0)
@@ -65,25 +65,32 @@ const StylePanel = ({
         overflow: "hidden",
       }}
     >
-      {!editMode && <>
-        <div
-          style={{ marginBottom: "2px", marginTop: "2px", marginLeft: "0px", marginRight: "15px" }}
-        >
-          <input
-            id="label-field"
-            value={currentNodeLabel ?? ""}
-            onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                document.getElementById("graph-editor")?.focus();
-              }
+      {!editMode && (
+        <>
+          <div
+            style={{
+              marginBottom: "2px",
+              marginTop: "2px",
+              marginLeft: "0px",
+              marginRight: "15px",
             }}
-            disabled={currentNodeLabel === undefined}
-            className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
-          />
-        </div>
-        <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
-      </>}
+          >
+            <input
+              id="label-field"
+              value={currentNodeLabel ?? ""}
+              onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  document.getElementById("graph-editor")?.focus();
+                }
+              }}
+              disabled={currentNodeLabel === undefined}
+              className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
+            />
+          </div>
+          <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
+        </>
+      )}
 
       <div style={{ overflow: "hidden", height: "calc(100% - 80px)", width: "100%" }}>
         <div
@@ -96,18 +103,18 @@ const StylePanel = ({
             marginBottom: "10px",
           }}
         >
-          {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
-            if (style.isEdgeStyle || (editMode && name === "none")) {
+          {tikzStyles.styles.map(style => {
+            if (style.isEdgeStyle || (editMode && style.name === "none")) {
               return null;
             }
-            const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
+            const shortName = style.name.length > 8 ? style.name.slice(0, 8) + "…" : style.name;
             return (
               <a
-                key={name}
+                key={style.name}
                 href="#"
                 draggable={false}
-                title={name}
-                onClick={e => setNodeStyle(name, e.detail > 1)}
+                title={style.name}
+                onClick={e => setNodeStyle(style.name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
                 <svg
@@ -136,18 +143,21 @@ const StylePanel = ({
             color: "#000",
           }}
         >
-          {Array.from(tikzStyles.styleData.entries()).map(([name, style]) => {
-            if ((name !== "none" && !style.isEdgeStyle) || (editMode && name === "none")) {
+          {tikzStyles.styles.map(style => {
+            if (
+              (style.name !== "none" && !style.isEdgeStyle) ||
+              (editMode && style.name === "none")
+            ) {
               return null;
             }
-            const shortName = name.length > 8 ? name.slice(0, 8) + "…" : name;
+            const shortName = style.name.length > 8 ? style.name.slice(0, 8) + "…" : style.name;
             return (
               <a
-                key={name}
+                key={style.name}
                 href="#"
                 draggable={false}
-                title={name}
-                onClick={e => setEdgeStyle(name, e.detail > 1)}
+                title={style.name}
+                onClick={e => setEdgeStyle(style.name, e.detail > 1)}
                 style={{ outline: "none" }}
               >
                 <svg
@@ -155,9 +165,9 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px" }}
                 >
-                  {currentEdgeStyle === name && <rect {...selectionProps} />}
+                  {currentEdgeStyle === style.name && <rect {...selectionProps} />}
                   <Edge
-                    data={edge.setProperty("style", name)}
+                    data={edge.setProperty("style", style.name)}
                     sourceData={enode1}
                     targetData={enode2}
                     tikzStyles={tikzStyles}

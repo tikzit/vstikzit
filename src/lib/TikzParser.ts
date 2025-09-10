@@ -204,7 +204,7 @@ class TikzParser extends EmbeddedActionsParser {
 
     this.ACTION(() => {
       if (this.styles !== undefined) {
-        if (this.styles.styleData.has(name)) {
+        if (this.styles.hasStyle(name)) {
           throw new ParseError(
             tok.startLine ?? 1,
             tok.startColumn ?? 1,
@@ -549,10 +549,10 @@ function parseTikz(
     return parseStyles
       ? { result: parser.styles, errors: [] }
       : {
-        result: parser.graph,
-        nodeTikzPositions: parser.nodeTikzPositions,
-        errors: [],
-      };
+          result: parser.graph,
+          nodeTikzPositions: parser.nodeTikzPositions,
+          errors: [],
+        };
   } catch (e) {
     if (e instanceof ParseError) {
       return {

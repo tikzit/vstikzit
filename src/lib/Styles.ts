@@ -1,3 +1,4 @@
+import { Style } from "util";
 import { StyleData } from "./Data";
 
 class Styles {
@@ -9,12 +10,16 @@ class Styles {
     this._filename = styles?._filename ?? "";
   }
 
-  public get styleData(): Map<string, StyleData> {
-    return this._styleData;
-  }
+  // public get styleData(): Map<string, StyleData> {
+  //   return this._styleData;
+  // }
 
   public get filename(): string {
     return this._filename;
+  }
+
+  public get styles(): StyleData[] {
+    return Array.from(this._styleData.values());
   }
 
   public style(name: string | undefined): StyleData {
