@@ -126,24 +126,41 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
     });
   }
 
+  const newStyle = (isEdgeStyle: boolean) => {
+    const name = tikzStyles.freshStyleName;
+    let d = new StyleData().setName(name);
+    if (isEdgeStyle) {
+      d = d.setAtom("-");
+    }
+    setTikzStyles(tikzStyles.addStyle(d));
+    setCurrentStyle(name);
+  };
+
+  const moveStyle = (direction: "up" | "down") => {
+    let updatedStyles: Styles;
+    if (direction === "up") {
+      updatedStyles = tikzStyles.moveStyleUp(currentStyle);
+    } else {
+      updatedStyles = tikzStyles.moveStyleDown(currentStyle);
+    }
+    if (!updatedStyles.equals(tikzStyles)) {
+      setTikzStyles(updatedStyles);
+      updateFromGui(updatedStyles.tikz());
+    }
+  };
+
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <Splitpane splitRatio={0.8} orientation="horizontal">
         <div>
           <div className="button-container">
-            <button>+ Node Style</button>
-            <button>+ Edge Style</button>
-            <button>&#129092;</button>
-            <button>&#129094;</button>
-            <button disabled={!hasChanges} onClick={applyStyleChanges}>
-              &#10004; Apply
-            </button>
-            <button disabled={!hasChanges} onClick={resetStyleChanges}>
-              &#8634; Reset
-            </button>
-            <button onClick={() => editStyle(currentStyle)}>
-              &#9998; Edit
-            </button>
+            <button onClick={() => newStyle(false)}>+ Node Style</button>
+            <button onClick={() => newStyle(true)}>+ Edge Style</button>
+            <button onClick={() => moveStyle("up")}>&#129092;</button>
+            <button onClick={() => moveStyle("down")}>&#129094;</button>
+            <button disabled={!hasChanges} onClick={applyStyleChanges}>&#10004; Apply</button>
+            <button disabled={!hasChanges} onClick={resetStyleChanges}>&#8634; Reset</button>
+            <button onClick={() => editStyle(currentStyle)}>&#9998; Edit</button>
             <button onClick={deleteStyle}>&#128465; Delete</button>
           </div>
           <Style data={currentStyleData} onChange={setCurrentStyleData} />

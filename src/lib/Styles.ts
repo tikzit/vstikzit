@@ -1,4 +1,4 @@
-import { StyleData } from "./Data";
+import { arrayEquals, StyleData } from "./Data";
 
 class Styles {
   private _nodeStyles: StyleData[];
@@ -9,6 +9,12 @@ class Styles {
     this._nodeStyles = styles !== undefined ? [...styles._nodeStyles] : [];
     this._edgeStyles = styles !== undefined ? [...styles._edgeStyles] : [];
     this._filename = styles?._filename ?? "";
+  }
+
+  public equals(other: Styles): boolean {
+    return this._filename === other._filename &&
+      arrayEquals(this._nodeStyles, other._nodeStyles) &&
+      arrayEquals(this._edgeStyles, other._edgeStyles);
   }
 
   // public get styleData(): Map<string, StyleData> {
