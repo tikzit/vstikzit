@@ -122,9 +122,9 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px", borderWidth: 0 }}
                 >
-                  {currentNodeStyle === name && <rect {...selectionProps} />}
+                  {currentNodeStyle === style.name && <rect {...selectionProps} />}
                   <Node
-                    data={node.setProperty("style", name)}
+                    data={node.setProperty("style", style.name)}
                     tikzStyles={tikzStyles}
                     sceneCoords={sceneCoords}
                   />
