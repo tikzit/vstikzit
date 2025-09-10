@@ -20,7 +20,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     parseTikzStyles(initialContent.document).result ?? new Styles()
   );
-  const [currentStyle, setCurrentStyle] = useState<string>(tikzStyles.firstStyle ?? "none");
+  const [currentStyle, setCurrentStyle] = useState<string>(tikzStyles.firstStyleName ?? "none");
   const [currentStyleData, setCurrentStyleData] = useState<StyleData>(
     tikzStyles.style(currentStyle)
   );
@@ -36,7 +36,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
       const styles = parsed.result;
       setTikzStyles(styles);
       if (styles.style(currentStyle) === undefined) {
-        setCurrentStyle(styles.firstStyle ?? "none");
+        setCurrentStyle(styles.firstStyleName ?? "none");
       }
 
       setCurrentStyleData(styles.style(currentStyle));
@@ -70,7 +70,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
     setCurrentStyleData(tikzStyles.style(currentStyle));
   }, [currentStyle, tikzStyles]);
 
-  const handleCurrentStyleChange = (styleName: string) => {
+  const handleCurrentStyleChange = (styleName: string, doubleClicked: boolean) => {
     if (hasChanges && styleName !== currentStyle) {
       if (!applyStyleChanges()) {
         return;
@@ -79,6 +79,10 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
 
     setCurrentStyle(styleName);
     setCurrentStyleData(tikzStyles.style(styleName));
+
+    if (doubleClicked) {
+      editStyle(styleName);
+    }
   };
 
   // const handleStyleDataChange = (newData: StyleData) => {
@@ -88,16 +92,12 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
 
   const applyStyleChanges = (): boolean => {
     let updatedStyles = tikzStyles;
-    if (currentStyleData.name !== currentStyle) {
-      if (tikzStyles.hasStyle(currentStyleData.name)) {
-        alert("A style with this name already exists.");
-        return false;
-      }
-
-      updatedStyles = updatedStyles.deleteStyle(currentStyle);
-      setCurrentStyle(currentStyleData.name);
+    if (currentStyleData.name !== currentStyle && tikzStyles.hasStyle(currentStyleData.name)) {
+      alert("A style with this name already exists.");
+      return false;
     }
-    updatedStyles = updatedStyles.updateStyle(currentStyleData);
+    updatedStyles = updatedStyles.updateStyle(currentStyle, currentStyleData);
+    setCurrentStyle(currentStyleData.name);
     setTikzStyles(updatedStyles);
     updateFromGui(updatedStyles.tikz());
     return true;
@@ -114,27 +114,36 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
       const updatedStyles = tikzStyles.deleteStyle(currentStyle);
       setTikzStyles(updatedStyles);
       updateFromGui(updatedStyles.tikz());
-      setCurrentStyle(updatedStyles.firstStyle ?? "none");
+      setCurrentStyle(updatedStyles.firstStyleName ?? "none");
     }
   };
+
+  const editStyle = (styleName: string) => {
+    const [_, position] = tikzStyles.tikzWithPosition(styleName);
+    vscode.postMessage({
+      type: "openCodeEditor",
+      content: position ?? { line: 0, column: 0 },
+    });
+  }
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <Splitpane splitRatio={0.8} orientation="horizontal">
         <div>
-          <div style={{ textAlign: "center", margin: "20px" }}>
-            <button>+ Node Style</button>&nbsp;
-            <button>+ Edge Style</button>&nbsp;
-            <button>&#129092;</button>&nbsp;
-            <button>&#129094;</button>&nbsp;
+          <div className="button-container">
+            <button>+ Node Style</button>
+            <button>+ Edge Style</button>
+            <button>&#129092;</button>
+            <button>&#129094;</button>
             <button disabled={!hasChanges} onClick={applyStyleChanges}>
               &#10004; Apply
             </button>
-            &nbsp;
             <button disabled={!hasChanges} onClick={resetStyleChanges}>
               &#8634; Reset
             </button>
-            &nbsp;
+            <button onClick={() => editStyle(currentStyle)}>
+              &#9998; Edit
+            </button>
             <button onClick={deleteStyle}>&#128465; Delete</button>
           </div>
           <Style data={currentStyleData} onChange={setCurrentStyleData} />
@@ -144,7 +153,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
           currentNodeLabel={undefined}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => {}}
+          onCurrentNodeLabelChanged={() => { }}
           onNodeStyleChanged={handleCurrentStyleChange}
           onEdgeStyleChanged={handleCurrentStyleChange}
           editMode={true}

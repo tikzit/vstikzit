@@ -60,13 +60,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
             const parsed = parseTikzStyles(message.content.source);
             if (parsed.result !== undefined) {
               const s = parsed.result
-                .setFilename(message.content.filename)
-                .inheritDataFrom(tikzStyles);
+                .setFilename(message.content.filename);
               setTikzStyles(s);
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {

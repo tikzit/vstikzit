@@ -101,3 +101,24 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   border: none;
 }
+
+.form-label {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.form-label-alt {
+  text-align: right;
+  padding-right: 10px;
+  font-style: italic;
+  color: var(--vscode-editorCodeLens-foreground);
+}
+
+.button-container {
+  text-align: center;
+  margin: 30px;
+}
+
+.button-container button {
+  margin: 3px;
+}

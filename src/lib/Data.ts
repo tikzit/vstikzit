@@ -467,6 +467,60 @@ class StyleData extends Data<StyleData> {
     }
   }
 
+  private clearArrowTips(): StyleData {
+    const d = new StyleData(this);
+    d._map.delete("-");
+    d._map.delete("->");
+    d._map.delete("-|");
+    d._map.delete("<-");
+    d._map.delete("<->");
+    d._map.delete("<-|");
+    d._map.delete("|-");
+    d._map.delete("|->");
+    d._map.delete("|-|");
+    return d;
+  }
+
+  public setArrowHead(style: ArrowTipStyle): StyleData {
+    let s: string;
+    const tail = this.arrowTail;
+    if (tail === "pointer") {
+      s = "<-";
+    } else if (tail === "flat") {
+      s = "|-";
+    } else {
+      s = "-";
+    }
+
+    if (style === "pointer") {
+      s += ">";
+    } else if (style === "flat") {
+      s += "|";
+    }
+
+    return this.clearArrowTips().setAtom(s);
+  }
+
+  public setArrowTail(style: ArrowTipStyle): StyleData {
+    let s: string;
+    if (style === "pointer") {
+      s = "<-";
+    } else if (style === "flat") {
+      s = "|-";
+    } else {
+      s = "-";
+    }
+
+    const head = this.arrowHead;
+    if (head === "pointer") {
+      s += ">";
+    } else if (head === "flat") {
+      s += "|";
+    }
+
+    return this.clearArrowTips().setAtom(s);
+  }
+
   public equals(other: StyleData): boolean {
     return super.equals(other) && this._name === other._name;
   }

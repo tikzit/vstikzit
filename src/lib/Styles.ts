@@ -1,11 +1,13 @@
 import { StyleData } from "./Data";
 
 class Styles {
-  private _styleData: Map<string, StyleData>;
+  private _nodeStyles: StyleData[];
+  private _edgeStyles: StyleData[];
   private _filename: string = "";
 
   constructor(styles?: Styles) {
-    this._styleData = styles !== undefined ? new Map(styles._styleData) : new Map();
+    this._nodeStyles = styles !== undefined ? [...styles._nodeStyles] : [];
+    this._edgeStyles = styles !== undefined ? [...styles._edgeStyles] : [];
     this._filename = styles?._filename ?? "";
   }
 
@@ -17,39 +19,78 @@ class Styles {
     return this._filename;
   }
 
+  public get nodeStyles(): StyleData[] {
+    return [...this._nodeStyles];
+  }
+
+  public get edgeStyles(): StyleData[] {
+    return [...this._edgeStyles];
+  }
+
   public get styles(): StyleData[] {
-    return Array.from(this._styleData.values());
+    return [...this._nodeStyles, ...this._edgeStyles];
   }
 
   public style(name: string | undefined): StyleData {
     if (name === undefined) {
       return new StyleData();
     } else {
-      return this._styleData.get(name) ?? new StyleData();
+      return this._nodeStyles.find(style => style.name === name) ?? this._edgeStyles.find(style => style.name === name) ?? new StyleData();
     }
   }
 
   public hasStyle(name: string): boolean {
-    return this._styleData.has(name);
+    return this._nodeStyles.some(style => style.name === name) || this._edgeStyles.some(style => style.name === name);
   }
 
   public deleteStyle(name: string) {
-    if (!this._styleData.has(name)) {
+    if (!this.hasStyle(name)) {
       return this;
     }
     const s = new Styles(this);
-    s._styleData.delete(name);
+    s._nodeStyles = s._nodeStyles.filter(style => style.name !== name);
+    s._edgeStyles = s._edgeStyles.filter(style => style.name !== name);
     return s;
   }
 
-  public addStyle(style: StyleData) {
+  public addStyle(style: StyleData): Styles {
+    if (this.hasStyle(style.name)) {
+      console.log(`Warning: style with name ${style.name} already exists, ignoring.`);
+      return this;
+    }
+
     const s = new Styles(this);
-    s._styleData.set(style.name, style);
+    if (style.isEdgeStyle) {
+      s._edgeStyles.push(style);
+    } else {
+      s._nodeStyles.push(style);
+    }
     return s;
   }
 
-  public updateStyle(style: StyleData) {
-    return this.addStyle(style);
+  public updateStyle(name: string, style: StyleData) {
+    const i = this._nodeStyles.findIndex(s => s.name === name);
+    const j = this._edgeStyles.findIndex(s => s.name === name);
+    const s = new Styles(this);
+    if (i !== -1) {
+      if (!style.isEdgeStyle) {
+        s._nodeStyles[i] = style;
+      } else {
+        s._nodeStyles.splice(i, 1);
+        s._edgeStyles.push(style);
+      }
+    } else if (j !== -1) {
+      if (style.isEdgeStyle) {
+        s._edgeStyles[j] = style;
+      } else {
+        s._edgeStyles.splice(j, 1);
+        s._nodeStyles.push(style);
+      }
+    } else {
+      throw new Error(`Style with name ${style.name} does not exist.`);
+    }
+
+    return s;
   }
 
   public setFilename(filename: string) {
@@ -59,38 +100,64 @@ class Styles {
   }
 
   public numStyles(): number {
-    return this._styleData.size;
+    return this._nodeStyles.length + this._edgeStyles.length;
+  }
+
+  public tikzWithPosition(styleName?: string): [string, { line: number; column: number } | undefined] {
+    let result = "";
+    let position: { line: number; column: number } | undefined;
+    this.styles.forEach(style => {
+      if (style.name !== "none") {
+        result += `\\tikzstyle{${style.name}}=`;
+
+        if (style.name === styleName) {
+          // return the position of the start of the property list
+          const lines = result.split("\n");
+          position = { line: lines.length - 1, column: lines[lines.length - 1].length };
+        }
+
+        result += style.tikz() + "\n";
+      }
+    });
+    return [result, position];
   }
 
   public tikz(): string {
-    let s = "";
-    this._styleData.forEach((style, name) => {
-      if (name !== "none") {
-        s += `\\tikzstyle{${name}}=${style.tikz()}\n`;
-      }
-    });
-    return s;
+    return this.tikzWithPosition()[0];
   }
 
-  /** This function inherits any identical data from the provided styles
-   *
-   * This helps reactive components recognise the same data via Object.is() after the graph
-   * has been re-parsed.
-   */
-  public inheritDataFrom(other: Styles): Styles {
+  public get firstStyleName(): string | undefined {
+    return this.styles.find(s => s.name !== "none")?.name;
+  }
+
+  public moveStyleUp(name: string): Styles {
     const s = new Styles(this);
-    const keys = Array.from(this._styleData.keys());
-    for (const key of keys) {
-      const d = other._styleData.get(key)!;
-      if (this._styleData.get(key)?.equals(d)) {
-        s._styleData.set(key, d);
-      }
+    const i = s._nodeStyles.findIndex(style => style.name === name);
+    if (i > 0) {
+      const temp = s._nodeStyles[i - 1];
+      s._nodeStyles[i - 1] = s._nodeStyles[i];
+      s._nodeStyles[i] = temp;
     }
     return s;
   }
 
-  public get firstStyle(): string | undefined {
-    return Array.from(this._styleData.keys()).find(s => s !== "none");
+  public moveStyleDown(name: string): Styles {
+    const s = new Styles(this);
+    const i = s._nodeStyles.findIndex(style => style.name === name);
+    if (i !== -1 && i < s._nodeStyles.length - 1) {
+      const temp = s._nodeStyles[i + 1];
+      s._nodeStyles[i + 1] = s._nodeStyles[i];
+      s._nodeStyles[i] = temp;
+    }
+    return s;
+  }
+
+  public get freshStyleName(): string {
+    let i = 1;
+    while (this.hasStyle(`new style ${i}`)) {
+      i++;
+    }
+    return `new style ${i}`;
   }
 }
 

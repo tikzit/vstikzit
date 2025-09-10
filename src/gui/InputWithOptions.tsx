@@ -1,0 +1,45 @@
+import { JSX } from "preact/jsx-runtime";
+
+interface InputWithOptionsProps {
+  style?: JSX.CSSProperties;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}
+
+const InputWithOptions = ({ style = {}, value, options, onChange }: InputWithOptionsProps) => {
+  return (
+    <div style={{ position: "relative", ...style }}>
+      <select
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          boxSizing: "border-box",
+          outline: "none",
+        }}
+        value={value}
+        onChange={e => onChange((e.target as HTMLSelectElement).value)}
+      >
+        {options.map(option => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+      <input
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "calc(100% - 20px)",
+          marginBottom: "2px",
+          boxSizing: "border-box"
+        }}
+        value={value}
+        onInput={e => onChange((e.target as HTMLInputElement).value)}
+      />
+    </div >
+  );
+}
+
+export default InputWithOptions;
