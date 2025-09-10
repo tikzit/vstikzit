@@ -1,4 +1,3 @@
-import { Style } from "util";
 import { StyleData } from "./Data";
 
 class Styles {

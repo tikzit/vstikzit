@@ -70,11 +70,7 @@ function openTikzEditor(): void {
         vscode.commands.executeCommand("workbench.action.closeActiveEditor");
       }
 
-      vscode.commands.executeCommand(
-        "vscode.openWith",
-        uri,
-        "vstikzit.tikzEditor"
-      );
+      vscode.commands.executeCommand("vscode.openWith", uri, "vstikzit.tikzEditor");
     } else {
       vscode.commands.executeCommand("editor.action.openLink");
     }
