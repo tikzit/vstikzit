@@ -20,6 +20,10 @@ export const texColors: Record<string, string> = {
   pink: "#ffbfbf",
 };
 
+export const texColorsInverse: Record<string, string> = Object.fromEntries(
+  Object.entries(texColors).map(([k, v]) => [v, k])
+);
+
 export function colorToHex(s: string | undefined): string | undefined {
   if (s === undefined) {
     return undefined;
@@ -45,6 +49,26 @@ export function colorToHex(s: string | undefined): string | undefined {
     const hb = b.toString(16).padStart(2, "0");
 
     return `#${hr}${hg}${hb}`;
+  }
+  return undefined;
+}
+
+export function colorFromHex(s: string | undefined): string | undefined {
+  if (s === undefined) {
+    return undefined;
+  }
+
+  if (s in texColorsInverse) {
+    return texColorsInverse[s];
+  }
+
+  const hexPattern = /^#([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])$/;
+  const match = s.match(hexPattern);
+  if (match) {
+    const r = parseInt(match[1], 16);
+    const g = parseInt(match[2], 16);
+    const b = parseInt(match[3], 16);
+    return `rgb,255: red,${r}; green,${g}; blue,${b}`;
   }
   return undefined;
 }

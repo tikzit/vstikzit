@@ -77,6 +77,7 @@ const StylePanel = ({
           >
             <input
               id="label-field"
+              style={{ width: "80%" }}
               value={currentNodeLabel ?? ""}
               onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
               onKeyDown={e => {

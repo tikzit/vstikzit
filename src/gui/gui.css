@@ -1,5 +1,4 @@
 input {
-  width: 100%;
   background-color: var(--vscode-input-background);
   color: var(--vscode-input-foreground);
   border: 1px solid var(--vscode-input-border);

@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { colorToHex, texColors } from "../lib/color";
 
 interface ColorPickerProps {
-  value?: string;
+  value: string | undefined;
   onChange?: (color: string) => void;
   presetColors?: Record<string, string>;
   disabled?: boolean;
 }
 
 const ColorPicker = ({
-  value = "#000000",
+  value,
   onChange,
   presetColors = texColors,
   disabled = false,
@@ -88,17 +88,51 @@ const ColorPicker = ({
         className={`color-swatch ${disabled ? "disabled" : ""}`}
         onClick={handleSwatchClick}
         style={{
-          backgroundColor: displayColor,
+          backgroundColor: value === undefined ? "white" : displayColor,
           border: "2px solid var(--vscode-input-border)",
           borderRadius: "4px",
           width: "30px",
           height: "25px",
           cursor: disabled ? "not-allowed" : "pointer",
           display: "inline-block",
+          top: "10px",
           position: "relative",
         }}
-        title={`Current color: ${displayColor}`}
-      />
+        title={value === undefined ? "No color selected" : `Current color: ${displayColor}`}
+      >
+        {value === undefined && (
+          <svg
+            width="30"
+            height="25"
+            viewBox="0 0 30 25"
+            style={{
+              position: "absolute",
+              top: "0",
+              left: "0",
+              pointerEvents: "none",
+            }}
+          >
+            <line
+              x1="5"
+              y1="5"
+              x2="25"
+              y2="20"
+              stroke="gray"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <line
+              x1="25"
+              y1="5"
+              x2="5"
+              y2="20"
+              stroke="gray"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
+      </div>
 
       {isOpen && !disabled && (
         <div
