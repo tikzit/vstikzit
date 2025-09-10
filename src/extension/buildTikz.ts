@@ -72,11 +72,46 @@ async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promi
   );
 }
 
+async function pdflatex(path: string, file: string): Promise<number> {
+  const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", file], {
+    cwd: path,
+    shell: true,
+  });
+
+  return new Promise((resolve, reject) => {
+    pdflatex.on("close", async code => {
+      if (code === 0) {
+        resolve(code);
+      } else {
+        reject(code);
+      }
+    });
+  });
+}
+
+async function dvisvgm(path: string, inFile: string, outFile: string): Promise<number> {
+  const dvisvgm = spawn("dvisvgm", ["--pdf", "--no-fonts", "--scale=2,2", inFile, outFile], {
+    cwd: path,
+    shell: true,
+  });
+
+  return new Promise((resolve, reject) => {
+    dvisvgm.on("close", async code => {
+      if (code === 0) {
+        resolve(code);
+      } else {
+        reject(code);
+      }
+    });
+  });
+}
+
 async function buildTikz(
   workspaceRoot: vscode.Uri,
   fileName: string,
   source: string | undefined,
-  tikzIncludes: string
+  tikzIncludes: string,
+  svg: boolean = false
 ): Promise<number> {
   // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}`);
   const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
@@ -107,33 +142,35 @@ async function buildTikz(
     Buffer.from(tex)
   );
 
-  // run pdflatex from tikzCacheFolder on texFile
-  const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", texFile], {
-    cwd: tikzCacheFolder.fsPath,
-    shell: true,
-  });
+  try {
+    await pdflatex(tikzCacheFolder.fsPath, texFile);
 
-  return new Promise((resolve, reject) => {
-    pdflatex.on("close", async code => {
-      // console.log(`pdflatex process exited with code ${code}`);
-      if (code === 0) {
-        // copy the contents of FILE.tmp.pdf into FILE.pdf
-        const pdfContent = await vscode.workspace.fs.readFile(
-          vscode.Uri.joinPath(tikzCacheFolder, baseName + ".tmp.pdf")
-        );
-        await vscode.workspace.fs.writeFile(
-          vscode.Uri.joinPath(tikzCacheFolder, baseName + ".pdf"),
-          pdfContent
-        );
+    let outExt = "pdf";
+    if (svg) {
+      outExt = "svg";
+      const pdfFile = baseName !== undefined ? baseName + ".tmp.pdf" : "tikzfigure.tmp.pdf";
+      const svgFile = baseName !== undefined ? baseName + ".svg" : "tikzfigure.tmp.svg";
+      await dvisvgm(tikzCacheFolder.fsPath, pdfFile, svgFile);
+    }
 
-        await cleanBuildDir(workspaceRoot);
+    // copy the contents of FILE.tmp.(pdf|svg) into FILE.(pdf|svg)
+    const outContent = await vscode.workspace.fs.readFile(
+      vscode.Uri.joinPath(tikzCacheFolder, baseName + ".tmp." + outExt)
+    );
+    await vscode.workspace.fs.writeFile(
+      vscode.Uri.joinPath(tikzCacheFolder, baseName + "." + outExt),
+      outContent
+    );
 
-        resolve(code);
-      } else {
-        reject(code);
-      }
-    });
-  });
+    await cleanBuildDir(workspaceRoot);
+    return 0;
+  } catch (err) {
+    if (typeof err === "number") {
+      return err;
+    } else {
+      throw err;
+    }
+  }
 }
 
 async function buildCurrentTikzFigure(): Promise<void> {
