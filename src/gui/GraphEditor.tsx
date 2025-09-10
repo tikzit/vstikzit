@@ -325,7 +325,7 @@ const GraphEditor = ({
       case "edge":
         if (uiState.edgeStartNode !== undefined) {
           const p1 = sceneCoords.coordFromScreen(p);
-          const n = Array.from(graph.nodes.values()).find(
+          const n = graph.nodes.find(
             d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
           )?.id;
           updateUIState({ edgeEndNode: n });
@@ -389,7 +389,7 @@ const GraphEditor = ({
           }
         } else if (uiState.selectionRect !== undefined) {
           const sel = new Set(selectedNodes);
-          for (const d of graph.nodes.values()) {
+          for (const d of graph.nodes) {
             const c = sceneCoords.coordToScreen(d.coord);
             // if c is in selectionRect
             if (
@@ -509,8 +509,8 @@ const GraphEditor = ({
             }
 
             const g1 = graph.insertGraph(g);
-            const sel = new Set(g1.nodes.keys());
-            for (const n of graph.nodes.keys()) {
+            const sel = new Set(g1.nodeIds);
+            for (const n of graph.nodeIds) {
               sel.delete(n);
             }
             updateGraph(g1, true);
@@ -610,7 +610,7 @@ const GraphEditor = ({
         }
         break;
       case "vstikzit.selectAll":
-        updateSelection(new Set(graph.nodes.keys()), new Set());
+        updateSelection(new Set(graph.nodeIds), new Set());
         break;
       case "vstikzit.deselectAll":
         updateSelection(new Set(), new Set());

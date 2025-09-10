@@ -516,12 +516,15 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 2);
 
       // First path should contain only the first edge
-      assert.ok(arrayEquals(splitGraph.path(1)?.edges, [1]));
+      assert.ok(arrayEquals(splitGraph.path(1)?.edges, [1]), "First path should contain edge 1");
       assert.strictEqual(splitGraph.edge(1)?.path, 1);
 
       // Second path should contain only the second edge with a new path ID
-      const newPathId = Array.from(splitGraph.paths.keys()).find(id => id !== 1)!;
-      assert.ok(arrayEquals(splitGraph.path(newPathId)?.edges, [2]));
+      const newPathId = splitGraph.pathIds.find(id => id !== 1)!;
+      assert.ok(
+        arrayEquals(splitGraph.path(newPathId)?.edges, [2]),
+        "Second path should contain edge 2"
+      );
       assert.strictEqual(splitGraph.edge(2)?.path, newPathId);
 
       // Original path should no longer be a cycle
