@@ -23,27 +23,39 @@ class Graph {
     return this._graphData;
   }
 
-  public get nodeData(): Map<number, NodeData> {
-    return this._nodeData;
+  public get nodes(): NodeData[] {
+    return Array.from(this._nodeData.values());
   }
 
-  public get edgeData(): Map<number, EdgeData> {
-    return this._edgeData;
+  public get edges(): EdgeData[] {
+    return Array.from(this._edgeData.values());
   }
 
-  public get pathData(): Map<number, PathData> {
-    return this._pathData;
+  public get paths(): PathData[] {
+    return Array.from(this._pathData.values());
   }
 
-  public get nodes(): number[] {
+  public node(id: number): NodeData | undefined {
+    return this._nodeData.get(id);
+  }
+
+  public edge(id: number): EdgeData | undefined {
+    return this._edgeData.get(id);
+  }
+
+  public path(id: number): PathData | undefined {
+    return this._pathData.get(id);
+  }
+
+  public get nodeIds(): number[] {
     return Array.from(this._nodeData.keys());
   }
 
-  public get paths(): number[] {
+  public get pathIds(): number[] {
     return Array.from(this._pathData.keys());
   }
 
-  public get edges(): number[] {
+  public get edgeIds(): number[] {
     return Array.from(this._edgeData.keys());
   }
 
@@ -57,6 +69,18 @@ class Graph {
 
   public get numPaths(): number {
     return this._pathData.size;
+  }
+
+  public hasNode(id: number): boolean {
+    return this._nodeData.has(id);
+  }
+
+  public hasEdge(id: number): boolean {
+    return this._edgeData.has(id);
+  }
+
+  public hasPath(id: number): boolean {
+    return this._pathData.has(id);
   }
 
   public setGraphData(d: GraphData): Graph {
@@ -185,7 +209,9 @@ class Graph {
   }
 
   public pathTarget(id: number): number {
-    const edge = this._edgeData.get(this._pathData.get(id)!.edges[this._pathData.get(id)!.edges.length - 1])!;
+    const edge = this._edgeData.get(
+      this._pathData.get(id)!.edges[this._pathData.get(id)!.edges.length - 1]
+    )!;
     return edge.target;
   }
 
@@ -374,7 +400,7 @@ class Graph {
 
   public subgraphFromNodes(nodes: Iterable<number>): Graph {
     const nodeSet = new Set(nodes);
-    const nodeComp = this.nodes.filter(key => !nodeSet.has(key));
+    const nodeComp = this.nodeIds.filter(key => !nodeSet.has(key));
     return this.removeNodes(nodeComp);
   }
 
@@ -480,7 +506,7 @@ class Graph {
 
     let result = "\\begin{tikzpicture}\n";
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
-    for (const d of this.nodeData.values()) {
+    for (const d of this.nodes.values()) {
       if (d) {
         const dt = d.tikz();
         result += "\t\t\\node " + dt;
@@ -500,8 +526,8 @@ class Graph {
     }
     result += "\t\\end{pgfonlayer}\n";
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
-    for (const pd of this.pathData.values()) {
-      let d = this.edgeData.get(pd.edges[0])!;
+    for (const pd of this.paths) {
+      let d = this.edge(pd.edges[0])!;
       const dt = d.tikz();
       result += `\t\t\\draw ${dt}`;
 
@@ -519,7 +545,7 @@ class Graph {
       result += `${d.sourceRef} to${edgeNode} ${d.targetRef}`;
 
       for (const edgeId of pd.edges.slice(1)) {
-        d = this.edgeData.get(edgeId)!;
+        d = this.edge(edgeId)!;
         edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
         result += ` to${d.tikz()}${edgeNode} ${d.targetRef}`;
       }

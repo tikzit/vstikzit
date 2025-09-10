@@ -78,10 +78,10 @@ const GraphEditor = ({
   // path selection is calculated from selected edges or nodes
   const selectedPaths = new Set(
     selectedEdges.size > 0
-      ? Array.from(selectedEdges).map(e => graph.edgeData.get(e)!.path)
-      : Array.from(graph.edgeData.values())
-        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-        .map(d => d.path)
+      ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
+      : graph.edges
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
   );
 
   useEffect(() => {
@@ -130,17 +130,20 @@ const GraphEditor = ({
     return new Coord(x, y);
   };
 
-  const updateSceneCoords = useCallback((coords: SceneCoords) => {
-    const viewport = document.getElementById("graph-editor-viewport")!;
-    const c0 = new Coord(
-      viewport.scrollLeft + viewport.clientWidth / 2,
-      viewport.scrollTop + viewport.clientHeight / 2
-    );
-    const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
-    viewport.scrollLeft += c1.x - c0.x;
-    viewport.scrollTop += c1.y - c0.y;
-    setSceneCoords(coords);
-  }, [sceneCoords, setSceneCoords]);
+  const updateSceneCoords = useCallback(
+    (coords: SceneCoords) => {
+      const viewport = document.getElementById("graph-editor-viewport")!;
+      const c0 = new Coord(
+        viewport.scrollLeft + viewport.clientWidth / 2,
+        viewport.scrollTop + viewport.clientHeight / 2
+      );
+      const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
+      viewport.scrollLeft += c1.x - c0.x;
+      viewport.scrollTop += c1.y - c0.y;
+      setSceneCoords(coords);
+    },
+    [sceneCoords, setSceneCoords]
+  );
 
   const handleMouseDown = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
@@ -253,9 +256,9 @@ const GraphEditor = ({
           );
         } else if (clickedControlPoint.current !== undefined) {
           const [edge, pt] = clickedControlPoint.current;
-          let d = graph.edgeData.get(edge)!;
-          const sourceCoord = sceneCoords.coordToScreen(graph.nodeData.get(d.source)!.coord);
-          const targetCoord = sceneCoords.coordToScreen(graph.nodeData.get(d.target)!.coord);
+          let d = graph.edge(edge)!;
+          const sourceCoord = sceneCoords.coordToScreen(graph.node(d.source)!.coord);
+          const targetCoord = sceneCoords.coordToScreen(graph.node(d.target)!.coord);
           const dx1 = targetCoord.x - sourceCoord.x;
           const dy1 = targetCoord.y - sourceCoord.y;
           let dx2: number, dy2: number;
@@ -322,7 +325,7 @@ const GraphEditor = ({
       case "edge":
         if (uiState.edgeStartNode !== undefined) {
           const p1 = sceneCoords.coordFromScreen(p);
-          const n = Array.from(graph.nodeData.values()).find(
+          const n = Array.from(graph.nodes.values()).find(
             d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
           )?.id;
           updateUIState({ edgeEndNode: n });
@@ -330,13 +333,13 @@ const GraphEditor = ({
           let c2: Coord;
           if (n !== undefined) {
             [c1, c2] = shortenLine(
-              graph.nodeData.get(uiState.edgeStartNode)!.coord,
-              graph.nodeData.get(n)!.coord,
+              graph.node(uiState.edgeStartNode)!.coord,
+              graph.node(n)!.coord,
               0.2,
               0.2
             );
           } else {
-            [c1, c2] = shortenLine(graph.nodeData.get(uiState.edgeStartNode)!.coord, p1, 0.2, 0);
+            [c1, c2] = shortenLine(graph.node(uiState.edgeStartNode)!.coord, p1, 0.2, 0);
           }
           updateUIState({
             addEdgeLineStart: sceneCoords.coordToScreen(c1),
@@ -361,9 +364,9 @@ const GraphEditor = ({
           if (clickedNode.current !== undefined) {
             document.getElementById("label-field")?.focus();
           } else if (clickedEdge.current !== undefined) {
-            let d = graph.edgeData.get(clickedEdge.current)!;
-            const sCoord = graph.nodeData.get(d.source)!.coord;
-            const tCoord = graph.nodeData.get(d.target)!.coord;
+            let d = graph.edge(clickedEdge.current)!;
+            const sCoord = graph.node(d.source)!.coord;
+            const tCoord = graph.node(d.target)!.coord;
             const baseAngle =
               (Math.atan2(tCoord.y - sCoord.y, tCoord.x - sCoord.x) * 180) / Math.PI;
 
@@ -386,7 +389,7 @@ const GraphEditor = ({
           }
         } else if (uiState.selectionRect !== undefined) {
           const sel = new Set(selectedNodes);
-          for (const d of graph.nodeData.values()) {
+          for (const d of graph.nodes.values()) {
             const c = sceneCoords.coordToScreen(d.coord);
             // if c is in selectionRect
             if (
@@ -447,7 +450,6 @@ const GraphEditor = ({
     updateUIState("reset");
   };
 
-
   const handleKeyDown = async (event: KeyboardEvent) => {
     // ignore key events if focus is in an input field
     if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
@@ -498,21 +500,17 @@ const GraphEditor = ({
           const parsed = parseTikzPicture(pastedData);
           if (parsed.result !== undefined) {
             let g = parsed.result;
-            const nodes = g.nodes;
+            const nodes = g.nodeIds;
             if (nodes.length !== 0) {
               const n = nodes[0];
-              while (
-                Array.from(graph.nodeData.values()).find(d =>
-                  g.nodeData.get(n)!.coord.equals(d.coord)
-                )
-              ) {
+              while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
                 g = g.shiftGraph(0.5, -0.5);
               }
             }
 
             const g1 = graph.insertGraph(g);
-            const sel = new Set(g1.nodeData.keys());
-            for (const n of graph.nodeData.keys()) {
+            const sel = new Set(g1.nodes.keys());
+            for (const n of graph.nodes.keys()) {
               sel.delete(n);
             }
             updateGraph(g1, true);
@@ -612,7 +610,7 @@ const GraphEditor = ({
         }
         break;
       case "vstikzit.selectAll":
-        updateSelection(new Set(graph.nodeData.keys()), new Set());
+        updateSelection(new Set(graph.nodes.keys()), new Set());
         break;
       case "vstikzit.deselectAll":
         updateSelection(new Set(), new Set());
@@ -641,10 +639,13 @@ const GraphEditor = ({
         overflowY: "scroll",
       }}
     >
-      <Help visible={!!uiState.helpVisible} onClose={() => {
-        updateUIState({ helpVisible: false });
-        document.getElementById("graph-editor")?.focus();
-      }} />
+      <Help
+        visible={!!uiState.helpVisible}
+        onClose={() => {
+          updateUIState({ helpVisible: false });
+          document.getElementById("graph-editor")?.focus();
+        }}
+      />
       <svg
         id="graph-editor"
         style={{
@@ -665,29 +666,29 @@ const GraphEditor = ({
       >
         <g id="grid"></g>
         <g id="edgeLayer">
-          {Array.from(graph.edgeData.entries()).map(([key, data]) => (
+          {graph.edges.map(data => (
             <Edge
-              key={key}
+              key={data.id}
               data={data}
-              sourceData={graph.nodeData.get(data.source)!}
-              targetData={graph.nodeData.get(data.target)!}
+              sourceData={graph.node(data.source)!}
+              targetData={graph.node(data.target)!}
               tikzStyles={tikzStyles}
-              selected={selectedEdges.has(key)}
-              onMouseDown={() => (clickedEdge.current = key)}
-              onControlPointMouseDown={i => (clickedControlPoint.current = [key, i])}
+              selected={selectedEdges.has(data.id)}
+              onMouseDown={() => (clickedEdge.current = data.id)}
+              onControlPointMouseDown={i => (clickedControlPoint.current = [data.id, i])}
               sceneCoords={sceneCoords}
             />
           ))}
         </g>
         <g id="nodeLayer">
-          {Array.from(graph.nodeData.entries()).map(([key, data]) => (
+          {graph.nodes.map(data => (
             <Node
-              key={key}
+              key={data.id}
               data={data}
               tikzStyles={tikzStyles}
-              selected={selectedNodes.has(key)}
-              highlight={uiState.edgeStartNode === key || uiState.edgeEndNode === key}
-              onMouseDown={() => (clickedNode.current = key)}
+              selected={selectedNodes.has(data.id)}
+              highlight={uiState.edgeStartNode === data.id || uiState.edgeEndNode === data.id}
+              onMouseDown={() => (clickedNode.current = data.id)}
               sceneCoords={sceneCoords}
             />
           ))}

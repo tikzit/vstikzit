@@ -438,7 +438,7 @@ class TikzParser extends EmbeddedActionsParser {
             if (this.currentPath && this.currentPath.edges.length > 0) {
               this.currentPath = this.currentPath.setIsCycle(true);
               const firstEdge = this.currentPath.edges[0];
-              this.d = d.setTarget(this.graph?.edgeData.get(firstEdge)?.source ?? -1);
+              this.d = d.setTarget(this.graph?.edge(firstEdge)?.source ?? -1);
             } else {
               throw new ParseError(
                 cycleToken.startLine ?? 1,

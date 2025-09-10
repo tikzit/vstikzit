@@ -4,8 +4,8 @@ import { parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
 function strip(input: string): string {
   return input
     .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line !== "")
+    .map(line => line.trim())
+    .filter(line => line !== "")
     .join("\n");
 }
 
@@ -23,14 +23,14 @@ describe("Graph parser", () => {
 
     if (parsed.errors.length > 0) {
       console.error("Parsing errors found:");
-      parsed.errors.forEach((error) => {
+      parsed.errors.forEach(error => {
         console.error(`${error.line}(${error.column}): ${error.message}`);
       });
     }
     assert.notStrictEqual(parsed.result, undefined);
     const g = parsed.result!;
-    assert.strictEqual(g.nodeData.size, 1);
-    assert.strictEqual(g.nodeData.get(0)?.property("style"), "Z");
+    assert.strictEqual(g.numNodes, 1);
+    assert.strictEqual(g.node(0)?.property("style"), "Z");
     assert.strictEqual(strip(g.tikz()), strip(input));
   });
 
@@ -51,7 +51,7 @@ describe("Graph parser", () => {
     const parsed = parseTikzPicture(input);
     if (parsed.errors.length > 0) {
       console.error("Parsing errors found:");
-      parsed.errors.forEach((error) => {
+      parsed.errors.forEach(error => {
         console.error(`${error.line}(${error.column}): ${error.message}`);
       });
     }
@@ -60,22 +60,19 @@ describe("Graph parser", () => {
     assert.strictEqual(g.numNodes, 4);
     assert.strictEqual(g.numEdges, 3);
     assert.strictEqual(g.numPaths, 2);
-    assert.strictEqual(g.nodeData.get(0)?.property("style"), "A");
-    assert.strictEqual(
-      g.nodeData.get(0)?.property("complex style"),
-      "{foo} {bar\\\\} {baz=$\\{$}"
-    );
-    assert.strictEqual(g.nodeData.get(1)?.property("style"), "B");
-    assert.strictEqual(g.nodeData.get(2)?.property("style"), "C");
-    assert.strictEqual(g.nodeData.get(3)?.property("style"), "D");
-    assert.strictEqual(g.edgeData.get(0)?.source, 0);
-    assert.strictEqual(g.edgeData.get(0)?.target, 1);
-    assert.strictEqual(g.edgeData.get(1)?.source, 1);
-    assert.strictEqual(g.edgeData.get(1)?.target, 2);
-    assert.strictEqual(g.edgeData.get(2)?.source, 2);
-    assert.strictEqual(g.edgeData.get(2)?.target, 3);
-    assert.strictEqual(g.pathData.get(0)?.edges.length, 1);
-    assert.strictEqual(g.pathData.get(1)?.edges.length, 2);
+    assert.strictEqual(g.node(0)?.property("style"), "A");
+    assert.strictEqual(g.node(0)?.property("complex style"), "{foo} {bar\\\\} {baz=$\\{$}");
+    assert.strictEqual(g.node(1)?.property("style"), "B");
+    assert.strictEqual(g.node(2)?.property("style"), "C");
+    assert.strictEqual(g.node(3)?.property("style"), "D");
+    assert.strictEqual(g.edge(0)?.source, 0);
+    assert.strictEqual(g.edge(0)?.target, 1);
+    assert.strictEqual(g.edge(1)?.source, 1);
+    assert.strictEqual(g.edge(1)?.target, 2);
+    assert.strictEqual(g.edge(2)?.source, 2);
+    assert.strictEqual(g.edge(2)?.target, 3);
+    assert.strictEqual(g.path(0)?.edges.length, 1);
+    assert.strictEqual(g.path(1)?.edges.length, 2);
     assert.strictEqual(strip(g.tikz()), strip(input));
   });
 
@@ -103,36 +100,16 @@ describe("Graph parser", () => {
     const g1 = parsed1.result!;
 
     const g2 = parsed2.result!;
-    assert.notStrictEqual(
-      g1.nodeData.get(0),
-      g2.nodeData.get(0),
-      "g1[0] ? g2[0]"
-    );
-    assert.notStrictEqual(
-      g1.nodeData.get(1),
-      g2.nodeData.get(1),
-      "g1[1] ? g2[1]"
-    );
-    assert.notStrictEqual(
-      g1.nodeData.get(2),
-      g2.nodeData.get(2),
-      "g1[2] ? g2[2]"
-    );
-    assert.notStrictEqual(
-      g1.nodeData.get(3),
-      g2.nodeData.get(3),
-      "g1[3] ? g2[3]"
-    );
+    assert.notStrictEqual(g1.node(0), g2.node(0), "g1[0] ? g2[0]");
+    assert.notStrictEqual(g1.node(1), g2.node(1), "g1[1] ? g2[1]");
+    assert.notStrictEqual(g1.node(2), g2.node(2), "g1[2] ? g2[2]");
+    assert.notStrictEqual(g1.node(3), g2.node(3), "g1[3] ? g2[3]");
 
     const g3 = g2.inheritDataFrom(g1);
-    assert.strictEqual(g1.nodeData.get(0), g3.nodeData.get(0), "g1[0] ? g3[0]");
-    assert.notStrictEqual(
-      g1.nodeData.get(1),
-      g3.nodeData.get(1),
-      "g1[1] ? g3[1]"
-    );
-    assert.strictEqual(g1.nodeData.get(2), g3.nodeData.get(2), "g1[2] ? g3[2]");
-    assert.strictEqual(g1.nodeData.get(3), g3.nodeData.get(3), "g1[3] ? g3[3]");
+    assert.strictEqual(g1.node(0), g3.node(0), "g1[0] ? g3[0]");
+    assert.notStrictEqual(g1.node(1), g3.node(1), "g1[1] ? g3[1]");
+    assert.strictEqual(g1.node(2), g3.node(2), "g1[2] ? g3[2]");
+    assert.strictEqual(g1.node(3), g3.node(3), "g1[3] ? g3[3]");
   });
 });
 

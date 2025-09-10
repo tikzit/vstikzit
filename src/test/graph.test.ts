@@ -22,9 +22,9 @@ describe("Graph", () => {
 
       // New graph should contain the node
       assert.strictEqual(newGraph.numNodes, 1);
-      assert.ok(newGraph.nodeData.has(1));
-      assert.strictEqual(newGraph.nodeData.get(1)?.label, "Node 1");
-      assert.deepStrictEqual(newGraph.nodeData.get(1)?.coord, new Coord(1, 2));
+      assert.ok(newGraph.hasNode(1));
+      assert.strictEqual(newGraph.node(1)?.label, "Node 1");
+      assert.deepStrictEqual(newGraph.node(1)?.coord, new Coord(1, 2));
     });
 
     it("should add multiple nodes", () => {
@@ -35,10 +35,10 @@ describe("Graph", () => {
       const newGraph = graph.addNodeWithData(node1).addNodeWithData(node2);
 
       assert.strictEqual(newGraph.numNodes, 2);
-      assert.ok(newGraph.nodeData.has(1));
-      assert.ok(newGraph.nodeData.has(2));
-      assert.strictEqual(newGraph.nodeData.get(1)?.label, "Node 1");
-      assert.strictEqual(newGraph.nodeData.get(2)?.label, "Node 2");
+      assert.ok(newGraph.hasNode(1));
+      assert.ok(newGraph.hasNode(2));
+      assert.strictEqual(newGraph.node(1)?.label, "Node 1");
+      assert.strictEqual(newGraph.node(2)?.label, "Node 2");
     });
 
     it("should remove a single node", () => {
@@ -51,8 +51,8 @@ describe("Graph", () => {
       const graphAfterRemoval = graphWithNodes.removeNodes([1]);
 
       assert.strictEqual(graphAfterRemoval.numNodes, 1);
-      assert.ok(!graphAfterRemoval.nodeData.has(1));
-      assert.ok(graphAfterRemoval.nodeData.has(2));
+      assert.ok(!graphAfterRemoval.hasNode(1));
+      assert.ok(graphAfterRemoval.hasNode(2));
     });
 
     it("should remove multiple nodes", () => {
@@ -69,9 +69,9 @@ describe("Graph", () => {
       const graphAfterRemoval = graphWithNodes.removeNodes([1, 3]);
 
       assert.strictEqual(graphAfterRemoval.numNodes, 1);
-      assert.ok(!graphAfterRemoval.nodeData.has(1));
-      assert.ok(graphAfterRemoval.nodeData.has(2));
-      assert.ok(!graphAfterRemoval.nodeData.has(3));
+      assert.ok(!graphAfterRemoval.hasNode(1));
+      assert.ok(graphAfterRemoval.hasNode(2));
+      assert.ok(!graphAfterRemoval.hasNode(3));
     });
 
     it("should update node data", () => {
@@ -81,8 +81,8 @@ describe("Graph", () => {
       const graphWithNode = graph.addNodeWithData(node);
       const updatedGraph = graphWithNode.updateNodeData(1, data => data.setLabel("Updated"));
 
-      assert.strictEqual(updatedGraph.nodeData.get(1)?.label, "Updated");
-      assert.strictEqual(graphWithNode.nodeData.get(1)?.label, "Original");
+      assert.strictEqual(updatedGraph.node(1)?.label, "Updated");
+      assert.strictEqual(graphWithNode.node(1)?.label, "Original");
     });
 
     it("should generate fresh node IDs", () => {
@@ -111,9 +111,9 @@ describe("Graph", () => {
         .addPathWithData(path);
 
       assert.strictEqual(newGraph.numEdges, 1);
-      assert.ok(newGraph.edgeData.has(1));
-      assert.strictEqual(newGraph.edgeData.get(1)?.source, 1);
-      assert.strictEqual(newGraph.edgeData.get(1)?.target, 2);
+      assert.ok(newGraph.hasEdge(1));
+      assert.strictEqual(newGraph.edge(1)?.source, 1);
+      assert.strictEqual(newGraph.edge(1)?.target, 2);
     });
 
     it("should create a self-loop edge", () => {
@@ -126,7 +126,7 @@ describe("Graph", () => {
 
       assert.strictEqual(newGraph.numEdges, 1);
       assert.strictEqual(newGraph.numPaths, 1);
-      assert.ok(newGraph.edgeData.get(1)?.isSelfLoop);
+      assert.ok(newGraph.edge(1)?.isSelfLoop);
     });
 
     it("should add multiple edges", () => {
@@ -151,8 +151,8 @@ describe("Graph", () => {
 
       assert.strictEqual(newGraph.numEdges, 2);
       assert.strictEqual(newGraph.numPaths, 2);
-      assert.ok(newGraph.edgeData.has(1));
-      assert.ok(newGraph.edgeData.has(2));
+      assert.ok(newGraph.hasEdge(1));
+      assert.ok(newGraph.hasEdge(2));
     });
 
     it("should remove edges", () => {
@@ -176,8 +176,8 @@ describe("Graph", () => {
       const graphAfterRemoval = graphWithEdges.removeEdges([1]);
 
       assert.strictEqual(graphAfterRemoval.numEdges, 1);
-      assert.ok(!graphAfterRemoval.edgeData.has(1));
-      assert.ok(graphAfterRemoval.edgeData.has(2));
+      assert.ok(!graphAfterRemoval.hasEdge(1));
+      assert.ok(graphAfterRemoval.hasEdge(2));
     });
 
     it("should automatically remove edges when removing nodes", () => {
@@ -210,10 +210,10 @@ describe("Graph", () => {
 
       assert.strictEqual(graphAfterRemoval.numNodes, 2);
       assert.strictEqual(graphAfterRemoval.numEdges, 1);
-      assert.ok(!graphAfterRemoval.nodeData.has(1));
-      assert.ok(!graphAfterRemoval.edgeData.has(1)); // Edge from node 1 to 2
-      assert.ok(graphAfterRemoval.edgeData.has(2)); // Edge from node 2 to 3
-      assert.ok(!graphAfterRemoval.edgeData.has(3)); // Edge from node 1 to 3
+      assert.ok(!graphAfterRemoval.hasNode(1));
+      assert.ok(!graphAfterRemoval.hasEdge(1)); // Edge from node 1 to 2
+      assert.ok(graphAfterRemoval.hasEdge(2)); // Edge from node 2 to 3
+      assert.ok(!graphAfterRemoval.hasEdge(3)); // Edge from node 1 to 3
     });
 
     it("should update edge data", () => {
@@ -233,8 +233,8 @@ describe("Graph", () => {
         data.setProperty("style", "dashed")
       );
 
-      assert.strictEqual(updatedGraph.edgeData.get(1)?.property("style"), "dashed");
-      assert.strictEqual(graphWithEdge.edgeData.get(1)?.property("style"), undefined);
+      assert.strictEqual(updatedGraph.edge(1)?.property("style"), "dashed");
+      assert.strictEqual(graphWithEdge.edge(1)?.property("style"), undefined);
     });
 
     it("should generate fresh edge IDs", () => {
@@ -316,19 +316,19 @@ describe("Graph", () => {
       const subgraph = fullGraph.subgraphFromNodes([1, 2]);
 
       assert.strictEqual(subgraph.numNodes, 2);
-      assert.ok(subgraph.nodeData.has(1));
-      assert.ok(subgraph.nodeData.has(2));
-      assert.ok(!subgraph.nodeData.has(3));
+      assert.ok(subgraph.hasNode(1));
+      assert.ok(subgraph.hasNode(2));
+      assert.ok(!subgraph.hasNode(3));
 
       // Should only have edges between remaining nodes
       assert.strictEqual(subgraph.numEdges, 1);
-      assert.ok(subgraph.edgeData.has(1)); // Edge between nodes 1 and 2
-      assert.ok(!subgraph.edgeData.has(2)); // Edge to removed node 3
+      assert.ok(subgraph.hasEdge(1)); // Edge between nodes 1 and 2
+      assert.ok(!subgraph.hasEdge(2)); // Edge to removed node 3
 
       // Should have one path
       assert.strictEqual(subgraph.numPaths, 1);
-      assert.ok(subgraph.pathData.has(1)); // Path 1 is still present
-      assert.ok(!subgraph.pathData.has(2)); // Path 2 is removed
+      assert.ok(subgraph.hasPath(1)); // Path 1 is still present
+      assert.ok(!subgraph.hasPath(2)); // Path 2 is removed
     });
   });
 
@@ -361,14 +361,14 @@ describe("Graph", () => {
       assert.strictEqual(combinedGraph.numNodes, 4, "Combined graph should have 4 nodes");
       assert.strictEqual(combinedGraph.numEdges, 2, "Combined graph should have 2 edges");
       assert.strictEqual(combinedGraph.numPaths, 2, "Combined graph should have 2 paths");
-      assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
-      assert.ok(combinedGraph.nodeData.has(4), "Node 4 should be present");
-      assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
-      assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
-      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
+      assert.ok(combinedGraph.hasNode(3), "Node 3 should be present");
+      assert.ok(combinedGraph.hasNode(4), "Node 4 should be present");
+      assert.ok(combinedGraph.hasEdge(2), "Edge 2 should be present");
+      assert.ok(combinedGraph.hasPath(2), "Path 2 should be present");
+      assert.strictEqual(combinedGraph.edge(2)?.source, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edge(2)?.target, 4, "Edge 2 should have target 4");
+      assert.strictEqual(combinedGraph.edge(2)?.path, 2, "Edge 2 should belong to path 2");
+      assert.ok(combinedGraph.path(2)?.edges.includes(2), "Path 2 should include edge 2");
     });
 
     it("should assign fresh names correctly", () => {
@@ -390,23 +390,23 @@ describe("Graph", () => {
       assert.strictEqual(combinedGraph.numPaths, 3, "Combined graph should have 3 paths");
 
       // check nodes, edges, and paths are present
-      assert.ok(combinedGraph.nodeData.has(3), "Node 3 should be present");
-      assert.ok(combinedGraph.nodeData.has(4), "Node 4 should be present");
-      assert.ok(combinedGraph.nodeData.has(5), "Node 5 should be present");
-      assert.ok(combinedGraph.nodeData.has(6), "Node 6 should be present");
-      assert.ok(combinedGraph.edgeData.has(2), "Edge 2 should be present");
-      assert.ok(combinedGraph.pathData.has(2), "Path 2 should be present");
-      assert.ok(combinedGraph.edgeData.has(2), "Edge 3 should be present");
-      assert.ok(combinedGraph.pathData.has(2), "Path 3 should be present");
+      assert.ok(combinedGraph.hasNode(3), "Node 3 should be present");
+      assert.ok(combinedGraph.hasNode(4), "Node 4 should be present");
+      assert.ok(combinedGraph.hasNode(5), "Node 5 should be present");
+      assert.ok(combinedGraph.hasNode(6), "Node 6 should be present");
+      assert.ok(combinedGraph.hasEdge(2), "Edge 2 should be present");
+      assert.ok(combinedGraph.hasPath(2), "Path 2 should be present");
+      assert.ok(combinedGraph.hasEdge(2), "Edge 3 should be present");
+      assert.ok(combinedGraph.hasPath(2), "Path 3 should be present");
 
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.target, 4, "Edge 2 should have target 4");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.source, 5, "Edge 3 should have source 5");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.target, 6, "Edge 3 should have target 6");
-      assert.strictEqual(combinedGraph.edgeData.get(2)?.path, 2, "Edge 2 should belong to path 2");
-      assert.strictEqual(combinedGraph.edgeData.get(3)?.path, 3, "Edge 3 should belong to path 3");
-      assert.ok(combinedGraph.pathData.get(2)?.edges.includes(2), "Path 2 should include edge 2");
-      assert.ok(combinedGraph.pathData.get(3)?.edges.includes(3), "Path 3 should include edge 3");
+      assert.strictEqual(combinedGraph.edge(2)?.source, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edge(2)?.target, 4, "Edge 2 should have target 4");
+      assert.strictEqual(combinedGraph.edge(3)?.source, 5, "Edge 3 should have source 5");
+      assert.strictEqual(combinedGraph.edge(3)?.target, 6, "Edge 3 should have target 6");
+      assert.strictEqual(combinedGraph.edge(2)?.path, 2, "Edge 2 should belong to path 2");
+      assert.strictEqual(combinedGraph.edge(3)?.path, 3, "Edge 3 should belong to path 3");
+      assert.ok(combinedGraph.path(2)?.edges.includes(2), "Path 2 should include edge 2");
+      assert.ok(combinedGraph.path(3)?.edges.includes(3), "Path 3 should include edge 3");
     });
   });
 
@@ -424,13 +424,13 @@ describe("Graph", () => {
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
+      assert.ok(arrayEquals(graph.path(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([1, 2, 3]);
 
       assert.strictEqual(graph1.numPaths, 0);
       assert.strictEqual(graph1.numEdges, 0);
-      assert.ok(!graph1.pathData.has(1));
+      assert.ok(!graph1.hasPath(1));
     });
 
     it("should shorten a path when removing an edge at the beginning or end", () => {
@@ -446,18 +446,18 @@ describe("Graph", () => {
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
+      assert.ok(arrayEquals(graph.path(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([1]);
       const graph2 = graph.removeEdges([3]);
 
       assert.strictEqual(graph1.numPaths, 1);
       assert.strictEqual(graph1.numEdges, 2);
-      assert.ok(arrayEquals(graph1.pathData.get(1)?.edges, [2, 3]));
+      assert.ok(arrayEquals(graph1.path(1)?.edges, [2, 3]));
 
       assert.strictEqual(graph2.numPaths, 1);
       assert.strictEqual(graph2.numEdges, 2);
-      assert.ok(arrayEquals(graph2.pathData.get(1)?.edges, [1, 2]));
+      assert.ok(arrayEquals(graph2.path(1)?.edges, [1, 2]));
     });
 
     it("should split a path when removing an edge in the middle", () => {
@@ -473,14 +473,14 @@ describe("Graph", () => {
 
       assert.strictEqual(graph.numPaths, 1);
       assert.strictEqual(graph.numEdges, 3);
-      assert.ok(arrayEquals(graph.pathData.get(1)?.edges, [1, 2, 3]));
+      assert.ok(arrayEquals(graph.path(1)?.edges, [1, 2, 3]));
 
       const graph1 = graph.removeEdges([2]);
 
       assert.strictEqual(graph1.numPaths, 2);
       assert.strictEqual(graph1.numEdges, 2);
-      assert.ok(arrayEquals(graph1.pathData.get(1)?.edges, [1]));
-      assert.ok(arrayEquals(graph1.pathData.get(2)?.edges, [3]));
+      assert.ok(arrayEquals(graph1.path(1)?.edges, [1]));
+      assert.ok(arrayEquals(graph1.path(2)?.edges, [3]));
     });
   });
 
@@ -497,8 +497,8 @@ describe("Graph", () => {
       // Splitting a single-edge path should result in no change
       assert.strictEqual(splitGraph.numPaths, 1);
       assert.strictEqual(splitGraph.numEdges, 1);
-      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
-      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+      assert.ok(arrayEquals(splitGraph.path(1)?.edges, [1]));
+      assert.strictEqual(splitGraph.edge(1)?.path, 1);
     });
 
     it("should split a two-edge path into two single-edge paths", () => {
@@ -516,16 +516,16 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 2);
 
       // First path should contain only the first edge
-      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
-      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+      assert.ok(arrayEquals(splitGraph.path(1)?.edges, [1]));
+      assert.strictEqual(splitGraph.edge(1)?.path, 1);
 
       // Second path should contain only the second edge with a new path ID
-      const newPathId = Array.from(splitGraph.pathData.keys()).find(id => id !== 1)!;
-      assert.ok(arrayEquals(splitGraph.pathData.get(newPathId)?.edges, [2]));
-      assert.strictEqual(splitGraph.edgeData.get(2)?.path, newPathId);
+      const newPathId = Array.from(splitGraph.paths.keys()).find(id => id !== 1)!;
+      assert.ok(arrayEquals(splitGraph.path(newPathId)?.edges, [2]));
+      assert.strictEqual(splitGraph.edge(2)?.path, newPathId);
 
       // Original path should no longer be a cycle
-      assert.strictEqual(splitGraph.pathData.get(1)?.isCycle, false);
+      assert.strictEqual(splitGraph.path(1)?.isCycle, false);
     });
 
     it("should split a multi-edge path into individual single-edge paths", () => {
@@ -547,16 +547,16 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 4);
 
       // First path should contain only the first edge
-      assert.ok(arrayEquals(splitGraph.pathData.get(1)?.edges, [1]));
-      assert.strictEqual(splitGraph.edgeData.get(1)?.path, 1);
+      assert.ok(arrayEquals(splitGraph.path(1)?.edges, [1]));
+      assert.strictEqual(splitGraph.edge(1)?.path, 1);
 
       // Each subsequent edge should be in its own path
-      assert.strictEqual(splitGraph.pathData.size, 4);
+      assert.strictEqual(splitGraph.numPaths, 4);
 
       for (let i = 2; i <= 4; i++) {
-        const pathId = splitGraph.edgeData.get(i)?.path;
+        const pathId = splitGraph.edge(i)?.path;
         assert.ok(pathId !== undefined);
-        assert.ok(arrayEquals(splitGraph.pathData.get(pathId!)?.edges, [i]));
+        assert.ok(arrayEquals(splitGraph.path(pathId!)?.edges, [i]));
       }
     });
 
@@ -568,9 +568,7 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(1));
-      graph = graph.addPathWithData(
-        new PathData().setId(1).setEdges([1, 2, 3]).setIsCycle(true)
-      );
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]).setIsCycle(true));
 
       const splitGraph = graph.splitPath(1);
 
@@ -578,7 +576,7 @@ describe("Graph", () => {
       assert.strictEqual(splitGraph.numEdges, 3);
 
       // Original path should no longer be a cycle after splitting
-      assert.strictEqual(splitGraph.pathData.get(1)?.isCycle, false);
+      assert.strictEqual(splitGraph.path(1)?.isCycle, false);
     });
   });
 
@@ -603,12 +601,12 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 2);
 
       // Path 1 should now contain both edges
-      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2]));
-      assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
+      assert.ok(arrayEquals(joinedGraph.path(1)?.edges, [1, 2]));
+      assert.ok(!joinedGraph.hasPath(2)); // Path 2 should be removed
 
       // Both edges should belong to path 1
-      assert.strictEqual(joinedGraph.edgeData.get(1)?.path, 1);
-      assert.strictEqual(joinedGraph.edgeData.get(2)?.path, 1);
+      assert.strictEqual(joinedGraph.edge(1)?.path, 1);
+      assert.strictEqual(joinedGraph.edge(2)?.path, 1);
     });
 
     it("should join two connecting paths (source to target) with reversal", () => {
@@ -631,8 +629,8 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 2);
 
       // Path 1 should now contain both edges in correct order
-      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [2, 1]));
-      assert.ok(!joinedGraph.pathData.has(2)); // Path 2 should be removed
+      assert.ok(arrayEquals(joinedGraph.path(1)?.edges, [2, 1]));
+      assert.ok(!joinedGraph.hasPath(2)); // Path 2 should be removed
     });
 
     it("should join paths that connect at their endpoints with reversal", () => {
@@ -658,9 +656,9 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 3);
 
       // Path 1 should contain edges 1 and 3
-      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 3]));
-      assert.ok(joinedGraph.pathData.has(2)); // Path 2 should still exist
-      assert.ok(!joinedGraph.pathData.has(3)); // Path 3 should be removed
+      assert.ok(arrayEquals(joinedGraph.path(1)?.edges, [1, 3]));
+      assert.ok(joinedGraph.hasPath(2)); // Path 2 should still exist
+      assert.ok(!joinedGraph.hasPath(3)); // Path 3 should be removed
     });
 
     it("should not join paths that don't connect", () => {
@@ -683,8 +681,8 @@ describe("Graph", () => {
       assert.ok(joinedGraph.equals(originalGraph));
       assert.strictEqual(joinedGraph.numPaths, 2);
       assert.strictEqual(joinedGraph.numEdges, 2);
-      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1]));
-      assert.ok(arrayEquals(joinedGraph.pathData.get(2)?.edges, [2]));
+      assert.ok(arrayEquals(joinedGraph.path(1)?.edges, [1]));
+      assert.ok(arrayEquals(joinedGraph.path(2)?.edges, [2]));
     });
 
     it("should handle joining multiple paths in sequence", () => {
@@ -710,14 +708,14 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 4);
 
       // All edges should be in path 1
-      assert.ok(arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2, 3, 4]));
+      assert.ok(arrayEquals(joinedGraph.path(1)?.edges, [1, 2, 3, 4]));
       for (let i = 1; i <= 4; i++) {
-        assert.strictEqual(joinedGraph.edgeData.get(i)?.path, 1);
+        assert.strictEqual(joinedGraph.edge(i)?.path, 1);
       }
 
       // Other paths should be removed
       for (let i = 2; i <= 4; i++) {
-        assert.ok(!joinedGraph.pathData.has(i));
+        assert.ok(!joinedGraph.hasPath(i));
       }
     });
 
@@ -742,13 +740,9 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 3);
 
       // Should form a cycle
-      assert.strictEqual(
-        joinedGraph.pathData.get(1)?.isCycle,
-        true,
-        "Joined path should be a cycle"
-      );
+      assert.strictEqual(joinedGraph.path(1)?.isCycle, true, "Joined path should be a cycle");
       assert.ok(
-        arrayEquals(joinedGraph.pathData.get(1)?.edges, [1, 2, 3]),
+        arrayEquals(joinedGraph.path(1)?.edges, [1, 2, 3]),
         "Joined path should contain all edges"
       );
     });
@@ -824,18 +818,18 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numPaths, 2);
 
       // Check that path 1 now contains both edges
-      const path1Data = joinedGraph.pathData.get(1);
+      const path1Data = joinedGraph.path(1);
       assert.ok(path1Data, "Path 1 should exist after joining");
       assert.ok(arrayEquals(path1Data.edges, [1, 3]), "Path 1 should contain edges 1 and 3");
 
       // Path 2 should remain separate and unchanged
-      assert.ok(joinedGraph.pathData.has(2), "Path 2 should remain separate");
-      const path2Data = joinedGraph.pathData.get(2);
+      assert.ok(joinedGraph.hasPath(2), "Path 2 should remain separate");
+      const path2Data = joinedGraph.path(2);
       assert.ok(path2Data, "Path 2 should exist");
       assert.ok(arrayEquals(path2Data.edges, [2]), "Path 2 should still contain only edge 2");
 
       // Path 3 should be removed
-      assert.ok(!joinedGraph.pathData.has(3), "Path 3 should be removed");
+      assert.ok(!joinedGraph.hasPath(3), "Path 3 should be removed");
     });
   });
 });

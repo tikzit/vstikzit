@@ -85,8 +85,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
     const parsed = parseTikzPicture(tikz);
     if (parsed.result !== undefined) {
       const g = parsed.result.inheritDataFrom(graph);
-      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.nodeData.has(id))));
-      setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.edgeData.has(id))));
+      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.hasNode(id))));
+      setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.hasEdge(id))));
       setGraph(g);
     }
   };
@@ -165,7 +165,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
     if (selectedNodes.size === 1) {
       const [n] = selectedNodes;
-      setCurrentNodeLabel(graph.nodeData.get(n)?.label);
+      setCurrentNodeLabel(graph.node(n)?.label);
     } else {
       setCurrentNodeLabel(undefined);
     }
