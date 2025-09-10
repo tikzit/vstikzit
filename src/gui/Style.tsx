@@ -1,4 +1,5 @@
 import { StyleData } from "../lib/Data";
+import ColorPicker from "./ColorPicker";
 
 interface StyleProps {
   data: StyleData;
@@ -17,6 +18,12 @@ const Style = ({ data, onChange }: StyleProps) => {
               value={data.name}
               onInput={e => onChange(data.setName((e.target as HTMLInputElement).value))}
             />
+          </td>
+        </tr>
+        <tr>
+          <td>draw</td>
+          <td>
+            <ColorPicker />
           </td>
         </tr>
       </table>

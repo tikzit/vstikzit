@@ -1,4 +1,4 @@
-const texColors: Record<string, string> = {
+export const texColors: Record<string, string> = {
   black: "#000000",
   darkgray: "#404040",
   gray: "#808080",

@@ -53,3 +53,52 @@ select {
   font-family: var(--vscode-editor-font-family);
   height: 30px;
 }
+
+.color-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.color-swatch.disabled {
+  opacity: 0.5;
+}
+
+.color-dropdown {
+  box-sizing: border-box;
+}
+
+.preset-swatch:hover {
+  transform: scale(1.1);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  width: 180px;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--vscode-button-background);
+  border: 2px solid var(--vscode-button-foreground);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--vscode-button-background);
+  border: 2px solid var(--vscode-button-foreground);
+  cursor: pointer;
+  border: none;
+}
