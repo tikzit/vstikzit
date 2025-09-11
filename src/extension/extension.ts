@@ -52,6 +52,20 @@ function activate(context: vscode.ExtensionContext): void {
     )
   );
 
+  // used to open text editor at specific location when clicking on errors
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "vstikzit.openInTextEditor",
+      async (uri: vscode.Uri, line?: number, column?: number) => {
+        await vscode.window.showTextDocument(uri, {
+          viewColumn: vscode.ViewColumn.One,
+          selection:
+            line !== undefined ? new vscode.Range(line, column || 0, line, column || 0) : undefined,
+        });
+      }
+    )
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", () =>
       buildCurrentTikzFigure(false)

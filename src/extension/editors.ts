@@ -31,6 +31,7 @@ class BaseEditorProvider {
   private context: vscode.ExtensionContext;
   private isUpdatingFromGui: boolean = false;
   protected entryPoint: string = "unknown";
+  protected diagnosticCollection: vscode.DiagnosticCollection;
 
   static documentWithUri(uri: vscode.Uri): vscode.TextDocument | undefined {
     return Array.from(BaseEditorProvider.openDocuments).find(
@@ -50,6 +51,7 @@ class BaseEditorProvider {
 
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
+    this.diagnosticCollection = vscode.languages.createDiagnosticCollection("tikz");
   }
 
   protected async initialContent(document: vscode.TextDocument): Promise<string> {
@@ -98,6 +100,10 @@ class BaseEditorProvider {
           return;
         case "openCodeEditor": {
           this.openCodeEditor(e.content.line, e.content.column);
+          return;
+        }
+        case "setErrors": {
+          this.setErrors(e.content);
           return;
         }
       }
@@ -173,6 +179,37 @@ class BaseEditorProvider {
     const result = await vscode.workspace.applyEdit(edit);
     this.isUpdatingFromGui = false;
     return result;
+  }
+
+  async setErrors(errors: { line: number; column: number; message: string }[]): Promise<void> {
+    const diagnostics: vscode.Diagnostic[] = errors.map(err => {
+      const range = new vscode.Range(err.line, err.column, err.line, err.column + 1);
+      const diagnostic = new vscode.Diagnostic(range, err.message, vscode.DiagnosticSeverity.Error);
+      const uriWithPosition = BaseEditorProvider.currentDocument()?.uri.with({
+        fragment: `L${err.line},${err.column}`,
+      });
+      diagnostic.source = "TikZit";
+
+      if (!uriWithPosition) {
+        return diagnostic;
+      }
+
+      // Add a code with a command link to open in text editor
+      diagnostic.code = {
+        value: "show",
+        target: vscode.Uri.parse(
+          `command:vscode.openWith?${encodeURIComponent(
+            JSON.stringify([uriWithPosition.toString(), "default"])
+          )}`
+        ),
+      };
+      return diagnostic;
+    });
+
+    const uri = BaseEditorProvider.currentDocument()?.uri;
+    if (uri) {
+      this.diagnosticCollection.set(uri, diagnostics);
+    }
   }
 
   async getTikzStyles(): Promise<[string, string]> {

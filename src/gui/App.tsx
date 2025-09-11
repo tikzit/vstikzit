@@ -59,13 +59,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
             console.log("parsing\n" + message.content.source);
             const parsed = parseTikzStyles(message.content.source);
             if (parsed.result !== undefined) {
-              const s = parsed.result
-                .setFilename(message.content.filename);
+              const s = parsed.result.setFilename(message.content.filename);
               setTikzStyles(s);
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {
@@ -93,7 +92,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const updateFromGui = (tikz: string) => {
     vscode.postMessage({
       type: "updateFromGui",
-      content: tikz,
+      content: { document: tikz },
     });
   };
 
@@ -102,6 +101,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
       type: "refreshTikzStyles",
     });
   };
+
+  const setErrors = () => {
+    vscode.postMessage({
+      type: "setErrors",
+      content: [{ line: 0, column: 0, message: "Test error" }],
+    });
+  };
+
+  setErrors();
 
   const handleCurrentNodeLabelChanged = (label: string) => {
     console.log("label changed to", label);
