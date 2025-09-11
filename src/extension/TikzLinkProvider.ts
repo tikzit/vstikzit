@@ -15,11 +15,11 @@ export default class TikzLinkProvider implements vscode.DocumentLinkProvider {
 
     // Regular expression to match \tikzfig{filename} or \ctikzfig{filename}
     // Captures the filename in group 1
-    const regex = /\\c?tikzfig\{([^}]+)\}/g;
+    const regex = /\\c?tikzfig\{([^}]+)\}|"tikzcache\/([^"]+).svg"/g;
 
     let match;
     while ((match = regex.exec(text)) !== null) {
-      const filename = match[1];
+      const filename = match[1] || match[2];
       const startPos = document.positionAt(match.index);
       const endPos = document.positionAt(match.index + match[0].length);
       const range = new vscode.Range(startPos, endPos);
@@ -43,17 +43,18 @@ export default class TikzLinkProvider implements vscode.DocumentLinkProvider {
 }
 
 /**
- * Registers the TikzLinkProvider with VS Code for LaTeX files
+ * Registers the TikzLinkProvider with VS Code for LaTeX and HTML files
  */
 export function registerTikzLinkProvider(context: vscode.ExtensionContext): void {
   const provider = new TikzLinkProvider();
 
-  // Register for various LaTeX file types
+  // Register for TeX and HTML files
   const latexSelector = [
     { language: "latex", scheme: "file" },
     { language: "tex", scheme: "file" },
+    { language: "html", scheme: "file" },
     { pattern: "**/*.tex", scheme: "file" },
-    { pattern: "**/*.latex", scheme: "file" },
+    { pattern: "**/*.html", scheme: "file" },
   ];
 
   const disposable = vscode.languages.registerDocumentLinkProvider(latexSelector, provider);

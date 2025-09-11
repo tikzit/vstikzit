@@ -43,8 +43,10 @@ function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerDocumentLinkProvider(
       [
         { language: "tex", scheme: "file" },
+        { language: "latex", scheme: "file" },
+        { language: "html", scheme: "file" },
         { pattern: "**/*.tex", scheme: "file" },
-        { pattern: "**/*.latex", scheme: "file" },
+        { pattern: "**/*.html", scheme: "file" },
       ],
       new TikzLinkProvider()
     )

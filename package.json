@@ -16,7 +16,8 @@
   ],
   "activationEvents": [
     "onLanguage:tex",
-    "onLanguage:latex"
+    "onLanguage:latex",
+    "onLanguage:html"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -70,7 +71,7 @@
       {
         "command": "vstikzit.openTikzEditor",
         "key": "ctrl+alt+t",
-        "when": "resourceExtname == .tikz || resourceExtname == .tex"
+        "when": "resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html"
       }
     ],
     "languages": [
