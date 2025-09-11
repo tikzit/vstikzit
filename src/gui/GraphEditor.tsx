@@ -227,6 +227,10 @@ const GraphEditor = ({
 
   const handleMouseMove = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
+    if (!enabled) {
+      return;
+    }
+
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
     }
@@ -352,6 +356,10 @@ const GraphEditor = ({
 
   const handleMouseUp = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
+    if (!enabled) {
+      return;
+    }
+
     if (uiState.mouseDownPos === undefined || !enabled) {
       return;
     }
@@ -451,6 +459,10 @@ const GraphEditor = ({
   };
 
   const handleKeyDown = async (event: KeyboardEvent) => {
+    if (!enabled) {
+      return;
+    }
+
     // ignore key events if focus is in an input field
     if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
       return;
@@ -651,8 +663,8 @@ const GraphEditor = ({
         style={{
           height: `${sceneCoords.screenHeight}px`,
           width: `${sceneCoords.screenWidth}px`,
-          backgroundColor: "white",
-          // outline: "none", // Remove default focus outline
+          backgroundColor: enabled ? "white" : "#eeeeee",
+          outline: "none",
         }}
         tabindex={0}
         onKeyDown={handleKeyDown}

@@ -127,10 +127,12 @@ const allTokens = {
 class ParseError extends Error {
   public line: number;
   public column: number;
+  public message: string;
   constructor(line: number, column: number, message: string) {
     super(message);
     this.line = line;
     this.column = column;
+    this.message = message;
   }
 }
 
@@ -586,6 +588,7 @@ export {
   ParseTikzPictureResult,
   parseTikzStyles,
   ParseTikzStylesResult,
+  ParseError,
   isValidPropertyVal,
   isValidDelimString,
 };

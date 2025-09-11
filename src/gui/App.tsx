@@ -3,12 +3,18 @@ import { useState, useEffect } from "preact/hooks";
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
 import Graph from "../lib/Graph";
-import { isValidDelimString, parseTikzPicture, parseTikzStyles } from "../lib/TikzParser";
+import {
+  isValidDelimString,
+  ParseError,
+  parseTikzPicture,
+  parseTikzStyles,
+} from "../lib/TikzParser";
 import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
 import "./gui.css";
+import { use } from "chai";
 
 interface IContent {
   document: string;
@@ -22,15 +28,14 @@ interface AppProps {
 }
 
 const App = ({ initialContent, vscode }: AppProps) => {
+  const parsed = parseTikzPicture(initialContent.document);
+  const [graph, setGraph] = useState<Graph>(parsed.result ?? new Graph());
+  const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
+  const [parseErrors, setParseErrors] = useState<ParseError[]>(parsed.errors);
   const [tool, setTool] = useState<GraphTool>("select");
-
-  // the current graph being displayed
-  const [graph, setGraph] = useState<Graph | undefined>(parseTikzPicture(initialContent.document).result);
-
   const [currentNodeLabel, setCurrentNodeLabel] = useState<string | undefined>(undefined);
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
-
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(new Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(new Set());
 
@@ -41,8 +46,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
   );
 
   useEffect(() => {
-    // setupCodeEditor(vscode);
-
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       switch (message.type) {
@@ -62,7 +65,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {
@@ -77,23 +80,24 @@ const App = ({ initialContent, vscode }: AppProps) => {
     return () => window.removeEventListener("message", handleMessage);
   });
 
-  const tryParseGraph = (tikz: string) => {
-    const parsed = parseTikzPicture(tikz);
-    let g = parsed.result;
-    if (g !== undefined) {
-      const g1 = (graph !== undefined) ? g.inheritDataFrom(graph) : g;
-      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g1.hasNode(id))));
-      setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g1.hasEdge(id))));
-      g = g1;
-    }
-    setGraph(g);
-  };
+  useEffect(() => {
+    vscode.postMessage({
+      type: "setErrors",
+      content: parseErrors.map(e => ({
+        line: e.line - 1,
+        column: e.column - 1,
+        message: e.message,
+      })),
+    });
+  }, [parseErrors]);
 
   const updateFromGui = (tikz: string) => {
-    vscode.postMessage({
-      type: "updateFromGui",
-      content: { document: tikz },
-    });
+    if (enabled) {
+      vscode.postMessage({
+        type: "updateFromGui",
+        content: { document: tikz },
+      });
+    }
   };
 
   const refreshTikzStyles = () => {
@@ -102,14 +106,21 @@ const App = ({ initialContent, vscode }: AppProps) => {
     });
   };
 
-  const setErrors = () => {
-    vscode.postMessage({
-      type: "setErrors",
-      content: [{ line: 0, column: 0, message: "Test error" }],
-    });
+  const tryParseGraph = (tikz: string) => {
+    const parsed = parseTikzPicture(tikz);
+    setParseErrors(parsed.errors);
+    if (parsed.result !== undefined) {
+      const g = parsed.result.inheritDataFrom(graph);
+      setEnabled(true);
+      setGraph(g);
+      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.hasNode(id))));
+      setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.hasEdge(id))));
+    } else {
+      setEnabled(false);
+      setSelectedNodes(new Set());
+      setSelectedEdges(new Set());
+    }
   };
-
-  setErrors();
 
   const handleCurrentNodeLabelChanged = (label: string) => {
     console.log("label changed to", label);
@@ -126,7 +137,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   const handleNodeStyleChanged = (style: string, apply: boolean) => {
     setCurrentNodeStyle(style);
-    if (apply && graph !== undefined) {
+    if (apply) {
       const g = graph.mapNodeData(d =>
         selectedNodes.has(d.id) ? d.setProperty("style", style) : d
       );
@@ -138,7 +149,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   const handleEdgeStyleChanged = (style: string, apply: boolean) => {
     setCurrentEdgeStyle(style);
-    if (apply && graph !== undefined) {
+    if (apply) {
       const g = graph.mapEdgeData(d => {
         if (selectedEdges.has(d.id)) {
           if (style === "none") {
@@ -170,7 +181,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
     setSelectedNodes(selectedNodes);
     setSelectedEdges(selectedEdges);
 
-    if (graph !== undefined && selectedNodes.size === 1) {
+    if (selectedNodes.size === 1) {
       const [n] = selectedNodes;
       setCurrentNodeLabel(graph.node(n)?.label);
     } else {
@@ -179,7 +190,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   const handleJumpToNode = (node: number) => {
-    const [_, position] = graph !== undefined ? graph.tikzWithPosition(node, undefined) : [0, 0];
+    const [_, position] = graph.tikzWithPosition(node, undefined);
     console.log("got position", position);
 
     vscode.postMessage({
@@ -189,7 +200,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   };
 
   const handleJumpToEdge = (edge: number) => {
-    const [_, position] = graph !== undefined ? graph.tikzWithPosition(undefined, edge) : [0, 0];
+    const [_, position] = graph.tikzWithPosition(undefined, edge);
     console.log("got position", position);
 
     vscode.postMessage({
@@ -213,8 +224,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
           <GraphEditor
             tool={tool}
             onToolChanged={setTool}
-            enabled={true}
-            graph={graph ?? new Graph()}
+            enabled={enabled}
+            graph={graph}
             onGraphChange={handleGraphChange}
             selectedNodes={selectedNodes}
             selectedEdges={selectedEdges}
