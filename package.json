@@ -23,17 +23,27 @@
     "commands": [
       {
         "command": "vstikzit.buildCurrentTikzFigure",
-        "title": "Build Current TikZ figure",
+        "title": "Build TikZ figure",
+        "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.buildCurrentTikzFigureSVG",
+        "title": "Build TikZ figure as SVG",
         "category": "TikZiT"
       },
       {
         "command": "vstikzit.viewCurrentTikzFigure",
-        "title": "View Current TikZ figure",
+        "title": "View TikZ figure",
         "category": "TikZiT"
       },
       {
         "command": "vstikzit.syncTikzFigures",
         "title": "Sync TikZ Figures",
+        "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.syncTikzFiguresSVG",
+        "title": "Sync TikZ Figures with SVGs",
         "category": "TikZiT"
       },
       {
@@ -55,8 +65,7 @@
       },
       {
         "command": "vstikzit.syncTikzFigures",
-        "key": "ctrl+alt+s",
-        "when": "resourceExtname == .tikz"
+        "key": "ctrl+alt+s"
       },
       {
         "command": "vstikzit.openTikzEditor",

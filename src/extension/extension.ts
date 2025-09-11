@@ -2,7 +2,12 @@ import * as vscode from "vscode";
 
 import { StyleEditorProvider, TikzEditorProvider, currentUri } from "./editors";
 import TikzLinkProvider from "./TikzLinkProvider";
-import { buildCurrentTikzFigure, stopSyncTikzFigures, syncTikzFigures } from "./buildTikz";
+import {
+  buildCurrentTikzFigure,
+  stopSyncTikzFigures,
+  syncTikzFigures,
+  syncTikzFiguresSVG,
+} from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
 
 function activate(context: vscode.ExtensionContext): void {
@@ -46,7 +51,15 @@ function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", buildCurrentTikzFigure)
+    vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", () =>
+      buildCurrentTikzFigure(false)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigureSVG", () =>
+      buildCurrentTikzFigure(true)
+    )
   );
 
   context.subscriptions.push(
@@ -55,6 +68,10 @@ function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.syncTikzFigures", syncTikzFigures)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.syncTikzFiguresSVG", syncTikzFiguresSVG)
   );
 
   context.subscriptions.push(

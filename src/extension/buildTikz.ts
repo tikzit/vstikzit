@@ -64,7 +64,7 @@ async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promi
   const baseName = path.basename(fileName, ".tikz");
 
   await Promise.all(
-    [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf"].map(ext =>
+    [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf", ".tmp.svg"].map(ext =>
       vscode.workspace.fs.delete(
         vscode.Uri.joinPath(vscode.Uri.joinPath(workspaceRoot, "tikzcache"), baseName + ext)
       )
@@ -73,10 +73,11 @@ async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promi
 }
 
 async function sh(path: string, command: string, args: string[]): Promise<number> {
-  const cmd = spawn(command, args, { cwd: path, shell: true });
+  const cmd = spawn(command, args, { cwd: path, shell: false });
 
   return new Promise((resolve, reject) => {
     cmd.on("close", async code => {
+      // console.log(`${command} exited with code ${code}`);
       if (code === 0) {
         resolve(code);
       } else {
@@ -93,7 +94,7 @@ async function buildTikz(
   tikzIncludes: string,
   svg: boolean = false
 ): Promise<number> {
-  // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}`);
+  // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}, svg = ${svg}`);
   const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
   // if source is null, load it from the file
   if (!source) {
@@ -137,11 +138,13 @@ async function buildTikz(
         "--no-fonts",
         "--scale=2,2",
         baseName + ".tmp.pdf",
+        "-o",
         baseName + ".tmp.svg",
       ]);
     }
 
     // copy the contents of FILE.tmp.(pdf|svg) into FILE.(pdf|svg)
+    // console.log(`Copying ${baseName}.tmp.${outExt} to ${baseName}.${outExt}`);
     const outContent = await vscode.workspace.fs.readFile(
       vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.tmp.${outExt}`)
     );
@@ -162,6 +165,7 @@ async function buildTikz(
 }
 
 async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
+  // console.log(`Building current TikZ figure, svg = ${svg}`);
   const document = TikzEditorProvider.currentDocument();
   // console.log("Building current TikZ figure...", document?.uri.fsPath);
   const workspaceRoot = document?.uri
@@ -182,10 +186,10 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
         await cleanAuxFiles(document.uri.fsPath, workspaceRoot);
         statusBarItem.dispose();
       },
-      (errorCode: number) => {
-        vscode.window.showErrorMessage(`pdflatex exited with code ${errorCode}`);
-        const baseName = path.basename(document.uri.fsPath, ".tikz");
-        const logFile = baseName !== undefined ? baseName + ".tmp.log" : "tikzfigure.tmp.log";
+      error => {
+        vscode.window.showErrorMessage(`build exited with error ${error}`);
+        const baseName = path.basename(document.uri.fsPath, ".tikz") ?? "tikzfigure";
+        const logFile = baseName + ".tmp.log";
         vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "tikzcache", logFile));
       }
     );
@@ -246,18 +250,19 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
     return;
   }
 
-  for (const workspaceRoot of workspaceFolders.map(f => f.uri)) {
+  for (const folder of workspaceFolders) {
+    const workspaceRoot = folder.uri;
     const figuresToRebuild = await getTikzFiguresToRebuild(workspaceRoot, svg);
     if (figuresToRebuild.length > 0) {
       const tikzIncludes = await prepareBuildDir(workspaceRoot);
       let figuresBuilt = 0;
       const errorFiles: string[] = [];
       const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-      statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
+      statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: 0/${figuresToRebuild.length}`;
       statusBarItem.show();
       await Promise.all(
         figuresToRebuild.map(file =>
-          buildTikz(workspaceRoot, file, undefined, tikzIncludes).then(
+          buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
             async () => {
               figuresBuilt += 1;
               await cleanAuxFiles(file, workspaceRoot);
