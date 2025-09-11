@@ -138,9 +138,6 @@ class TikzParser extends EmbeddedActionsParser {
   public graph?: Graph;
   public styles?: Styles;
 
-  // a mapping from node ids to their positions in the tikz source
-  public nodeTikzPositions?: Map<number, { start: number; end: number }>;
-
   // field holds the current data for parsing properties. Can be NodeData, EdgeData, StyleData, or GraphData
   private d?: any;
   // the parser allows arbitrary node names in tikz files, but only stores ids. This field maps names to generated ids
@@ -164,7 +161,6 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       this.graph = new Graph();
       this.nodeIds = new Map();
-      this.nodeTikzPositions = new Map();
       this.d = this.graph.graphData;
     });
 
@@ -308,10 +304,6 @@ class TikzParser extends EmbeddedActionsParser {
           .setCoord(coord)
           .setLabel(stripBraces(labelToken.image));
         this.nodeIds?.set(name, d.id);
-        this.nodeTikzPositions?.set(d.id, {
-          start: labelToken.startOffset,
-          end: labelToken.endOffset ?? labelToken.startOffset,
-        });
         this.graph = this.graph.addNodeWithData(d);
       }
     });
@@ -509,7 +501,6 @@ const parser = new TikzParser();
 
 interface ParseTikzPictureResult {
   result?: Graph;
-  nodeTikzPositions?: Map<number, { start: number; end: number }>;
   errors: ParseError[];
 }
 
@@ -550,7 +541,6 @@ function parseTikz(
       ? { result: parser.styles, errors: [] }
       : {
           result: parser.graph,
-          nodeTikzPositions: parser.nodeTikzPositions,
           errors: [],
         };
   } catch (e) {
