@@ -52,19 +52,6 @@ function activate(context: vscode.ExtensionContext): void {
     )
   );
 
-  // used to open text editor at specific location when clicking on errors
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "vstikzit.openInTextEditor",
-      async (uri: vscode.Uri, line?: number, column?: number) => {
-        await vscode.window.showTextDocument(uri, {
-          viewColumn: vscode.ViewColumn.One,
-          selection:
-            line !== undefined ? new vscode.Range(line, column || 0, line, column || 0) : undefined,
-        });
-      }
-    )
-  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", () =>
@@ -90,9 +77,14 @@ function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("vstikzit.syncTikzFiguresSVG", syncTikzFiguresSVG)
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor)
-  );
+  context.subscriptions.push(vscode.commands.registerCommand("vstikzit.showError", showError));
+  context.subscriptions.push(vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor));
+}
+
+async function showError(uri: string, line?: number, column?: number): Promise<void> {
+  await vscode.window.showTextDocument(vscode.Uri.parse(uri), {
+    selection: new vscode.Range(line ?? 0, column ?? 0, line ?? 0, column ?? 0),
+  });
 }
 
 function openTikzEditor(): void {

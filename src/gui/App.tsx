@@ -25,9 +25,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const [tool, setTool] = useState<GraphTool>("select");
 
   // the current graph being displayed
-  const [graph, setGraph] = useState<Graph>(
-    parseTikzPicture(initialContent.document).result ?? new Graph()
-  );
+  const [graph, setGraph] = useState<Graph | undefined>(parseTikzPicture(initialContent.document).result);
 
   const [currentNodeLabel, setCurrentNodeLabel] = useState<string | undefined>(undefined);
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
@@ -64,7 +62,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
             } else {
               console.log(
                 "Failed to parse tikzstyles:\n" +
-                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
+                parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
               );
             }
           } else {
@@ -81,12 +79,13 @@ const App = ({ initialContent, vscode }: AppProps) => {
 
   const tryParseGraph = (tikz: string) => {
     const parsed = parseTikzPicture(tikz);
-    if (parsed.result !== undefined) {
-      const g = parsed.result.inheritDataFrom(graph);
+    let g = parsed.result;
+    if (g !== undefined && graph !== undefined) {
+      g = g.inheritDataFrom(graph);
       setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.hasNode(id))));
       setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.hasEdge(id))));
-      setGraph(g);
     }
+    setGraph(g);
   };
 
   const updateFromGui = (tikz: string) => {

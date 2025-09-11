@@ -185,21 +185,19 @@ class BaseEditorProvider {
     const diagnostics: vscode.Diagnostic[] = errors.map(err => {
       const range = new vscode.Range(err.line, err.column, err.line, err.column + 1);
       const diagnostic = new vscode.Diagnostic(range, err.message, vscode.DiagnosticSeverity.Error);
-      const uriWithPosition = BaseEditorProvider.currentDocument()?.uri.with({
-        fragment: `L${err.line},${err.column}`,
-      });
-      diagnostic.source = "TikZit";
+      const uri = BaseEditorProvider.currentDocument()?.uri;
+      diagnostic.source = "TikZiT Parser";
 
-      if (!uriWithPosition) {
+      if (!uri) {
         return diagnostic;
       }
 
       // Add a code with a command link to open in text editor
       diagnostic.code = {
-        value: "show",
+        value: "show source",
         target: vscode.Uri.parse(
-          `command:vscode.openWith?${encodeURIComponent(
-            JSON.stringify([uriWithPosition.toString(), "default"])
+          `command:vstikzit.showError?${encodeURIComponent(
+            JSON.stringify([uri.toString(), err.line, err.column])
           )}`
         ),
       };
