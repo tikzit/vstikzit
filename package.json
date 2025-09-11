@@ -112,7 +112,7 @@
     "build-webview": "vite build",
     "build-extension": "vite build --mode extension",
     "build-test": "vite build --mode test",
-    "lint": "eslint .",
+    "lint": "tsc && eslint .",
     "preview": "vite preview",
     "test": "mocha dist/tests.js",
     "package": "rm dist/* && vite build && vite build --mode extension && vsce package",

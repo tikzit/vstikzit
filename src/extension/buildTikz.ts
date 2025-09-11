@@ -72,31 +72,11 @@ async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promi
   );
 }
 
-async function pdflatex(path: string, file: string): Promise<number> {
-  const pdflatex = spawn("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", file], {
-    cwd: path,
-    shell: true,
-  });
+async function sh(path: string, command: string, args: string[]): Promise<number> {
+  const cmd = spawn(command, args, { cwd: path, shell: true });
 
   return new Promise((resolve, reject) => {
-    pdflatex.on("close", async code => {
-      if (code === 0) {
-        resolve(code);
-      } else {
-        reject(code);
-      }
-    });
-  });
-}
-
-async function dvisvgm(path: string, inFile: string, outFile: string): Promise<number> {
-  const dvisvgm = spawn("dvisvgm", ["--pdf", "--no-fonts", "--scale=2,2", inFile, outFile], {
-    cwd: path,
-    shell: true,
-  });
-
-  return new Promise((resolve, reject) => {
-    dvisvgm.on("close", async code => {
+    cmd.on("close", async code => {
       if (code === 0) {
         resolve(code);
       } else {
@@ -134,8 +114,8 @@ async function buildTikz(
   tex += "\n\\end{document}\n";
 
   // if this document has a file name, get the base name
-  const baseName = path.basename(fileName, ".tikz");
-  const texFile = baseName !== undefined ? baseName + ".tmp.tex" : "tikzfigure.tmp.tex";
+  const baseName = path.basename(fileName, ".tikz") ?? "tikzfigure";
+  const texFile = baseName + ".tmp.tex";
 
   await vscode.workspace.fs.writeFile(
     vscode.Uri.joinPath(tikzCacheFolder, texFile),
@@ -143,22 +123,30 @@ async function buildTikz(
   );
 
   try {
-    await pdflatex(tikzCacheFolder.fsPath, texFile);
+    await sh(tikzCacheFolder.fsPath, "pdflatex", [
+      "-interaction=nonstopmode",
+      "-halt-on-error",
+      texFile,
+    ]);
 
     let outExt = "pdf";
     if (svg) {
       outExt = "svg";
-      const pdfFile = baseName !== undefined ? baseName + ".tmp.pdf" : "tikzfigure.tmp.pdf";
-      const svgFile = baseName !== undefined ? baseName + ".svg" : "tikzfigure.tmp.svg";
-      await dvisvgm(tikzCacheFolder.fsPath, pdfFile, svgFile);
+      await sh(tikzCacheFolder.fsPath, "dvisvgm", [
+        "--pdf",
+        "--no-fonts",
+        "--scale=2,2",
+        baseName + ".tmp.pdf",
+        baseName + ".tmp.svg",
+      ]);
     }
 
     // copy the contents of FILE.tmp.(pdf|svg) into FILE.(pdf|svg)
     const outContent = await vscode.workspace.fs.readFile(
-      vscode.Uri.joinPath(tikzCacheFolder, baseName + ".tmp." + outExt)
+      vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.tmp.${outExt}`)
     );
     await vscode.workspace.fs.writeFile(
-      vscode.Uri.joinPath(tikzCacheFolder, baseName + "." + outExt),
+      vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.${outExt}`),
       outContent
     );
 
@@ -173,7 +161,7 @@ async function buildTikz(
   }
 }
 
-async function buildCurrentTikzFigure(): Promise<void> {
+async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
   const document = TikzEditorProvider.currentDocument();
   // console.log("Building current TikZ figure...", document?.uri.fsPath);
   const workspaceRoot = document?.uri
@@ -189,7 +177,7 @@ async function buildCurrentTikzFigure(): Promise<void> {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     statusBarItem.text = "$(sync~spin) Building TikZ figure";
     statusBarItem.show();
-    buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes).then(
+    buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes, svg).then(
       async (_: number) => {
         await cleanAuxFiles(document.uri.fsPath, workspaceRoot);
         statusBarItem.dispose();
@@ -207,9 +195,13 @@ async function buildCurrentTikzFigure(): Promise<void> {
   }
 }
 
-async function getTikzFiguresToRebuild(workspaceRoot: vscode.Uri): Promise<string[]> {
+async function getTikzFiguresToRebuild(
+  workspaceRoot: vscode.Uri,
+  svg: boolean = false
+): Promise<string[]> {
   const figuresFolder = vscode.Uri.joinPath(workspaceRoot, "figures");
   const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
+  const outExt = svg ? ".svg" : ".pdf";
 
   // Get all files in the figures folder
   let allFiles: [string, vscode.FileType][] = [];
@@ -225,17 +217,17 @@ async function getTikzFiguresToRebuild(workspaceRoot: vscode.Uri): Promise<strin
     if (fileType === vscode.FileType.File && fileName.endsWith(".tikz")) {
       const baseName = path.basename(fileName, ".tikz");
       const tikzFile = vscode.Uri.joinPath(figuresFolder, fileName);
-      const pdfFile = vscode.Uri.joinPath(tikzCacheFolder, baseName + ".pdf");
+      const outFile = vscode.Uri.joinPath(tikzCacheFolder, baseName + outExt);
 
       try {
         // Check if PDF exists and get its modification time
-        const [tikzStat, pdfStat] = await Promise.all([
+        const [tikzStat, outStat] = await Promise.all([
           vscode.workspace.fs.stat(tikzFile),
-          vscode.workspace.fs.stat(pdfFile),
+          vscode.workspace.fs.stat(outFile),
         ]);
 
         // If tikz file is newer than PDF, rebuild
-        if (tikzStat.mtime > pdfStat.mtime) {
+        if (tikzStat.mtime > outStat.mtime) {
           files.push(fileName);
         }
       } catch {
@@ -248,14 +240,14 @@ async function getTikzFiguresToRebuild(workspaceRoot: vscode.Uri): Promise<strin
   return files;
 }
 
-async function rebuildTikzFigures(): Promise<void> {
+async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     return;
   }
 
   for (const workspaceRoot of workspaceFolders.map(f => f.uri)) {
-    const figuresToRebuild = await getTikzFiguresToRebuild(workspaceRoot);
+    const figuresToRebuild = await getTikzFiguresToRebuild(workspaceRoot, svg);
     if (figuresToRebuild.length > 0) {
       const tikzIncludes = await prepareBuildDir(workspaceRoot);
       let figuresBuilt = 0;
@@ -293,6 +285,7 @@ async function rebuildTikzFigures(): Promise<void> {
 }
 
 let tikzFigureWatcher: vscode.FileSystemWatcher | undefined = undefined;
+let tikzFigureSVGWatcher: vscode.FileSystemWatcher | undefined = undefined;
 
 async function syncTikzFigures(): Promise<void> {
   await rebuildTikzFigures();
@@ -301,8 +294,18 @@ async function syncTikzFigures(): Promise<void> {
   stopSyncTikzFigures();
   tikzFigureWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
   tikzFigureWatcher.onDidChange(() => {
-    // console.log("Detected change in .tikz file, rebuilding figures...");
     rebuildTikzFigures();
+  });
+}
+
+async function syncTikzFiguresSVG(): Promise<void> {
+  await rebuildTikzFigures(true);
+
+  // listen for changes in any .tikz file in the figures folder and call rebuildTikzFigures when needed
+  stopSyncTikzFigures();
+  tikzFigureSVGWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
+  tikzFigureSVGWatcher.onDidChange(() => {
+    rebuildTikzFigures(true);
   });
 }
 
@@ -311,6 +314,10 @@ async function stopSyncTikzFigures(): Promise<void> {
     tikzFigureWatcher.dispose();
     tikzFigureWatcher = undefined;
   }
+  if (tikzFigureSVGWatcher !== undefined) {
+    tikzFigureSVGWatcher.dispose();
+    tikzFigureSVGWatcher = undefined;
+  }
 }
 
-export { buildCurrentTikzFigure, syncTikzFigures, stopSyncTikzFigures };
+export { buildCurrentTikzFigure, syncTikzFigures, syncTikzFiguresSVG, stopSyncTikzFigures };
