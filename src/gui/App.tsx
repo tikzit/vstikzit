@@ -150,9 +150,29 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const handleNodeStyleChanged = (style: string, apply: boolean) => {
     setCurrentNodeStyle(style);
     if (apply) {
-      const g = graph.mapNodeData(d =>
-        selectedNodes.has(d.id) ? d.setProperty("style", style) : d
-      );
+      let g = graph.mapNodeData(d => (selectedNodes.has(d.id) ? d.setProperty("style", style) : d));
+
+      g = g.mapEdgeData(d => {
+        let d1 = d;
+        if (selectedNodes.has(d.source) || selectedNodes.has(d.target)) {
+          const oldSourceStyle = g.node(d.source)?.property("style");
+          const oldTargetStyle = g.node(d.target)?.property("style");
+
+          if (style === "none" && oldSourceStyle !== "none") {
+            d1 = d1.setSourceAnchor("center");
+          } else if (style !== "none" && oldSourceStyle === "none") {
+            d1 = d1.setSourceAnchor(undefined);
+          }
+
+          if (style === "none" && oldTargetStyle !== "none") {
+            d1 = d1.setTargetAnchor("center");
+          } else if (style !== "none" && oldTargetStyle === "none") {
+            d1 = d1.setTargetAnchor(undefined);
+          }
+        }
+        return d1;
+      });
+
       handleGraphChange(g, true);
     }
 

@@ -442,6 +442,12 @@ const GraphEditor = ({
           if (currentEdgeStyle !== "none") {
             edge = edge.setProperty("style", currentEdgeStyle);
           }
+          if (graph.node(edge.source)?.property("style") === "none") {
+            edge = edge.setSourceAnchor("center");
+          }
+          if (graph.node(edge.target)?.property("style") === "none") {
+            edge = edge.setTargetAnchor("center");
+          }
           const path = new PathData().setId(pathId).setEdges([edge.id]);
           updateGraph(graph.addEdgeWithData(edge).addPathWithData(path), true);
         }
