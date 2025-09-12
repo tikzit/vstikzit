@@ -3,6 +3,7 @@ src/
 example/
 .vscode/
 .git/
+.github/
 images/
 *
 !package.json
