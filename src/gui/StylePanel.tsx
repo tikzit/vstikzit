@@ -8,24 +8,28 @@ import { JSX } from "preact";
 
 interface StylePanelProps {
   tikzStyles: Styles;
-  currentNodeLabel: string | undefined;
+  editMode: boolean;
   currentNodeStyle: string | undefined;
   currentEdgeStyle: string | undefined;
-  onCurrentNodeLabelChanged: (label: string) => void;
   onNodeStyleChanged: (style: string, apply: boolean) => void;
   onEdgeStyleChanged: (style: string, apply: boolean) => void;
-  editMode: boolean;
+  currentNodeLabel?: string | undefined;
+  onCurrentNodeLabelChanged?: (label: string) => void;
+  onEditStyles?: (e: Event) => void;
+  onRefreshStyles?: (e: Event) => void;
 }
 
 const StylePanel = ({
   tikzStyles,
-  currentNodeLabel,
+  editMode,
   currentNodeStyle,
   currentEdgeStyle,
-  onCurrentNodeLabelChanged: setCurrentNodeLabel,
   onNodeStyleChanged: setNodeStyle,
   onEdgeStyleChanged: setEdgeStyle,
-  editMode,
+  currentNodeLabel,
+  onCurrentNodeLabelChanged: setCurrentNodeLabel,
+  onEditStyles,
+  onRefreshStyles,
 }: StylePanelProps) => {
   const sceneCoords = new SceneCoords()
     .setZoom(0)
@@ -79,7 +83,10 @@ const StylePanel = ({
               id="label-field"
               style={{ width: "80%" }}
               value={currentNodeLabel ?? ""}
-              onInput={e => setCurrentNodeLabel((e.target as HTMLInputElement).value)}
+              onInput={e =>
+                setCurrentNodeLabel !== undefined &&
+                setCurrentNodeLabel((e.target as HTMLInputElement).value)
+              }
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   document.getElementById("graph-editor")?.focus();
@@ -89,11 +96,25 @@ const StylePanel = ({
               className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
             />
           </div>
-          <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
+          <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
+            <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
+            <a href="#" title="Edit styles" onClick={onEditStyles}>
+              &#9998;
+            </a>
+            <a href="#" title="Refresh styles" onClick={onRefreshStyles}>
+              &#10227;
+            </a>
+          </div>
         </>
       )}
 
-      <div style={{ overflow: "hidden", height: "calc(100% - 80px)", width: "100%" }}>
+      <div
+        style={{
+          overflow: "hidden",
+          height: editMode ? "calc(100% - 30px)" : "calc(100% - 100px)",
+          width: "100%",
+        }}
+      >
         <div
           id="node-styles"
           style={{

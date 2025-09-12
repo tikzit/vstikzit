@@ -123,3 +123,15 @@ input[type="range"]::-moz-range-thumb {
 .button-container button {
   margin: 3px;
 }
+
+.style-info {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.style-info a {
+  text-decoration: none;
+  font-size: 1.5em;
+  outline: none;
+  margin-left: 10px;
+}

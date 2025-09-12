@@ -2,15 +2,13 @@ import { GraphTool } from "./GraphEditor";
 import selectIcon from "../../images/tikzit-tool-select.svg";
 import nodeIcon from "../../images/tikzit-tool-node.svg";
 import edgeIcon from "../../images/tikzit-tool-edge.svg";
-import refreshIcon from "../../images/refresh.svg";
 
 interface ToolbarProps {
   tool: GraphTool;
   onToolChanged: (tool: GraphTool) => void;
-  onRefreshClicked: () => void;
 }
 
-const Toolbar = ({ tool, onToolChanged, onRefreshClicked }: ToolbarProps) => {
+const Toolbar = ({ tool, onToolChanged }: ToolbarProps) => {
   const toolbarButtonStyle = (isSelected: boolean) => ({
     padding: "8px",
     margin: "2px",
@@ -50,9 +48,6 @@ const Toolbar = ({ tool, onToolChanged, onRefreshClicked }: ToolbarProps) => {
         title="Edge Tool"
       >
         <img src={edgeIcon} alt="Edge" style={iconStyle} />
-      </button>
-      <button style={toolbarButtonStyle(false)} title="Refresh Styles" onClick={onRefreshClicked}>
-        <img src={refreshIcon} alt="Refresh" style={iconStyle} />
       </button>
     </div>
   );

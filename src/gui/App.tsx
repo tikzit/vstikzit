@@ -100,9 +100,21 @@ const App = ({ initialContent, vscode }: AppProps) => {
     }
   };
 
-  const refreshTikzStyles = () => {
+  const refreshTikzStyles = (e: Event) => {
+    if (e) {
+      e.preventDefault();
+    }
     vscode.postMessage({
       type: "refreshTikzStyles",
+    });
+  };
+
+  const openTikzStyles = (e: Event) => {
+    if (e) {
+      e.preventDefault();
+    }
+    vscode.postMessage({
+      type: "openTikzStyles",
     });
   };
 
@@ -219,7 +231,6 @@ const App = ({ initialContent, vscode }: AppProps) => {
               setTool(t);
               document.getElementById("graph-editor")?.focus();
             }}
-            onRefreshClicked={refreshTikzStyles}
           />
           <GraphEditor
             tool={tool}
@@ -239,13 +250,15 @@ const App = ({ initialContent, vscode }: AppProps) => {
         </div>
         <StylePanel
           tikzStyles={tikzStyles}
-          currentNodeLabel={currentNodeLabel}
+          editMode={false}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={handleCurrentNodeLabelChanged}
           onNodeStyleChanged={handleNodeStyleChanged}
           onEdgeStyleChanged={handleEdgeStyleChanged}
-          editMode={false}
+          currentNodeLabel={currentNodeLabel}
+          onCurrentNodeLabelChanged={handleCurrentNodeLabelChanged}
+          onEditStyles={openTikzStyles}
+          onRefreshStyles={refreshTikzStyles}
         />
       </Splitpane>
     </div>

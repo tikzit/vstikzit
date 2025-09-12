@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 
 function currentUri(): vscode.Uri | undefined {
   const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
@@ -97,6 +98,9 @@ class BaseEditorProvider {
           return;
         case "refreshTikzStyles":
           this.refreshTikzStyles(webviewPanel.webview);
+          return;
+        case "openTikzStyles":
+          this.openTikzStyles();
           return;
         case "openCodeEditor": {
           this.openCodeEditor(e.content.line, e.content.column);
@@ -215,18 +219,20 @@ class BaseEditorProvider {
     }
   }
 
-  async getTikzStyles(): Promise<[string, string]> {
+  async getTikzStyles(withContent: boolean = true): Promise<[string, string]> {
     try {
-      const workspaceFolders = vscode.workspace.workspaceFolders;
-      if (!workspaceFolders || workspaceFolders.length === 0) {
+      const document = TikzEditorProvider.currentDocument();
+      // console.log("Building current TikZ figure...", document?.uri.fsPath);
+      const workspaceRoot = document?.uri
+        ? vscode.workspace.getWorkspaceFolder(document?.uri)?.uri
+        : undefined;
+
+      if (!workspaceRoot) {
         return ["", ""];
       }
 
-      // Get files at the root of the first workspace folder
-      const workspaceRoot = workspaceFolders[0].uri;
-      const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
-
       // Find the first .tikzstyles file
+      const files = await vscode.workspace.fs.readDirectory(workspaceRoot);
       const tikzStyles = files.find(
         f => f[1] === vscode.FileType.File && f[0].endsWith(".tikzstyles")
       );
@@ -235,12 +241,16 @@ class BaseEditorProvider {
         return ["", ""];
       }
 
-      // Read the file content
-      const fileUri = vscode.Uri.joinPath(workspaceRoot, tikzStyles[0]);
-      const fileContent = await vscode.workspace.fs.readFile(fileUri);
+      const stylePath = path.join(workspaceRoot.fsPath, tikzStyles[0]);
+
+      if (!withContent) {
+        return [stylePath, ""];
+      }
+
+      const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(stylePath));
       const content = Buffer.from(fileContent).toString("utf8");
 
-      return [tikzStyles[0], content];
+      return [stylePath, content];
     } catch {
       return ["", ""];
     }
@@ -251,10 +261,15 @@ class BaseEditorProvider {
     webview.postMessage({
       type: "tikzStylesContent",
       content: {
-        filename: styleFile,
+        filename: path.basename(styleFile),
         source: styles,
       },
     });
+  }
+
+  async openTikzStyles(): Promise<void> {
+    const [styleFile, _] = await this.getTikzStyles(false);
+    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(styleFile));
   }
 
   async openCodeEditor(line: number, column: number): Promise<void> {
@@ -297,7 +312,7 @@ class TikzEditorProvider extends BaseEditorProvider implements vscode.CustomText
   protected async initialContent(document: vscode.TextDocument): Promise<string> {
     const [styleFile, styles] = await this.getTikzStyles();
     const content = {
-      styleFile: styleFile,
+      styleFile: path.basename(styleFile),
       styles: styles,
       document: document.getText(),
     };
