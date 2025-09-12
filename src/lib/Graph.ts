@@ -11,9 +11,9 @@ class Graph {
 
   constructor(graph?: Graph) {
     this._graphData = graph?._graphData ?? new GraphData();
-    this._nodeData = graph !== undefined ? new Map(graph._nodeData) : new Map();
-    this._edgeData = graph !== undefined ? new Map(graph._edgeData) : new Map();
-    this._pathData = graph !== undefined ? new Map(graph._pathData) : new Map();
+    this._nodeData = graph !== undefined ? graph._nodeData : new Map();
+    this._edgeData = graph !== undefined ? graph._edgeData : new Map();
+    this._pathData = graph !== undefined ? graph._pathData : new Map();
     this.maxNodeId = graph?.maxNodeId ?? -1;
     this.maxEdgeId = graph?.maxEdgeId ?? -1;
     this.maxPathId = graph?.maxPathId ?? -1;
@@ -91,6 +91,7 @@ class Graph {
 
   public addNodeWithData(d: NodeData): Graph {
     const g = new Graph(this);
+    g._nodeData = new Map(this._nodeData);
     g._nodeData.set(d.id, d);
     if (d.id > g.maxNodeId) {
       g.maxNodeId = d.id;
@@ -100,6 +101,7 @@ class Graph {
 
   public addEdgeWithData(d: EdgeData): Graph {
     const g = new Graph(this);
+    g._edgeData = new Map(this._edgeData);
     g._edgeData.set(d.id, d);
     if (d.id > g.maxEdgeId) {
       g.maxEdgeId = d.id;
@@ -109,6 +111,7 @@ class Graph {
 
   public addPathWithData(d: PathData): Graph {
     const g = new Graph(this);
+    g._pathData = new Map(this._pathData);
     g._pathData.set(d.id, d);
     if (d.id > g.maxPathId) {
       g.maxPathId = d.id;
@@ -120,6 +123,7 @@ class Graph {
     const node = this._nodeData.get(id);
     if (node) {
       const g = new Graph(this);
+      g._nodeData = new Map(this._nodeData);
       g._nodeData.set(id, fn(node));
       return g;
     } else {
@@ -129,12 +133,14 @@ class Graph {
 
   public setNodeData(id: number, data: NodeData): Graph {
     const g = new Graph(this);
+    g._nodeData = new Map(this._nodeData);
     g._nodeData.set(id, data);
     return g;
   }
 
   public mapNodeData(fn: (data: NodeData) => NodeData): Graph {
     const g = new Graph(this);
+    g._nodeData = new Map(this._nodeData);
     const keys = Array.from(g._nodeData.keys());
     for (const key of keys) {
       g._nodeData.set(key, fn(g._nodeData.get(key)!));
@@ -146,6 +152,7 @@ class Graph {
     const edge = this._edgeData.get(id);
     if (edge) {
       const g = new Graph(this);
+      g._edgeData = new Map(this._edgeData);
       g._edgeData.set(id, fn(edge));
       return g;
     } else {
@@ -155,12 +162,14 @@ class Graph {
 
   public setEdgeData(id: number, data: EdgeData): Graph {
     const g = new Graph(this);
+    g._edgeData = new Map(this._edgeData);
     g._edgeData.set(id, data);
     return g;
   }
 
   public mapEdgeData(fn: (data: EdgeData) => EdgeData): Graph {
     const g = new Graph(this);
+    g._edgeData = new Map(this._edgeData);
     const keys = Array.from(g._edgeData.keys());
     for (const key of keys) {
       g._edgeData.set(key, fn(g._edgeData.get(key)!));
@@ -172,6 +181,7 @@ class Graph {
     const path = this._pathData.get(id);
     if (path) {
       const g = new Graph(this);
+      g._pathData = new Map(this._pathData);
       g._pathData.set(id, fn(path));
       return g;
     } else {
@@ -181,6 +191,7 @@ class Graph {
 
   public setPathData(id: number, data: PathData): Graph {
     const g = new Graph(this);
+    g._pathData = new Map(this._pathData);
     g._pathData.set(id, data);
     return g;
   }
@@ -217,6 +228,8 @@ class Graph {
 
   public removeNodes(nodes: Iterable<number>): Graph {
     const g = new Graph(this);
+    g._nodeData = new Map(this._nodeData);
+    g._edgeData = new Map(this._edgeData);
     const nodeSet = new Set(nodes);
     for (const n of nodeSet) {
       g._nodeData.delete(n);
@@ -233,6 +246,7 @@ class Graph {
 
   public removeEdges(edges: Iterable<number>): Graph {
     const g = new Graph(this);
+    g._edgeData = new Map(this._edgeData);
     const remove = Array.from(edges);
     for (const e of remove) {
       g._edgeData.delete(e);
@@ -242,6 +256,7 @@ class Graph {
 
   public removePath(pathId: number): Graph {
     const g = new Graph(this);
+    g._pathData = new Map(this._pathData);
     g._pathData.delete(pathId);
     return g;
   }
@@ -299,7 +314,7 @@ class Graph {
   public reversePath(pathId: number): Graph {
     let graph = new Graph(this);
     const pd = this._pathData.get(pathId)!;
-    graph.updatePathData(pathId, p => p.setEdges(pd.edges.reverse()));
+    graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.reverse()));
     for (const e of pd.edges) {
       graph = graph.updateEdgeData(e, ed => ed.reverse());
     }
@@ -423,12 +438,12 @@ class Graph {
     }
 
     for (const [id, data] of other._pathData) {
-      ptab[id] = g._pathData.has(id) ? g.freshPathId : id;
+      ptab[id] = g.hasPath(id) ? g.freshPathId : id;
       const d = data.setId(ptab[id]).setEdges(data.edges.map(e => etab[e]));
       g = g.addPathWithData(d);
     }
 
-    g = g.mapEdgeData(d => (!this._edgeData.has(d.id) ? d.setPath(ptab[d.path]) : d));
+    g = g.mapEdgeData(d => (!this.hasEdge(d.id) ? d.setPath(ptab[d.path]) : d));
 
     return g;
   }
