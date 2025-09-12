@@ -95,7 +95,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
     if (enabled) {
       vscode.postMessage({
         type: "updateFromGui",
-        content: { document: tikz },
+        content: tikz,
       });
     }
   };
