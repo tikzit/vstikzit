@@ -470,16 +470,12 @@ class Graph {
    * This helps reactive components recognise the same data via Object.is() after the graph
    * has been re-parsed.
    */
-  public inheritDataFrom(other: Graph): Graph {
-    const g = new Graph(this);
-    g.maxNodeId = this.maxNodeId;
-    g.maxEdgeId = this.maxEdgeId;
-    g.maxPathId = this.maxPathId;
+  public inheritDataFrom(other: Graph) {
     let keys = Array.from(this._nodeData.keys());
     for (const key of keys) {
       const d = other._nodeData.get(key)!;
       if (this._nodeData.get(key)?.equals(d)) {
-        g._nodeData.set(key, d);
+        this._nodeData.set(key, d);
       }
     }
 
@@ -487,7 +483,7 @@ class Graph {
     for (const key of keys) {
       const d = other._edgeData.get(key)!;
       if (this._edgeData.get(key)?.equals(d)) {
-        g._edgeData.set(key, d);
+        this._edgeData.set(key, d);
       }
     }
 
@@ -495,11 +491,9 @@ class Graph {
     for (const key of keys) {
       const d = other._pathData.get(key)!;
       if (this._pathData.get(key)?.equals(d)) {
-        g._pathData.set(key, d);
+        this._pathData.set(key, d);
       }
     }
-
-    return g;
   }
 
   public equals(other: Graph): boolean {

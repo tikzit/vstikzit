@@ -121,7 +121,8 @@ const App = ({ initialContent, vscode }: AppProps) => {
     const parsed = parseTikzPicture(tikz);
     setParseErrors(parsed.errors);
     if (parsed.result !== undefined) {
-      const g = parsed.result.inheritDataFrom(graph);
+      const g = parsed.result;
+      g.inheritDataFrom(graph);
       setEnabled(true);
       setGraph(g);
       setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.hasNode(id))));

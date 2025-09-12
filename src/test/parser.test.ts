@@ -105,11 +105,11 @@ describe("Graph parser", () => {
     assert.notStrictEqual(g1.node(2), g2.node(2), "g1[2] ? g2[2]");
     assert.notStrictEqual(g1.node(3), g2.node(3), "g1[3] ? g2[3]");
 
-    const g3 = g2.inheritDataFrom(g1);
-    assert.strictEqual(g1.node(0), g3.node(0), "g1[0] ? g3[0]");
-    assert.notStrictEqual(g1.node(1), g3.node(1), "g1[1] ? g3[1]");
-    assert.strictEqual(g1.node(2), g3.node(2), "g1[2] ? g3[2]");
-    assert.strictEqual(g1.node(3), g3.node(3), "g1[3] ? g3[3]");
+    g2.inheritDataFrom(g1);
+    assert.strictEqual(g1.node(0), g2.node(0), "g1[0] ? g3[0]");
+    assert.notStrictEqual(g1.node(1), g2.node(1), "g1[1] ? g3[1]");
+    assert.strictEqual(g1.node(2), g2.node(2), "g1[2] ? g3[2]");
+    assert.strictEqual(g1.node(3), g2.node(3), "g1[3] ? g3[3]");
   });
 });
 
