@@ -6,5 +6,7 @@ example/
 images/
 *
 !package.json
+!tikz-language-configuration.json
+!tikz.tmGrammar.json
 !README.md
 !LICENSE

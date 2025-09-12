@@ -76,18 +76,54 @@
     ],
     "languages": [
       {
-        "id": "latex",
+        "id": "tikz",
         "aliases": [
-          "LaTeX",
-          "latex"
+          "TikZ",
+          "tikz"
         ],
         "extensions": [
-          ".tikz",
-          ".tikzstyles",
-          ".tikzdefs",
-          ".tex"
+          ".tikz"
         ],
-        "configuration": ""
+        "configuration": "./tikz-language-configuration.json"
+      },
+      {
+        "id": "tikzstyles",
+        "aliases": [
+          "TikZ Styles",
+          "tikzstyles"
+        ],
+        "extensions": [
+          ".tikzstyles"
+        ],
+        "configuration": "./tikz-language-configuration.json"
+      },
+      {
+        "id": "tikzdefs",
+        "aliases": [
+          "TikZ Definitions",
+          "tikzdefs"
+        ],
+        "extensions": [
+          ".tikzdefs"
+        ],
+        "configuration": "./tikz-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tikz",
+        "scopeName": "text.tex.tikz",
+        "path": "./tikz.tmGrammar.json"
+      },
+      {
+        "language": "tikzstyles",
+        "scopeName": "text.tex.tikz", 
+        "path": "./tikz.tmGrammar.json"
+      },
+      {
+        "language": "tikzdefs",
+        "scopeName": "text.tex.tikz",
+        "path": "./tikz.tmGrammar.json"
       }
     ],
     "customEditors": [

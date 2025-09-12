@@ -1,0 +1,125 @@
+{
+    "name": "TikZ",
+    "scopeName": "text.tex.tikz",
+    "fileTypes": ["tikz", "tikzstyles", "tikzdefs"],
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#commands"
+        },
+        {
+            "include": "#braces"
+        },
+        {
+            "include": "#brackets"
+        },
+        {
+            "include": "#math"
+        },
+        {
+            "include": "#environments"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "name": "comment.line.percentage.tikz",
+            "match": "%.*$"
+        },
+        "commands": {
+            "patterns": [
+                {
+                    "name": "support.function.tikz",
+                    "match": "\\\\[a-zA-Z@]+\\*?"
+                },
+                {
+                    "name": "support.function.tikz",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "braces": {
+            "name": "meta.group.braces.tikz",
+            "begin": "\\{",
+            "end": "\\}",
+            "patterns": [
+                {
+                    "include": "$self"
+                }
+            ]
+        },
+        "brackets": {
+            "name": "meta.group.brackets.tikz",
+            "begin": "\\[",
+            "end": "\\]",
+            "patterns": [
+                {
+                    "include": "$self"
+                }
+            ]
+        },
+        "math": {
+            "patterns": [
+                {
+                    "name": "string.other.math.tikz",
+                    "begin": "\\$\\$",
+                    "end": "\\$\\$",
+                    "patterns": [
+                        {
+                            "include": "#commands"
+                        }
+                    ]
+                },
+                {
+                    "name": "string.other.math.tikz",
+                    "begin": "\\$",
+                    "end": "\\$",
+                    "patterns": [
+                        {
+                            "include": "#commands"
+                        }
+                    ]
+                }
+            ]
+        },
+        "environments": {
+            "name": "meta.environment.tikz",
+            "begin": "(\\\\begin)(\\{)([a-zA-Z*]+)(\\})",
+            "end": "(\\\\end)(\\{)(\\3)(\\})",
+            "beginCaptures": {
+                "1": {
+                    "name": "support.function.tikz"
+                },
+                "2": {
+                    "name": "punctuation.definition.arguments.begin.tikz"
+                },
+                "3": {
+                    "name": "entity.name.type.environment.tikz"
+                },
+                "4": {
+                    "name": "punctuation.definition.arguments.end.tikz"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "support.function.tikz"
+                },
+                "2": {
+                    "name": "punctuation.definition.arguments.begin.tikz"
+                },
+                "3": {
+                    "name": "entity.name.type.environment.tikz"
+                },
+                "4": {
+                    "name": "punctuation.definition.arguments.end.tikz"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "$self"
+                }
+            ]
+        }
+    }
+}
