@@ -9,6 +9,7 @@ import { JSX } from "preact";
 interface StylePanelProps {
   tikzStyles: Styles;
   editMode: boolean;
+  error: boolean;
   currentNodeStyle: string | undefined;
   currentEdgeStyle: string | undefined;
   onNodeStyleChanged: (style: string, apply: boolean) => void;
@@ -22,6 +23,7 @@ interface StylePanelProps {
 const StylePanel = ({
   tikzStyles,
   editMode,
+  error,
   currentNodeStyle,
   currentEdgeStyle,
   onNodeStyleChanged: setNodeStyle,
@@ -97,7 +99,9 @@ const StylePanel = ({
             />
           </div>
           <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
-            <i>[{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]</i>
+            <i style={{ color: error ? "var(--vscode-errorForeground)" : "inherit" }}>
+              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
+            </i>
             <a href="#" title="Edit styles" onClick={onEditStyles}>
               &#9998;
             </a>

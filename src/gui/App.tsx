@@ -14,7 +14,6 @@ import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
 import "./gui.css";
-import { use } from "chai";
 
 interface IContent {
   document: string;
@@ -39,10 +38,12 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(new Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(new Set());
 
+  const parsedStyles = parseTikzStyles(initialContent.styles);
   const [tikzStyles, setTikzStyles] = useState<Styles>(
-    (parseTikzStyles(initialContent.styles).result ?? new Styles()).setFilename(
-      initialContent.styleFile
-    )
+    (parsedStyles.result ?? new Styles()).setFilename(initialContent.styleFile)
+  );
+  const [tikzStylesError, setTikzStylesError] = useState<boolean>(
+    parsedStyles.result === undefined
   );
 
   useEffect(() => {
@@ -62,11 +63,9 @@ const App = ({ initialContent, vscode }: AppProps) => {
             if (parsed.result !== undefined) {
               const s = parsed.result.setFilename(message.content.filename);
               setTikzStyles(s);
+              setTikzStylesError(false);
             } else {
-              console.log(
-                "Failed to parse tikzstyles:\n" +
-                  parsed.errors.map(err => `${err.line} (${err.column}): ${err.message}`).join("\n")
-              );
+              setTikzStylesError(true);
             }
           } else {
             console.error("No tikzstyles content received:", message.error);
@@ -251,6 +250,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
         <StylePanel
           tikzStyles={tikzStyles}
           editMode={false}
+          error={tikzStylesError}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
           onNodeStyleChanged={handleNodeStyleChanged}

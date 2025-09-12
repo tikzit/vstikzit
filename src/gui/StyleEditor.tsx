@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import Splitpane from "./Splitpane";
 import StylePanel from "./StylePanel";
-import { parseTikzStyles } from "../lib/TikzParser";
+import { ParseError, parseTikzStyles } from "../lib/TikzParser";
 import Styles from "../lib/Styles";
 import "./gui.css";
 import Style from "./Style";
@@ -17,9 +17,10 @@ interface StyleEditorProps {
 }
 
 const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
-  const [tikzStyles, setTikzStyles] = useState<Styles>(
-    parseTikzStyles(initialContent.document).result ?? new Styles()
-  );
+  const parsed = parseTikzStyles(initialContent.document);
+  const [tikzStyles, setTikzStyles] = useState<Styles>(parsed.result ?? new Styles());
+  const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
+  const [parseErrors, setParseErrors] = useState<ParseError[]>(parsed.errors);
   const [currentStyle, setCurrentStyle] = useState<string>(tikzStyles.firstStyleName ?? "none");
   const [currentStyleData, setCurrentStyleData] = useState<StyleData>(
     tikzStyles.style(currentStyle)
@@ -32,22 +33,28 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
 
   const tryParseStyles = (tikz: string) => {
     const parsed = parseTikzStyles(tikz);
+    setParseErrors(parsed.errors);
     if (parsed.result !== undefined) {
       const styles = parsed.result;
+      setEnabled(true);
       setTikzStyles(styles);
       if (styles.style(currentStyle) === undefined) {
         setCurrentStyle(styles.firstStyleName ?? "none");
       }
 
       setCurrentStyleData(styles.style(currentStyle));
+    } else {
+      setEnabled(false);
     }
   };
 
   const updateFromGui = (tikz: string) => {
-    vscode.postMessage({
-      type: "updateFromGui",
-      content: tikz,
-    });
+    if (enabled) {
+      vscode.postMessage({
+        type: "updateFromGui",
+        content: tikz,
+      });
+    }
   };
 
   useEffect(() => {
@@ -69,6 +76,17 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
   useEffect(() => {
     setCurrentStyleData(tikzStyles.style(currentStyle));
   }, [currentStyle, tikzStyles]);
+
+  useEffect(() => {
+    vscode.postMessage({
+      type: "setErrors",
+      content: parseErrors.map(e => ({
+        line: e.line - 1,
+        column: e.column - 1,
+        message: e.message,
+      })),
+    });
+  }, [parseErrors]);
 
   const handleCurrentStyleChange = (styleName: string, doubleClicked: boolean) => {
     if (hasChanges && styleName !== currentStyle) {
@@ -124,7 +142,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
       type: "openCodeEditor",
       content: position ?? { line: 0, column: 0 },
     });
-  }
+  };
 
   const newStyle = (isEdgeStyle: boolean) => {
     const name = tikzStyles.freshStyleName;
@@ -154,23 +172,38 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
       <Splitpane splitRatio={0.8} orientation="horizontal">
         <div>
           <div className="button-container">
-            <button onClick={() => newStyle(false)}>+ Node Style</button>
-            <button onClick={() => newStyle(true)}>+ Edge Style</button>
-            <button onClick={() => moveStyle("up")}>&#129092;</button>
-            <button onClick={() => moveStyle("down")}>&#129094;</button>
-            <button disabled={!hasChanges} onClick={applyStyleChanges}>&#10004; Apply</button>
-            <button disabled={!hasChanges} onClick={resetStyleChanges}>&#8634; Reset</button>
+            <button onClick={() => newStyle(false)} disabled={!enabled}>
+              + Node Style
+            </button>
+            <button onClick={() => newStyle(true)} disabled={!enabled}>
+              + Edge Style
+            </button>
+            <button onClick={() => moveStyle("up")} disabled={!enabled}>
+              &#129092;
+            </button>
+            <button onClick={() => moveStyle("down")} disabled={!enabled}>
+              &#129094;
+            </button>
+            <button disabled={!(enabled && hasChanges)} onClick={applyStyleChanges}>
+              &#10004; Apply
+            </button>
+            <button disabled={!(enabled && hasChanges)} onClick={resetStyleChanges}>
+              &#8634; Reset
+            </button>
             <button onClick={() => editStyle(currentStyle)}>&#9998; Edit</button>
-            <button onClick={deleteStyle}>&#128465; Delete</button>
+            <button onClick={deleteStyle} disabled={!enabled}>
+              &#128465; Delete
+            </button>
           </div>
-          <Style data={currentStyleData} onChange={setCurrentStyleData} />
+          <Style data={currentStyleData} onChange={setCurrentStyleData} enabled={enabled} />
         </div>
         <StylePanel
           tikzStyles={tikzStyles}
+          error={!enabled}
           currentNodeLabel={undefined}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => { }}
+          onCurrentNodeLabelChanged={() => {}}
           onNodeStyleChanged={handleCurrentStyleChange}
           onEdgeStyleChanged={handleCurrentStyleChange}
           editMode={true}
