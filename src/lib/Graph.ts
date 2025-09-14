@@ -512,6 +512,7 @@ class Graph {
     edge?: number
   ): [string, { line: number; column: number } | undefined] {
     let position: { line: number; column: number } | undefined = undefined;
+    const path = edge ? this.edge(edge)?.path : undefined;
 
     let result = "\\begin{tikzpicture}\n";
     result += "\t\\begin{pgfonlayer}{nodelayer}\n";
@@ -540,7 +541,7 @@ class Graph {
       const dt = d.tikz();
       result += `\t\t\\draw ${dt}`;
 
-      if (edge !== undefined && pd.edges.find(e => e === edge)) {
+      if (path === pd.id) {
         // return the position of the end of the edge property list
         const lines = result.split("\n");
         position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
