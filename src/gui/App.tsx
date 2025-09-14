@@ -150,28 +150,30 @@ const App = ({ initialContent, vscode }: AppProps) => {
   const handleNodeStyleChanged = (style: string, apply: boolean) => {
     setCurrentNodeStyle(style);
     if (apply) {
-      let g = graph.mapNodeData(d => (selectedNodes.has(d.id) ? d.setProperty("style", style) : d));
-
+      let g = graph;
       g = g.mapEdgeData(d => {
         let d1 = d;
-        if (selectedNodes.has(d.source) || selectedNodes.has(d.target)) {
-          const oldSourceStyle = g.node(d.source)?.property("style");
-          const oldTargetStyle = g.node(d.target)?.property("style");
-
-          if (style === "none" && oldSourceStyle !== "none") {
+        if (selectedNodes.has(d.source)) {
+          const oldStyle = g.node(d.source)?.property("style");
+          if (style === "none" && oldStyle !== "none" && d1.sourceAnchor === undefined) {
             d1 = d1.setSourceAnchor("center");
-          } else if (style !== "none" && oldSourceStyle === "none") {
+          } else if (style !== "none" && oldStyle === "none" && d1.sourceAnchor === "center") {
             d1 = d1.setSourceAnchor(undefined);
           }
+        }
 
-          if (style === "none" && oldTargetStyle !== "none") {
+        if (selectedNodes.has(d.target)) {
+          const oldStyle = g.node(d.target)?.property("style");
+          if (style === "none" && oldStyle !== "none" && d1.targetAnchor === undefined) {
             d1 = d1.setTargetAnchor("center");
-          } else if (style !== "none" && oldTargetStyle === "none") {
+          } else if (style !== "none" && oldStyle === "none" && d1.targetAnchor === "center") {
             d1 = d1.setTargetAnchor(undefined);
           }
         }
         return d1;
       });
+
+      g = g.mapNodeData(d => (selectedNodes.has(d.id) ? d.setProperty("style", style) : d));
 
       handleGraphChange(g, true);
     }
