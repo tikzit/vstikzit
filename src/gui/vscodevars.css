@@ -1,0 +1,47 @@
+/* TikZit CSS Variables - Aliases for VS Code variables */
+/* This allows easy swapping between VS Code and standalone contexts */
+:root {
+  /* Button variables */
+  --tikzit-button-background: var(--vscode-button-background);
+  --tikzit-button-disabledBackground: var(--vscode-button-disabledBackground);
+  --tikzit-button-disabledForeground: var(--vscode-button-disabledForeground);
+  --tikzit-button-foreground: var(--vscode-button-foreground);
+  --tikzit-button-hoverBackground: var(--vscode-button-hoverBackground);
+  --tikzit-button-hoverForeground: var(--vscode-button-hoverForeground);
+  
+  /* Dropdown variables */
+  --tikzit-dropdown-background: var(--vscode-dropdown-background);
+  --tikzit-dropdown-border: var(--vscode-dropdown-border);
+  
+  /* Editor variables */
+  --tikzit-editor-background: var(--vscode-editor-background);
+  --tikzit-editorCodeLens-foreground: var(--vscode-editorCodeLens-foreground);
+  --tikzit-editor-font-family: var(--vscode-editor-font-family);
+  --tikzit-editor-font-size: var(--vscode-editor-font-size);
+  --tikzit-editor-foreground: var(--vscode-editor-foreground);
+  --tikzit-editor-selectionBackground: var(--vscode-editor-selectionBackground);
+  --tikzit-editor-selectionForeground: var(--vscode-editor-selectionForeground);
+  
+  /* General variables */
+  --tikzit-errorForeground: var(--vscode-errorForeground);
+  --tikzit-focusBorder: var(--vscode-focusBorder);
+  --tikzit-font-family: var(--vscode-font-family);
+  --tikzit-foreground: var(--vscode-foreground);
+  
+  /* Input variables */
+  --tikzit-input-background: var(--vscode-input-background);
+  --tikzit-input-border: var(--vscode-input-border);
+  --tikzit-input-foreground: var(--vscode-input-foreground);
+  
+  /* Keybinding label variables */
+  --tikzit-keybindingLabel-background: var(--vscode-keybindingLabel-background);
+  --tikzit-keybindingLabel-border: var(--vscode-keybindingLabel-border);
+  --tikzit-keybindingLabel-foreground: var(--vscode-keybindingLabel-foreground);
+  
+  /* Panel variables */
+  --tikzit-panel-border: var(--vscode-panel-border);
+  
+  /* Sash variables */
+  --tikzit-sash-border: var(--vscode-sash-border);
+  --tikzit-sash-hoverBorder: var(--vscode-sash-hoverBorder);
+}

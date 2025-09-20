@@ -13,7 +13,7 @@ import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
-import "./gui.css";
+import TikzitHost from "../lib/TikzitHost";
 
 interface IContent {
   document: string;
@@ -23,10 +23,10 @@ interface IContent {
 
 interface AppProps {
   initialContent: IContent;
-  vscode: VsCodeApi;
+  host: TikzitHost;
 }
 
-const App = ({ initialContent, vscode }: AppProps) => {
+const App = ({ initialContent, host }: AppProps) => {
   const parsed = parseTikzPicture(initialContent.document);
   const [graph, setGraph] = useState<Graph>(parsed.result ?? new Graph());
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
@@ -47,55 +47,29 @@ const App = ({ initialContent, vscode }: AppProps) => {
   );
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      switch (message.type) {
-        case "updateToGui":
-          if (message.content) {
-            // console.log("got update from vscode");
-            tryParseGraph(message.content);
-          }
-          break;
-        case "tikzStylesContent":
-          if (message.content) {
-            console.log("parsing\n" + message.content.source);
-            const parsed = parseTikzStyles(message.content.source);
-            if (parsed.result !== undefined) {
-              const s = parsed.result.setFilename(message.content.filename);
-              setTikzStyles(s);
-              setTikzStylesError(false);
-            } else {
-              setTikzStylesError(true);
-            }
-          } else {
-            console.error("No tikzstyles content received:", message.error);
-          }
-          break;
+    host.onSourceUpdated(source => {
+      tryParseGraph(source);
+    });
+
+    host.onTikzStylesUpdated((filename, source) => {
+      const parsed = parseTikzStyles(source);
+      if (parsed.result !== undefined) {
+        const s = parsed.result.setFilename(filename);
+        setTikzStyles(s);
+        setTikzStylesError(false);
+      } else {
+        setTikzStylesError(true);
       }
-    };
-
-    window.addEventListener("message", handleMessage);
-
-    return () => window.removeEventListener("message", handleMessage);
+    });
   });
 
   useEffect(() => {
-    vscode.postMessage({
-      type: "setErrors",
-      content: parseErrors.map(e => ({
-        line: e.line - 1,
-        column: e.column - 1,
-        message: e.message,
-      })),
-    });
+    host.setErrors(parseErrors);
   }, [parseErrors]);
 
   const updateFromGui = (tikz: string) => {
     if (enabled) {
-      vscode.postMessage({
-        type: "updateFromGui",
-        content: tikz,
-      });
+      host.updateSource(tikz);
     }
   };
 
@@ -103,18 +77,14 @@ const App = ({ initialContent, vscode }: AppProps) => {
     if (e) {
       e.preventDefault();
     }
-    vscode.postMessage({
-      type: "refreshTikzStyles",
-    });
+    host.refreshTikzStyles();
   };
 
   const openTikzStyles = (e: Event) => {
     if (e) {
       e.preventDefault();
     }
-    vscode.postMessage({
-      type: "openTikzStyles",
-    });
+    host.openTikzStyles();
   };
 
   const tryParseGraph = (tikz: string) => {
@@ -239,10 +209,7 @@ const App = ({ initialContent, vscode }: AppProps) => {
       }
     }
 
-    vscode.postMessage({
-      type: "openCodeEditor",
-      content: position,
-    });
+    host.openCodeEditor(position);
   };
 
   return (

@@ -1,15 +1,15 @@
 input {
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-input-border);
+  background-color: var(--tikzit-input-background);
+  color: var(--tikzit-input-foreground);
+  border: 1px solid var(--tikzit-input-border);
   border-radius: 2px;
   padding: 4px 8px;
-  font-size: var(--vscode-editor-font-size);
-  font-family: var(--vscode-editor-font-family);
+  font-size: var(--tikzit-editor-font-size);
+  font-family: var(--tikzit-editor-font-family);
 }
 input::selection {
-  background-color: var(--vscode-editor-selectionBackground);
-  color: var(--vscode-editor-selectionForeground);
+  background-color: var(--tikzit-editor-selectionBackground);
+  color: var(--tikzit-editor-selectionForeground);
 }
 input.error {
   border-color: red !important;
@@ -17,39 +17,39 @@ input.error {
 }
 
 button {
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+  background-color: var(--tikzit-button-background);
+  color: var(--tikzit-button-foreground);
   border: none;
   border-radius: 2px;
   padding: 4px 8px;
-  font-family: var(--vscode-font-family);
+  font-family: var(--tikzit-font-family);
   cursor: pointer;
   height: 30px;
 }
 
 button:hover {
-  background-color: var(--vscode-button-hoverBackground);
+  background-color: var(--tikzit-button-hoverBackground);
 }
 
 button:disabled {
-  background-color: var(--vscode-button-disabledBackground);
-  color: var(--vscode-button-disabledForeground);
+  background-color: var(--tikzit-button-disabledBackground);
+  color: var(--tikzit-button-disabledForeground);
   cursor: not-allowed;
 }
 
 button:disabled:hover {
-  background-color: var(--vscode-button-disabledBackground);
+  background-color: var(--tikzit-button-disabledBackground);
 }
 
 select {
   width: 100%;
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-input-border);
+  background-color: var(--tikzit-input-background);
+  color: var(--tikzit-input-foreground);
+  border: 1px solid var(--tikzit-input-border);
   border-radius: 2px;
   padding: 4px 8px;
-  font-size: var(--vscode-editor-font-size);
-  font-family: var(--vscode-editor-font-family);
+  font-size: var(--tikzit-editor-font-size);
+  font-family: var(--tikzit-editor-font-family);
   height: 30px;
 }
 
@@ -87,8 +87,8 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--vscode-button-background);
-  border: 2px solid var(--vscode-button-foreground);
+  background: var(--tikzit-button-background);
+  border: 2px solid var(--tikzit-button-foreground);
   cursor: pointer;
 }
 
@@ -96,8 +96,8 @@ input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--vscode-button-background);
-  border: 2px solid var(--vscode-button-foreground);
+  background: var(--tikzit-button-background);
+  border: 2px solid var(--tikzit-button-foreground);
   cursor: pointer;
   border: none;
 }
@@ -112,7 +112,7 @@ input[type="range"]::-moz-range-thumb {
   text-align: right;
   padding-right: 10px;
   font-style: italic;
-  color: var(--vscode-editorCodeLens-foreground);
+  color: var(--tikzit-editorCodeLens-foreground);
 }
 
 .button-container {

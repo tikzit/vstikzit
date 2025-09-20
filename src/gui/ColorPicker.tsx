@@ -88,8 +88,8 @@ const ColorPicker = ({
         className={`color-swatch ${disabled ? "disabled" : ""}`}
         onClick={handleSwatchClick}
         style={{
-          backgroundColor: value === undefined ? "var(--vscode-input-background)" : displayColor,
-          border: "2px solid var(--vscode-input-border)",
+          backgroundColor: value === undefined ? "var(--tikzit-input-background)" : displayColor,
+          border: "2px solid var(--tikzit-input-border)",
           borderRadius: "4px",
           width: "30px",
           height: "25px",
@@ -117,7 +117,7 @@ const ColorPicker = ({
               y1="5"
               x2="25"
               y2="20"
-              stroke="var(--vscode-foreground)"
+              stroke="var(--tikzit-foreground)"
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -126,7 +126,7 @@ const ColorPicker = ({
               y1="5"
               x2="5"
               y2="20"
-              stroke="var(--vscode-foreground)"
+              stroke="var(--tikzit-foreground)"
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -142,8 +142,8 @@ const ColorPicker = ({
             position: "absolute",
             top: "35px",
             left: "0",
-            backgroundColor: "var(--vscode-dropdown-background)",
-            border: "1px solid var(--vscode-dropdown-border)",
+            backgroundColor: "var(--tikzit-dropdown-background)",
+            border: "1px solid var(--tikzit-dropdown-border)",
             borderRadius: "4px",
             padding: "12px",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
@@ -199,7 +199,7 @@ const ColorPicker = ({
                 marginTop: "12px",
                 padding: "8px",
                 backgroundColor: displayColor,
-                border: "1px solid var(--vscode-input-border)",
+                border: "1px solid var(--tikzit-input-border)",
                 borderRadius: "4px",
                 textAlign: "center",
                 fontSize: "12px",
@@ -233,8 +233,8 @@ const ColorPicker = ({
                       height: "24px",
                       border:
                         currentColor === colorName || currentColor === hexColor
-                          ? "2px solid var(--vscode-focusBorder)"
-                          : "2px solid var(--vscode-input-border)",
+                          ? "2px solid var(--tikzit-focusBorder)"
+                          : "2px solid var(--tikzit-input-border)",
                       borderRadius: "4px",
                       cursor: "pointer",
                       display: "flex",

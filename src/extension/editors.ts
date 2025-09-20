@@ -156,9 +156,9 @@ class BaseEditorProvider {
 						padding: 0;
 						height: 100vh;
 						overflow: hidden;
-						font-family: var(--vscode-font-family);
-						background-color: var(--vscode-editor-background);
-						color: var(--vscode-editor-foreground);
+						font-family: var(--tikzit-font-family);
+						background-color: var(--tikzit-editor-background);
+						color: var(--tikzit-editor-foreground);
 					}
 					#root {
 						height: 100vh;

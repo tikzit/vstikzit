@@ -100,18 +100,18 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
           position: "relative",
           zIndex: 1,
           backgroundColor: isDragging
-            ? "var(--vscode-sash-hoverBorder)"
-            : "var(--vscode-sash-border)",
+            ? "var(--tikzit-sash-hoverBorder)"
+            : "var(--tikzit-sash-border)",
         }}
         onMouseDown={handleMouseDown}
         onMouseEnter={e => {
           if (!isDragging) {
-            (e.target as HTMLElement).style.backgroundColor = "var(--vscode-sash-hoverBorder)";
+            (e.target as HTMLElement).style.backgroundColor = "var(--tikzit-sash-hoverBorder)";
           }
         }}
         onMouseLeave={e => {
           if (!isDragging) {
-            (e.target as HTMLElement).style.backgroundColor = "var(--vscode-sash-border)";
+            (e.target as HTMLElement).style.backgroundColor = "var(--tikzit-sash-border)";
           }
         }}
       />

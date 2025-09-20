@@ -3,9 +3,9 @@ import Splitpane from "./Splitpane";
 import StylePanel from "./StylePanel";
 import { ParseError, parseTikzStyles } from "../lib/TikzParser";
 import Styles from "../lib/Styles";
-import "./gui.css";
 import Style from "./Style";
 import { StyleData } from "../lib/Data";
+import TikzitHost from "../lib/TikzitHost";
 
 interface IStyleEditorContent {
   document: string;
@@ -13,10 +13,10 @@ interface IStyleEditorContent {
 
 interface StyleEditorProps {
   initialContent: IStyleEditorContent;
-  vscode: VsCodeApi;
+  host: TikzitHost;
 }
 
-const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
+const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
   const parsed = parseTikzStyles(initialContent.document);
   const [tikzStyles, setTikzStyles] = useState<Styles>(parsed.result ?? new Styles());
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
@@ -50,27 +50,14 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
 
   const updateFromGui = (tikz: string) => {
     if (enabled) {
-      vscode.postMessage({
-        type: "updateFromGui",
-        content: tikz,
-      });
+      host.updateSource(tikz);
     }
   };
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      switch (message.type) {
-        case "updateToGui":
-          if (message.content) {
-            tryParseStyles(message.content);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    host.onSourceUpdated(source => {
+      tryParseStyles(source);
+    });
   });
 
   useEffect(() => {
@@ -78,14 +65,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
   }, [currentStyle, tikzStyles]);
 
   useEffect(() => {
-    vscode.postMessage({
-      type: "setErrors",
-      content: parseErrors.map(e => ({
-        line: e.line - 1,
-        column: e.column - 1,
-        message: e.message,
-      })),
-    });
+    host.setErrors(parseErrors);
   }, [parseErrors]);
 
   const handleCurrentStyleChange = (styleName: string, doubleClicked: boolean) => {
@@ -137,11 +117,7 @@ const StyleEditor = ({ initialContent, vscode }: StyleEditorProps) => {
   };
 
   const editStyle = (styleName: string) => {
-    const [_, position] = tikzStyles.tikzWithPosition(styleName);
-    vscode.postMessage({
-      type: "openCodeEditor",
-      content: position ?? { line: 0, column: 0 },
-    });
+    host.openCodeEditor(tikzStyles.tikzWithPosition(styleName)[1]);
   };
 
   const newStyle = (isEdgeStyle: boolean) => {

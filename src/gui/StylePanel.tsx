@@ -99,7 +99,7 @@ const StylePanel = ({
             />
           </div>
           <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
-            <i style={{ color: error ? "var(--vscode-errorForeground)" : "inherit" }}>
+            <i style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
               [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
             </i>
             <a href="#" title="Edit styles" onClick={onEditStyles}>

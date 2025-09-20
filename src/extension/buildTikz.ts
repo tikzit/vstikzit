@@ -63,13 +63,15 @@ async function cleanBuildDir(workspaceRoot: vscode.Uri): Promise<void> {
 async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promise<void> {
   const baseName = path.basename(fileName, ".tikz");
 
-  await Promise.all(
-    [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf", ".tmp.svg"].map(ext =>
-      vscode.workspace.fs.delete(
+  for (const ext of [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf", ".tmp.svg"]) {
+    try {
+      await vscode.workspace.fs.delete(
         vscode.Uri.joinPath(vscode.Uri.joinPath(workspaceRoot, "tikzcache"), baseName + ext)
-      )
-    )
-  );
+      );
+    } catch (error) {
+      // file probably doesn't exist, so just ignore the error
+    }
+  }
 }
 
 async function sh(path: string, command: string, args: string[]): Promise<number> {
