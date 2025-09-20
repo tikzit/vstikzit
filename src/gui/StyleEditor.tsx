@@ -7,12 +7,12 @@ import Style from "./Style";
 import { StyleData } from "../lib/Data";
 import TikzitHost from "../lib/TikzitHost";
 
-interface IStyleEditorContent {
+interface StyleEditorContent {
   document: string;
 }
 
 interface StyleEditorProps {
-  initialContent: IStyleEditorContent;
+  initialContent: StyleEditorContent;
   host: TikzitHost;
 }
 
@@ -190,3 +190,4 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
 };
 
 export default StyleEditor;
+export { StyleEditorContent };

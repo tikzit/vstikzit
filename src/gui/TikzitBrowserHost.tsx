@@ -1,7 +1,7 @@
 import { render } from "preact";
 import TikzEditor, { TikzEditorContent } from "./TikzEditor";
 import StyleEditor, { StyleEditorContent } from "./StyleEditor";
-import "./vscodevars.css";
+import "./defaultvars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
@@ -9,7 +9,7 @@ import TikzitHost from "../lib/TikzitHost";
 // VSCode WebView API (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
 
-class TikzitExtensionHost implements TikzitHost {
+class TikzitBrowserHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private tikzUpdatedHandler: ((source: string) => void) | undefined = undefined;
@@ -106,4 +106,4 @@ class TikzitExtensionHost implements TikzitHost {
   }
 }
 
-export { TikzitExtensionHost };
+export { TikzitBrowserHost };

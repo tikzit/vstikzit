@@ -1,0 +1,47 @@
+/* TikZit CSS Variables - Hard-coded values from VS Code default light theme */
+/* This provides standalone styling without VS Code variable dependencies */
+:root {
+  /* Button variables */
+  --tikzit-button-background: #0078d4;
+  --tikzit-button-disabledBackground: #f3f2f1;
+  --tikzit-button-disabledForeground: #a19f9d;
+  --tikzit-button-foreground: #ffffff;
+  --tikzit-button-hoverBackground: #106ebe;
+  --tikzit-button-hoverForeground: #ffffff;
+  
+  /* Dropdown variables */
+  --tikzit-dropdown-background: #ffffff;
+  --tikzit-dropdown-border: #cecece;
+  
+  /* Editor variables */
+  --tikzit-editor-background: #ffffff;
+  --tikzit-editorCodeLens-foreground: #919191;
+  --tikzit-editor-font-family: 'Consolas', 'Courier New', monospace;
+  --tikzit-editor-font-size: 14px;
+  --tikzit-editor-foreground: #000000;
+  --tikzit-editor-selectionBackground: #add6ff;
+  --tikzit-editor-selectionForeground: #000000;
+  
+  /* General variables */
+  --tikzit-errorForeground: #e51400;
+  --tikzit-focusBorder: #0078d4;
+  --tikzit-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  --tikzit-foreground: #323130;
+  
+  /* Input variables */
+  --tikzit-input-background: #ffffff;
+  --tikzit-input-border: #cecece;
+  --tikzit-input-foreground: #323130;
+  
+  /* Keybinding label variables */
+  --tikzit-keybindingLabel-background: #dddddd;
+  --tikzit-keybindingLabel-border: #cecece;
+  --tikzit-keybindingLabel-foreground: #323130;
+  
+  /* Panel variables */
+  --tikzit-panel-border: #e5e5e5;
+  
+  /* Sash variables */
+  --tikzit-sash-border: #e5e5e5;
+  --tikzit-sash-hoverBorder: #0078d4;
+}

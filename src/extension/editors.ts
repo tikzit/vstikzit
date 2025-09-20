@@ -167,9 +167,12 @@ class BaseEditorProvider {
 				<div id="root"></div>
 				<script id="initial-content" type="application/json">${contentJson}</script>
         <script nonce="${nonce}" type="module">
-        import { ${this.entryPoint} } from "${scriptUri}";
+        import { TikzitExtensionHost } from "${scriptUri}";
         window.addEventListener('load', () => {
-          ${this.entryPoint}();
+          const host = new TikzitExtensionHost();
+          const container = document.getElementById("root");
+          const initialContent = JSON.parse(document.getElementById("initial-content").textContent);
+          host.${this.entryPoint}(container, initialContent);
         });
         </script>
 			</body>

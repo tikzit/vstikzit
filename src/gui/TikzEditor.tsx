@@ -15,18 +15,18 @@ import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
 import TikzitHost from "../lib/TikzitHost";
 
-interface IContent {
+interface TikzEditorContent {
   document: string;
   styleFile: string;
   styles: string;
 }
 
 interface AppProps {
-  initialContent: IContent;
+  initialContent: TikzEditorContent;
   host: TikzitHost;
 }
 
-const App = ({ initialContent, host }: AppProps) => {
+const TikzEditor = ({ initialContent, host }: AppProps) => {
   const parsed = parseTikzPicture(initialContent.document);
   const [graph, setGraph] = useState<Graph>(parsed.result ?? new Graph());
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
@@ -256,4 +256,5 @@ const App = ({ initialContent, host }: AppProps) => {
   );
 };
 
-export default App;
+export default TikzEditor;
+export { TikzEditorContent };
