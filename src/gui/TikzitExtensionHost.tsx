@@ -6,7 +6,7 @@ import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
 
-// VSCode WebView API types (should be available globally in webview context)
+// VSCode WebView API (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
 
 class TikzitExtensionHost implements TikzitHost {
@@ -88,12 +88,10 @@ class TikzitExtensionHost implements TikzitHost {
   }
 }
 
-const initialContentText = document.getElementById("initial-content")!.textContent!;
-const container = document.getElementById("root")!;
-
-export function renderTikzEditor() {
+function renderTikzEditor() {
+  const container = document.getElementById("root")!;
   try {
-    const initialContent = JSON.parse(initialContentText);
+    const initialContent = JSON.parse(document.getElementById("initial-content")!.textContent!);
     const host = new TikzitExtensionHost();
     render(<TikzEditor initialContent={initialContent} host={host} />, container);
   } catch (error) {
@@ -102,9 +100,10 @@ export function renderTikzEditor() {
   }
 }
 
-export function renderStyleEditor() {
+function renderStyleEditor() {
+  const container = document.getElementById("root")!;
   try {
-    const initialContent = JSON.parse(initialContentText);
+    const initialContent = JSON.parse(document.getElementById("initial-content")!.textContent!);
     const host = new TikzitExtensionHost();
     render(<StyleEditor initialContent={initialContent} host={host} />, container);
   } catch (error) {
@@ -112,3 +111,6 @@ export function renderStyleEditor() {
     container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
   }
 }
+
+export default TikzitExtensionHost;
+export { renderTikzEditor, renderStyleEditor };

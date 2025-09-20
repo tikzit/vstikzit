@@ -126,15 +126,12 @@ class BaseEditorProvider {
   }
 
   async getHtmlForWebview(webview: vscode.Webview, contentJson: string): Promise<string> {
-    // Get the local path to main script run in the webview
-    const scriptPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.js");
-    const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
-
-    // Get the local path to the CSS file
-    const cssPathOnDisk = vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview.css");
-    const cssUri = webview.asWebviewUri(cssPathOnDisk);
-
-    // Use a nonce to only allow specific scripts to be run
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "dist", "tikzit_vscode.js")
+    );
+    const cssUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "dist", "tikzit_vscode.css")
+    );
     const nonce = getNonce();
 
     return `<!DOCTYPE html>

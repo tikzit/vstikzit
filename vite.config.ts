@@ -44,9 +44,9 @@ export default defineConfig(({ mode }) => {
     return {
       build: {
         lib: {
-          entry: resolve(__dirname, "src/gui/index.tsx"),
-          name: "webview",
-          fileName: "webview",
+          entry: resolve(__dirname, "src/gui/TikzitExtensionHost.tsx"),
+          name: "tikzit_vscode",
+          fileName: "tikzit_vscode",
           formats: ["es"],
         },
         outDir: "dist",
