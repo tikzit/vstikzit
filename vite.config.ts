@@ -39,14 +39,33 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [],
     };
-  } else {
-    // Webview-only build (default)
+  } else if (mode === "webview") {
     return {
       build: {
         lib: {
           entry: resolve(__dirname, "src/gui/TikzitExtensionHost.tsx"),
           name: "tikzit_vscode",
           fileName: "tikzit_vscode",
+          formats: ["es"],
+        },
+        outDir: "dist",
+        emptyOutDir: false,
+        assetsInlineLimit: 16384,
+      },
+      assetsInclude: ["**/*.svg"],
+      plugins: [preact()],
+      define: {
+        "process.env.NODE_ENV": '"production"',
+      },
+    };
+  } else {
+    // Browser build by default
+    return {
+      build: {
+        lib: {
+          entry: resolve(__dirname, "src/gui/TikzitBrowserHost.tsx"),
+          name: "tikzit_web",
+          fileName: "tikzit_web",
           formats: ["es"],
         },
         outDir: "dist",

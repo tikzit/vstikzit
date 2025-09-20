@@ -150,12 +150,12 @@
     ]
   },
   "scripts": {
-    "watch": "concurrently \"vite build --watch\" \"vite build --mode extension --watch\" \"vite build --mode test --watch\"",
-    "watch-webview": "vite build --watch",
+    "watch": "concurrently \"vite build --mode webview --watch\" \"vite build --mode extension --watch\" \"vite build --mode test --watch\"",
+    "watch-webview": "vite build --mode webview --watch",
     "watch-extension": "vite build --mode extension --watch",
     "watch-test": "vite build --mode test --watch",
-    "build": "vite build && vite build --mode extension && vite build --mode test",
-    "build-webview": "vite build",
+    "build": "vite build --mode webview && vite build --mode extension && vite build --mode test",
+    "build-webview": "vite build --mode webview",
     "build-extension": "vite build --mode extension",
     "build-test": "vite build --mode test",
     "lint": "tsc && eslint .",
