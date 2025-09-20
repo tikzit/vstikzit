@@ -1,5 +1,5 @@
 import { render } from "preact";
-import App from "./App";
+import TikzEditor from "./TikzEditor";
 import StyleEditor from "./StyleEditor";
 import "./vscodevars.css";
 import "./gui.css";
@@ -95,7 +95,7 @@ export function renderTikzEditor() {
   try {
     const initialContent = JSON.parse(initialContentText);
     const host = new TikzitExtensionHost();
-    render(<App initialContent={initialContent} host={host} />, container);
+    render(<TikzEditor initialContent={initialContent} host={host} />, container);
   } catch (error) {
     console.error("Error rendering TikzEditor:", error);
     container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
