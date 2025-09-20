@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TikZit</title>
+    <script type="module">
+      import { TikzitBrowserHost } from "./src/gui/TikzitBrowserHost.tsx";
+      window.addEventListener('load', () => {
+        const host = new TikzitBrowserHost();
+        const container = document.getElementById("root");
+        const initialContent = {
+          document: `\\begin{tikzpicture}\n\\end{tikzpicture}`,
+          styles: `\\tikzstyle{red dot}=[circle,fill=red,minimum size=4pt,inner sep=0pt]
+                    \\tikzstyle{blue dot}=[circle,fill=blue,minimum size=4pt,inner sep=0pt]`,
+          styleFile: "styles.tikzstyles",
+        };
+        host.renderTikzEditor(container, initialContent);
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

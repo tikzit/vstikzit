@@ -6,41 +6,10 @@ import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
 
-// VSCode WebView API (should be available globally in webview context)
-declare const acquireVsCodeApi: () => any;
-
 class TikzitBrowserHost implements TikzitHost {
-  private vscode: VsCodeApi;
-  private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private tikzUpdatedHandler: ((source: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
-  constructor() {
-    this.vscode = acquireVsCodeApi();
-    this.listener = (event: MessageEvent) => {
-      const message = event.data;
-      switch (message.type) {
-        case "updateToGui": {
-          if (message.content && this.tikzUpdatedHandler) {
-            this.tikzUpdatedHandler(message.content);
-          }
-          break;
-        }
-        case "tikzStylesContent": {
-          if (message.content && this.tikzStylesUpdatedHandler) {
-            this.tikzStylesUpdatedHandler(message.content.filename, message.content.source);
-          }
-          break;
-        }
-      }
-    };
-
-    window.addEventListener("message", this.listener);
-  }
-
-  destroy() {
-    window.removeEventListener("message", this.listener!);
-  }
 
   public onSourceUpdated(handler: (source: string) => void) {
     this.tikzUpdatedHandler = handler;
@@ -50,42 +19,15 @@ class TikzitBrowserHost implements TikzitHost {
     this.tikzStylesUpdatedHandler = handler;
   }
 
-  public setErrors(errors: ParseError[]) {
-    this.vscode.postMessage({
-      type: "setErrors",
-      content: errors.map(e => ({
-        line: e.line - 1,
-        column: e.column - 1,
-        message: e.message,
-      })),
-    });
-  }
+  public setErrors(errors: ParseError[]) {}
 
-  public updateSource(tikz: string) {
-    this.vscode.postMessage({
-      type: "updateFromGui",
-      content: tikz,
-    });
-  }
+  public updateSource(tikz: string) {}
 
-  public refreshTikzStyles() {
-    this.vscode.postMessage({
-      type: "refreshTikzStyles",
-    });
-  }
+  public refreshTikzStyles() {}
 
-  public openTikzStyles() {
-    this.vscode.postMessage({
-      type: "openTikzStyles",
-    });
-  }
+  public openTikzStyles() {}
 
-  public openCodeEditor(position?: { line: number; column: number }) {
-    this.vscode.postMessage({
-      type: "openCodeEditor",
-      content: position ?? { line: 0, column: 0 },
-    });
-  }
+  public openCodeEditor(position?: { line: number; column: number }) {}
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {

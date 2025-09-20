@@ -62,12 +62,6 @@ export default defineConfig(({ mode }) => {
     // Browser build by default
     return {
       build: {
-        lib: {
-          entry: resolve(__dirname, "src/gui/TikzitBrowserHost.tsx"),
-          name: "tikzit_web",
-          fileName: "tikzit_web",
-          formats: ["es"],
-        },
         outDir: "dist",
         emptyOutDir: false,
         assetsInlineLimit: 16384,
