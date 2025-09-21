@@ -1,6 +1,13 @@
 /* TikZit CSS Variables - Aliases for VS Code variables */
 /* This allows easy swapping between VS Code and standalone contexts */
 :root {
+  /* Background color for the main application window */
+  --tikzit-background: var(--vscode-editor-background);
+
+  /* Links */
+  --tikzit-link-foreground: var(--vscode-textLink-foreground);
+  --tikzit-link-activeForeground: var(--vscode-textLink-activeForeground);
+
   /* Button variables */
   --tikzit-button-background: var(--vscode-button-background);
   --tikzit-button-disabledBackground: var(--vscode-button-disabledBackground);

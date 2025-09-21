@@ -1,3 +1,20 @@
+body {
+  background-color: var(--tikzit-background);
+  color: var(--tikzit-foreground);
+  font-family: var(--tikzit-font-family);
+  font-size: var(--tikzit-font-size);
+  margin: 0;
+  padding: 0;
+}
+
+a, a:visited {
+  color: var(--tikzit-link-foreground);
+}
+
+a:hover {
+  color: var(--tikzit-link-activeForeground);
+}
+
 input {
   background-color: var(--tikzit-input-background);
   color: var(--tikzit-input-foreground);

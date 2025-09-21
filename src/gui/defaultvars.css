@@ -1,47 +1,53 @@
-/* TikZit CSS Variables - Hard-coded values from VS Code default light theme */
-/* This provides standalone styling without VS Code variable dependencies */
+/* TikZit CSS Variables - default dark theme values */
 :root {
+  /* Background color for the main application window */
+  --tikzit-background: #1e1e1e;
+
+  /* Links */
+  --tikzit-link-foreground: #3794ff;
+  --tikzit-link-activeForeground: #4daafc;
+
   /* Button variables */
-  --tikzit-button-background: #0078d4;
-  --tikzit-button-disabledBackground: #f3f2f1;
-  --tikzit-button-disabledForeground: #a19f9d;
+  --tikzit-button-background: #0e639c;
+  --tikzit-button-disabledBackground: #cccccc26;
+  --tikzit-button-disabledForeground: #cccccc80;
   --tikzit-button-foreground: #ffffff;
-  --tikzit-button-hoverBackground: #106ebe;
+  --tikzit-button-hoverBackground: #1177bb;
   --tikzit-button-hoverForeground: #ffffff;
   
   /* Dropdown variables */
-  --tikzit-dropdown-background: #ffffff;
-  --tikzit-dropdown-border: #cecece;
+  --tikzit-dropdown-background: #3c3c3c;
+  --tikzit-dropdown-border: #3c3c3c;
   
   /* Editor variables */
-  --tikzit-editor-background: #ffffff;
-  --tikzit-editorCodeLens-foreground: #919191;
+  --tikzit-editor-background: #1e1e1e;
+  --tikzit-editorCodeLens-foreground: #999999;
   --tikzit-editor-font-family: 'Consolas', 'Courier New', monospace;
   --tikzit-editor-font-size: 14px;
-  --tikzit-editor-foreground: #000000;
-  --tikzit-editor-selectionBackground: #add6ff;
-  --tikzit-editor-selectionForeground: #000000;
+  --tikzit-editor-foreground: #d4d4d4;
+  --tikzit-editor-selectionBackground: #264f78;
+  --tikzit-editor-selectionForeground: #ffffff;
   
   /* General variables */
-  --tikzit-errorForeground: #e51400;
-  --tikzit-focusBorder: #0078d4;
-  --tikzit-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  --tikzit-foreground: #323130;
+  --tikzit-errorForeground: #f14c4c;
+  --tikzit-focusBorder: #007fd4;
+  --tikzit-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --tikzit-foreground: #cccccc;
   
   /* Input variables */
-  --tikzit-input-background: #ffffff;
-  --tikzit-input-border: #cecece;
-  --tikzit-input-foreground: #323130;
+  --tikzit-input-background: #3c3c3c;
+  --tikzit-input-border: #3c3c3c;
+  --tikzit-input-foreground: #cccccc;
   
   /* Keybinding label variables */
-  --tikzit-keybindingLabel-background: #dddddd;
-  --tikzit-keybindingLabel-border: #cecece;
-  --tikzit-keybindingLabel-foreground: #323130;
+  --tikzit-keybindingLabel-background: #8080802b;
+  --tikzit-keybindingLabel-border: #33333399;
+  --tikzit-keybindingLabel-foreground: #cccccc;
   
   /* Panel variables */
-  --tikzit-panel-border: #e5e5e5;
+  --tikzit-panel-border: #80808059;
   
   /* Sash variables */
-  --tikzit-sash-border: #e5e5e5;
-  --tikzit-sash-hoverBorder: #0078d4;
+  --tikzit-sash-border: transparent;
+  --tikzit-sash-hoverBorder: #007fd4;
 }
