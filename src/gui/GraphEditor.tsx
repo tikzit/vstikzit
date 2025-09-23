@@ -703,8 +703,8 @@ const GraphEditor = ({
     <div
       id="graph-editor-viewport"
       style={{
-        height: "100%",
-        maxHeight: "calc(100vh - 50px)", // Limit to viewport height minus toolbar and margins
+        height: "calc(100% - 50px)",
+        maxHeight: "calc(100% - 50px)",
         overflowX: "scroll",
         overflowY: "scroll",
       }}

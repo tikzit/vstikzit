@@ -5,6 +5,8 @@ import "./defaultvars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
+import Splitpane from "./Splitpane";
+import CodeEditor from "./CodeEditor";
 
 class TikzitBrowserHost implements TikzitHost {
   private tikzUpdatedHandler: ((source: string) => void) | undefined = undefined;
@@ -31,7 +33,13 @@ class TikzitBrowserHost implements TikzitHost {
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {
-      render(<TikzEditor initialContent={initialContent} host={this} />, container);
+      render(
+        <Splitpane splitRatio={0.7} orientation="vertical">
+          <TikzEditor initialContent={initialContent} host={this} />
+          <CodeEditor />
+        </Splitpane>,
+        container
+      );
     } catch (error) {
       console.error("Error rendering TikzEditor:", error);
       container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;

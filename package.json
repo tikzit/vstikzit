@@ -117,7 +117,7 @@
       },
       {
         "language": "tikzstyles",
-        "scopeName": "text.tex.tikz", 
+        "scopeName": "text.tex.tikz",
         "path": "./tikz.tmGrammar.json"
       },
       {
@@ -168,6 +168,7 @@
   "dependencies": {
     "@preact/preset-vite": "^2.10.2",
     "chevrotain": "^11.0.3",
+    "monaco-editor": "^0.53.0",
     "preact": "^10.27.1"
   },
   "devDependencies": {

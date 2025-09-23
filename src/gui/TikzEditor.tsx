@@ -213,7 +213,7 @@ const TikzEditor = ({ initialContent, host }: AppProps) => {
   };
 
   return (
-    <div style={{ height: "100vh", width: "100vw" }}>
+    <div style={{ height: "100%", width: "100%" }}>
       <Splitpane splitRatio={0.8} orientation="horizontal">
         <div>
           <Toolbar
