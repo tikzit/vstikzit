@@ -215,7 +215,7 @@ const TikzEditor = ({ initialContent, host }: AppProps) => {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <Splitpane splitRatio={0.8} orientation="horizontal">
-        <div>
+        <div style={{ height: "100%" }}>
           <Toolbar
             tool={tool}
             onToolChanged={t => {

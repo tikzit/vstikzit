@@ -164,7 +164,7 @@ class BaseEditorProvider {
 				</style>
 			</head>
 			<body>
-				<div id="root"></div>
+				<div id="root" style="width: 100%; height: 100%;"></div>
 				<script id="initial-content" type="application/json">${contentJson}</script>
         <script nonce="${nonce}" type="module">
         import { TikzitExtensionHost } from "${scriptUri}";
