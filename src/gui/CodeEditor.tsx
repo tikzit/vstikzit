@@ -1,15 +1,13 @@
 import { useEffect, useRef } from "preact/hooks";
-import * as monaco from "monaco-editor";
+// import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
 
 interface CodeEditorProps {
   value?: string;
   onChange?: (value: string) => void;
-  height?: string;
-  theme?: "vs" | "vs-dark" | "hc-black";
-  readOnly?: boolean;
 }
 
-const CodeEditor = ({ value = "", onChange, theme = "vs" }: CodeEditorProps) => {
+const CodeEditor = ({ value = "", onChange }: CodeEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -108,21 +106,29 @@ const CodeEditor = ({ value = "", onChange, theme = "vs" }: CodeEditorProps) => 
         },
       });
 
-      // Define LaTeX theme colors
-      monaco.editor.defineTheme("latex-theme", {
+      // Define LaTeX theme colors - Catppuccin Latte
+      monaco.editor.defineTheme("catppucchin-latte", {
         base: "vs",
         inherit: true,
         rules: [
-          { token: "comment", foreground: "008000" },
-          { token: "keyword", foreground: "0000ff", fontStyle: "bold" },
-          { token: "string", foreground: "a31515" },
-          { token: "variable.name", foreground: "800080" },
-          { token: "number", foreground: "098658" },
-          { token: "delimiter.bracket", foreground: "000000", fontStyle: "bold" },
-          { token: "delimiter.square", foreground: "000000", fontStyle: "bold" },
+          { token: "comment", foreground: "6c6f85" }, // Surface2
+          { token: "keyword", foreground: "1e66f5", fontStyle: "bold" }, // Blue
+          { token: "string", foreground: "40a02b" }, // Green
+          { token: "variable.name", foreground: "8839ef" }, // Mauve
+          { token: "number", foreground: "fe640b" }, // Peach
+          { token: "delimiter.bracket", foreground: "4c4f69", fontStyle: "bold" }, // Text
+          { token: "delimiter.square", foreground: "4c4f69", fontStyle: "bold" }, // Text
         ],
         colors: {
-          "editor.background": "#ffffff",
+          "editor.background": "#eff1f5", // Base
+          "editor.foreground": "#4c4f69", // Text
+          "editorLineNumber.foreground": "#9ca0b0", // Surface1
+          "editorLineNumber.activeForeground": "#4c4f69", // Text
+          "editor.selectionBackground": "#acb0be40", // Surface0 with opacity
+          "editor.selectionHighlightBackground": "#bcc0cc40", // Overlay0 with opacity
+          "editorCursor.foreground": "#dc8a78", // Rosewater
+          "editor.findMatchBackground": "#df8e1d40", // Yellow with opacity
+          "editor.findMatchHighlightBackground": "#df8e1d20", // Yellow with less opacity
         },
       });
     }
@@ -131,7 +137,7 @@ const CodeEditor = ({ value = "", onChange, theme = "vs" }: CodeEditorProps) => 
     const editor = monaco.editor.create(editorRef.current, {
       value,
       language: "latex",
-      theme: theme === "vs" ? "latex-theme" : theme,
+      theme: "catppucchin-latte",
       automaticLayout: true,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
@@ -163,13 +169,6 @@ const CodeEditor = ({ value = "", onChange, theme = "vs" }: CodeEditorProps) => 
       monacoEditorRef.current.setValue(value);
     }
   }, [value]);
-
-  // Update editor theme when prop changes
-  useEffect(() => {
-    if (monacoEditorRef.current) {
-      monaco.editor.setTheme(theme === "vs" ? "latex-theme" : theme);
-    }
-  }, [theme]);
 
   return (
     <div
