@@ -65,6 +65,13 @@ export default defineConfig(({ mode }) => {
         outDir: "dist",
         emptyOutDir: false,
         assetsInlineLimit: 16384,
+        rollupOptions: {
+          output: {
+            entryFileNames: `assets/[name].js`,
+            chunkFileNames: `assets/[name].js`,
+            assetFileNames: `assets/[name].[ext]`,
+          },
+        },
       },
       assetsInclude: ["**/*.svg"],
       plugins: [preact()],
