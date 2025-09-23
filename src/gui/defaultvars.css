@@ -1,53 +1,54 @@
-/* TikZit CSS Variables - default dark theme values */
+/* TikZit CSS Variables - Catppuccin Latte theme colors */
+/* Using the beautiful Catppuccin Latte color palette */
 :root {
   /* Background color for the main application window */
-  --tikzit-background: #1e1e1e;
+  --tikzit-background: #eff1f5;
 
   /* Links */
-  --tikzit-link-foreground: #3794ff;
-  --tikzit-link-activeForeground: #4daafc;
+  --tikzit-link-foreground: #1e66f5;
+  --tikzit-link-activeForeground: #04a5e5;
 
   /* Button variables */
-  --tikzit-button-background: #0e639c;
-  --tikzit-button-disabledBackground: #cccccc26;
-  --tikzit-button-disabledForeground: #cccccc80;
-  --tikzit-button-foreground: #ffffff;
-  --tikzit-button-hoverBackground: #1177bb;
-  --tikzit-button-hoverForeground: #ffffff;
+  --tikzit-button-background: #1e66f5;
+  --tikzit-button-disabledBackground: #ccd0da;
+  --tikzit-button-disabledForeground: #9ca0b0;
+  --tikzit-button-foreground: #eff1f5;
+  --tikzit-button-hoverBackground: #04a5e5;
+  --tikzit-button-hoverForeground: #eff1f5;
   
   /* Dropdown variables */
-  --tikzit-dropdown-background: #3c3c3c;
-  --tikzit-dropdown-border: #3c3c3c;
+  --tikzit-dropdown-background: #e6e9ef;
+  --tikzit-dropdown-border: #acb0be;
   
   /* Editor variables */
-  --tikzit-editor-background: #1e1e1e;
-  --tikzit-editorCodeLens-foreground: #999999;
+  --tikzit-editor-background: #eff1f5;
+  --tikzit-editorCodeLens-foreground: #9ca0b0;
   --tikzit-editor-font-family: 'Consolas', 'Courier New', monospace;
   --tikzit-editor-font-size: 14px;
-  --tikzit-editor-foreground: #d4d4d4;
-  --tikzit-editor-selectionBackground: #264f78;
-  --tikzit-editor-selectionForeground: #ffffff;
+  --tikzit-editor-foreground: #4c4f69;
+  --tikzit-editor-selectionBackground: #dce0e8;
+  --tikzit-editor-selectionForeground: inherit;
   
   /* General variables */
-  --tikzit-errorForeground: #f14c4c;
-  --tikzit-focusBorder: #007fd4;
-  --tikzit-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --tikzit-foreground: #cccccc;
+  --tikzit-errorForeground: #d20f39;
+  --tikzit-focusBorder: #1e66f5;
+  --tikzit-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  --tikzit-foreground: #4c4f69;
   
   /* Input variables */
-  --tikzit-input-background: #3c3c3c;
-  --tikzit-input-border: #3c3c3c;
-  --tikzit-input-foreground: #cccccc;
+  --tikzit-input-background: #e6e9ef;
+  --tikzit-input-border: #acb0be;
+  --tikzit-input-foreground: #4c4f69;
   
   /* Keybinding label variables */
-  --tikzit-keybindingLabel-background: #8080802b;
-  --tikzit-keybindingLabel-border: #33333399;
-  --tikzit-keybindingLabel-foreground: #cccccc;
+  --tikzit-keybindingLabel-background: #dce0e8;
+  --tikzit-keybindingLabel-border: #bcc0cc;
+  --tikzit-keybindingLabel-foreground: #6c6f85;
   
   /* Panel variables */
-  --tikzit-panel-border: #80808059;
+  --tikzit-panel-border: #ccd0da;
   
   /* Sash variables */
   --tikzit-sash-border: transparent;
-  --tikzit-sash-hoverBorder: #007fd4;
+  --tikzit-sash-hoverBorder: #1e66f5;
 }
