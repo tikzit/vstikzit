@@ -180,11 +180,11 @@ export function computeControlPoints(
     const style = tikzStyles.style(sourceData.property("style"));
     if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
       // compute intersection with rectangle
-      const offset = polygonOffset(outAngle, Math.PI / 4, 4, 0.225);
+      const offset = polygonOffset(outAngle, Math.PI / 4, 4, 0.2);
       c1 = c1.shift(offset.x, offset.y);
     } else {
       // default to circle
-      c1 = c1.shift(Math.cos(outAngle) * 0.225, Math.sin(outAngle) * 0.225);
+      c1 = c1.shift(Math.cos(outAngle) * 0.2, Math.sin(outAngle) * 0.2);
     }
   }
 
@@ -192,11 +192,11 @@ export function computeControlPoints(
     const style = tikzStyles.style(targetData.property("style"));
     if ((style.property("tikzit shape") ?? style.property("shape")) === "rectangle") {
       // compute intersection with rectangle
-      const offset = polygonOffset(inAngle, Math.PI / 4, 4, 0.225);
+      const offset = polygonOffset(inAngle, Math.PI / 4, 4, 0.2);
       c2 = c2.shift(offset.x, offset.y);
     } else {
       // default to circle
-      c2 = c2.shift(Math.cos(inAngle) * 0.225, Math.sin(inAngle) * 0.225);
+      c2 = c2.shift(Math.cos(inAngle) * 0.2, Math.sin(inAngle) * 0.2);
     }
   }
 
