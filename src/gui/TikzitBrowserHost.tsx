@@ -20,12 +20,14 @@ class TikzitBrowserHost implements TikzitHost {
   public setErrors(errors: ParseError[]) { }
 
   public updateFromGui(tikz: string) {
+    // console.log("updateFromGui: ", this.updateFromGuiHandler !== undefined);
     if (this.updateFromGuiHandler) {
       this.updateFromGuiHandler(tikz);
     }
   }
 
   public updateToGui(tikz: string) {
+    // console.log("updateToGui: ", this.updateToGuiHandler !== undefined);
     if (this.updateToGuiHandler) {
       this.updateToGuiHandler(tikz);
     }
@@ -36,7 +38,7 @@ class TikzitBrowserHost implements TikzitHost {
   }
 
   public onUpdateToGui(handler: (source: string) => void) {
-    this.updateFromGuiHandler = handler;
+    this.updateToGuiHandler = handler;
   }
 
   public refreshTikzStyles() { }

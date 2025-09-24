@@ -14,16 +14,16 @@ interface AppProps {
 
 const App = ({ initialContent, host }: AppProps) => {
   const [code, setCode] = useState<string>(initialContent.document);
+  const [initialCode, resetCode] = useState<string>(initialContent.document);
 
   useEffect(() => {
     host.onUpdateFromGui(source => {
-      console.log("App: source updated");
-      // setCode(source);
+      setCode(source);
+      resetCode(source);
     });
-  }, [host, setCode]);
+  }, [host, setCode, resetCode]);
 
   const handleCodeChange = (newCode: string) => {
-    console.log("App: code changed");
     setCode(newCode);
     host.updateToGui(newCode);
   };
@@ -31,7 +31,7 @@ const App = ({ initialContent, host }: AppProps) => {
   return (
     <Splitpane splitRatio={0.7} orientation="vertical">
       <TikzEditor initialContent={initialContent} host={host} />
-      <CodeEditor value={code} />
+      <CodeEditor value={initialCode} onChange={handleCodeChange} />
     </Splitpane>);
 };
 
