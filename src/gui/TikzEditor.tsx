@@ -21,12 +21,12 @@ interface TikzEditorContent {
   styles: string;
 }
 
-interface AppProps {
+interface TikzEditorProps {
   initialContent: TikzEditorContent;
   host: TikzitHost;
 }
 
-const TikzEditor = ({ initialContent, host }: AppProps) => {
+const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   const parsed = parseTikzPicture(initialContent.document);
   const [graph, setGraph] = useState<Graph>(parsed.result ?? new Graph());
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
@@ -47,7 +47,7 @@ const TikzEditor = ({ initialContent, host }: AppProps) => {
   );
 
   useEffect(() => {
-    host.onSourceUpdated(source => {
+    host.onUpdateToGui(source => {
       tryParseGraph(source);
     });
 
@@ -69,7 +69,7 @@ const TikzEditor = ({ initialContent, host }: AppProps) => {
 
   const updateFromGui = (tikz: string) => {
     if (enabled) {
-      host.updateSource(tikz);
+      host.updateFromGui(tikz);
     }
   };
 

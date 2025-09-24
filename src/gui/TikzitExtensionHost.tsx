@@ -12,7 +12,7 @@ declare const acquireVsCodeApi: () => any;
 class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
-  private tikzUpdatedHandler: ((source: string) => void) | undefined = undefined;
+  private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
   constructor() {
@@ -21,8 +21,8 @@ class TikzitExtensionHost implements TikzitHost {
       const message = event.data;
       switch (message.type) {
         case "updateToGui": {
-          if (message.content && this.tikzUpdatedHandler) {
-            this.tikzUpdatedHandler(message.content);
+          if (message.content && this.updateToGuiHandler) {
+            this.updateToGuiHandler(message.content);
           }
           break;
         }
@@ -42,8 +42,8 @@ class TikzitExtensionHost implements TikzitHost {
     window.removeEventListener("message", this.listener!);
   }
 
-  public onSourceUpdated(handler: (source: string) => void) {
-    this.tikzUpdatedHandler = handler;
+  public onUpdateToGui(handler: (source: string) => void) {
+    this.updateToGuiHandler = handler;
   }
 
   public onTikzStylesUpdated(handler: (filename: string, source: string) => void) {
@@ -61,7 +61,7 @@ class TikzitExtensionHost implements TikzitHost {
     });
   }
 
-  public updateSource(tikz: string) {
+  public updateFromGui(tikz: string) {
     this.vscode.postMessage({
       type: "updateFromGui",
       content: tikz,

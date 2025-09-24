@@ -1,45 +1,53 @@
 import { render } from "preact";
-import TikzEditor, { TikzEditorContent } from "./TikzEditor";
+import { TikzEditorContent } from "./TikzEditor";
 import StyleEditor, { StyleEditorContent } from "./StyleEditor";
 import "./defaultvars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
-import Splitpane from "./Splitpane";
-import CodeEditor from "./CodeEditor";
+import App from "./App";
 
 class TikzitBrowserHost implements TikzitHost {
-  private tikzUpdatedHandler: ((source: string) => void) | undefined = undefined;
+  private updateFromGuiHandler: ((source: string) => void) | undefined = undefined;
+  private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
-
-  public onSourceUpdated(handler: (source: string) => void) {
-    this.tikzUpdatedHandler = handler;
-  }
 
   public onTikzStylesUpdated(handler: (filename: string, source: string) => void) {
     this.tikzStylesUpdatedHandler = handler;
   }
 
-  public setErrors(errors: ParseError[]) {}
+  public setErrors(errors: ParseError[]) { }
 
-  public updateSource(tikz: string) {}
+  public updateFromGui(tikz: string) {
+    if (this.updateFromGuiHandler) {
+      this.updateFromGuiHandler(tikz);
+    }
+  }
 
-  public refreshTikzStyles() {}
+  public updateToGui(tikz: string) {
+    if (this.updateToGuiHandler) {
+      this.updateToGuiHandler(tikz);
+    }
+  }
 
-  public openTikzStyles() {}
+  public onUpdateFromGui(handler: (tikz: string) => void) {
+    this.updateFromGuiHandler = handler;
+  }
 
-  public openCodeEditor(position?: { line: number; column: number }) {}
+  public onUpdateToGui(handler: (source: string) => void) {
+    this.updateFromGuiHandler = handler;
+  }
+
+  public refreshTikzStyles() { }
+
+  public openTikzStyles() { }
+
+  public openCodeEditor(position?: { line: number; column: number }) { }
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {
-      render(
-        <Splitpane splitRatio={0.7} orientation="vertical">
-          <TikzEditor initialContent={initialContent} host={this} />
-          <CodeEditor />
-        </Splitpane>,
-        container
-      );
+      render(<App initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering TikzEditor:", error);
       container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;

@@ -495,25 +495,19 @@ class Graph {
    * has been re-parsed.
    */
   public inheritDataFrom(other: Graph) {
-    let keys = Array.from(this._nodeData.keys());
-    for (const key of keys) {
-      const d = other._nodeData.get(key)!;
+    for (const [key, d] of other._nodeData.entries()) {
       if (this._nodeData.get(key)?.equals(d)) {
         this._nodeData.set(key, d);
       }
     }
 
-    keys = Array.from(this._edgeData.keys());
-    for (const key of keys) {
-      const d = other._edgeData.get(key)!;
+    for (const [key, d] of other._edgeData.entries()) {
       if (this._edgeData.get(key)?.equals(d)) {
         this._edgeData.set(key, d);
       }
     }
 
-    keys = Array.from(this._pathData.keys());
-    for (const key of keys) {
-      const d = other._pathData.get(key)!;
+    for (const [key, d] of other._pathData.entries()) {
       if (this._pathData.get(key)?.equals(d)) {
         this._pathData.set(key, d);
       }

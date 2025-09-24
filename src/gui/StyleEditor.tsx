@@ -50,12 +50,12 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
 
   const updateFromGui = (tikz: string) => {
     if (enabled) {
-      host.updateSource(tikz);
+      host.updateFromGui(tikz);
     }
   };
 
   useEffect(() => {
-    host.onSourceUpdated(source => {
+    host.onUpdateToGui(source => {
       tryParseStyles(source);
     });
   });
@@ -179,7 +179,7 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
           currentNodeLabel={undefined}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => {}}
+          onCurrentNodeLabelChanged={() => { }}
           onNodeStyleChanged={handleCurrentStyleChange}
           onEdgeStyleChanged={handleCurrentStyleChange}
           editMode={true}
