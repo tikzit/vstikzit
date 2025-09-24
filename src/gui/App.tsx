@@ -14,14 +14,18 @@ interface AppProps {
 
 const App = ({ initialContent, host }: AppProps) => {
   const [code, setCode] = useState<string>(initialContent.document);
-  const [initialCode, resetCode] = useState<string>(initialContent.document);
+  const [initialCode, setInitialCode] = useState<string>(initialContent.document);
+
+  const resetCode = (newCode: string) => {
+    setInitialCode(newCode);
+    setCode(newCode);
+  }
 
   useEffect(() => {
     host.onUpdateFromGui(source => {
-      setCode(source);
       resetCode(source);
     });
-  }, [host, setCode, resetCode]);
+  }, [host, resetCode]);
 
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);
