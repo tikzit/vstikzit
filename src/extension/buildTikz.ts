@@ -262,20 +262,19 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
       const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
       statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: 0/${figuresToRebuild.length}`;
       statusBarItem.show();
-      await Promise.all(
-        figuresToRebuild.map(file =>
-          buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
-            async () => {
-              figuresBuilt += 1;
-              await cleanAuxFiles(file, workspaceRoot);
-              statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
-            },
-            () => {
-              errorFiles.push(path.basename(file, ".tikz"));
-            }
-          )
-        )
-      );
+
+      for (const file of figuresToRebuild) {
+        await buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
+          async () => {
+            figuresBuilt += 1;
+            await cleanAuxFiles(file, workspaceRoot);
+            statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
+          },
+          () => {
+            errorFiles.push(path.basename(file, ".tikz"));
+          }
+        );
+      }
 
       statusBarItem.dispose();
 
