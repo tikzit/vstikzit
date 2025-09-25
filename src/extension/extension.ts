@@ -52,7 +52,6 @@ function activate(context: vscode.ExtensionContext): void {
     )
   );
 
-
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.buildCurrentTikzFigure", () =>
       buildCurrentTikzFigure(false)
@@ -77,8 +76,14 @@ function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("vstikzit.syncTikzFiguresSVG", syncTikzFiguresSVG)
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.stopSyncingTikzFigures", stopSyncTikzFigures)
+  );
+
   context.subscriptions.push(vscode.commands.registerCommand("vstikzit.showError", showError));
-  context.subscriptions.push(vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor));
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor)
+  );
 }
 
 async function showError(uri: string, line?: number, column?: number): Promise<void> {

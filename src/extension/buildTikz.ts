@@ -264,6 +264,9 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
       statusBarItem.show();
 
       for (const file of figuresToRebuild) {
+        if ((svg && tikzFigureSVGWatcher) || (!svg && tikzFigureWatcher)) {
+          break;
+        }
         await buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
           async () => {
             figuresBuilt += 1;

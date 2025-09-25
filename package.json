@@ -51,6 +51,11 @@
         "command": "vstikzit.openTikzEditor",
         "title": "Open TikZ Editor",
         "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.stopSyncingTikzFigures",
+        "title": "Stop Syncing TikZ Figures",
+        "category": "TikZiT"
       }
     ],
     "keybindings": [
