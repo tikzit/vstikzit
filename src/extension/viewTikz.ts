@@ -13,7 +13,7 @@ async function viewCurrentTikzFigure(): Promise<void> {
 
   const baseName = path.basename(document.uri.fsPath, ".tikz");
   const pdfFile = baseName !== undefined ? baseName + ".pdf" : "tikzfigure.pdf";
-  const pdfPath = vscode.Uri.joinPath(workspaceRoot, "tikzcache", pdfFile);
+  const pdfPath = vscode.Uri.joinPath(workspaceRoot, "cache", pdfFile);
 
   // if the PDF file at pdfPath exists, open it
   try {

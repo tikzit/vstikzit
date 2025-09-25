@@ -7,13 +7,13 @@ import { stat } from "fs";
 async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
   let tikzIncludes = "";
 
-  // create tikzcache folder in workspaceRoot, if it doesn't exist
-  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(workspaceRoot, "tikzcache"));
+  // create tikz cache folder in workspaceRoot, if it doesn't exist
+  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(workspaceRoot, "cache"));
 
   const cp = (f: string): Thenable<void> => {
     return vscode.workspace.fs.copy(
       vscode.Uri.joinPath(workspaceRoot, f),
-      vscode.Uri.joinPath(workspaceRoot, "tikzcache", f),
+      vscode.Uri.joinPath(workspaceRoot, "cache", f),
       { overwrite: true }
     );
   };
@@ -49,11 +49,11 @@ async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
 
 async function cleanBuildDir(workspaceRoot: vscode.Uri): Promise<void> {
   const files = await vscode.workspace.fs.readDirectory(
-    vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+    vscode.Uri.joinPath(workspaceRoot, "cache")
   );
   for (const f of files) {
     if (f[0].endsWith(".sty") || f[0].endsWith(".tikzstyles") || f[0].endsWith(".tikzdefs")) {
-      await vscode.workspace.fs.delete(vscode.Uri.joinPath(workspaceRoot, "tikzcache", f[0]), {
+      await vscode.workspace.fs.delete(vscode.Uri.joinPath(workspaceRoot, "cache", f[0]), {
         useTrash: false,
       });
     }
@@ -66,7 +66,7 @@ async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promi
   for (const ext of [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf", ".tmp.svg"]) {
     try {
       await vscode.workspace.fs.delete(
-        vscode.Uri.joinPath(vscode.Uri.joinPath(workspaceRoot, "tikzcache"), baseName + ext)
+        vscode.Uri.joinPath(vscode.Uri.joinPath(workspaceRoot, "cache"), baseName + ext)
       );
     } catch (error) {
       // file probably doesn't exist, so just ignore the error
@@ -97,7 +97,7 @@ async function buildTikz(
   svg: boolean = false
 ): Promise<number> {
   // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}, svg = ${svg}`);
-  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
+  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "cache");
   // if source is null, load it from the file
   if (!source) {
     try {
@@ -192,7 +192,7 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
         vscode.window.showErrorMessage(`build exited with error ${error}`);
         const baseName = path.basename(document.uri.fsPath, ".tikz") ?? "tikzfigure";
         const logFile = baseName + ".tmp.log";
-        vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "tikzcache", logFile));
+        vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "cache", logFile));
       }
     );
   } catch (error) {
@@ -206,7 +206,7 @@ async function getTikzFiguresToRebuild(
   svg: boolean = false
 ): Promise<string[]> {
   const figuresFolder = vscode.Uri.joinPath(workspaceRoot, "figures");
-  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "tikzcache");
+  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "cache");
   const outExt = svg ? ".svg" : ".pdf";
 
   // Get all files in the figures folder
