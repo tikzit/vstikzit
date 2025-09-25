@@ -164,7 +164,7 @@
     "preview": "concurrently \"vite build --mode browser --watch\" \"vite preview\"",
     "test": "mocha dist/tests.js",
     "pretest": "npm run build-test",
-    "package": "rm -r -f dist && vite build && vite build --mode extension && vsce package",
+    "package": "rm -r -f dist && vite build --mode webview && vite build --mode extension && vsce package",
     "analyze": "vite-bundle-analyzer"
   },
   "dependencies": {
