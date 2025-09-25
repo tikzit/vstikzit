@@ -155,7 +155,6 @@ async function buildTikz(
       outContent
     );
 
-    await cleanBuildDir(workspaceRoot);
     return 0;
   } catch (err) {
     if (typeof err === "number") {
@@ -186,6 +185,7 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
     buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes, svg).then(
       async (_: number) => {
         await cleanAuxFiles(document.uri.fsPath, workspaceRoot);
+        await cleanBuildDir(workspaceRoot);
         statusBarItem.dispose();
       },
       error => {
@@ -246,7 +246,14 @@ async function getTikzFiguresToRebuild(
   return files;
 }
 
+// used to prevent multiple simultaneous rebuilds and exit early if set to false while a rebuild is ongoing
+let rebuildingTikzFigures = false;
+
 async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
+  if (rebuildingTikzFigures) {
+    return;
+  }
+  rebuildingTikzFigures = true;
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     return;
@@ -263,22 +270,30 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
       statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: 0/${figuresToRebuild.length}`;
       statusBarItem.show();
 
-      for (const file of figuresToRebuild) {
-        if (
-          (svg && tikzFigureSVGWatcher === undefined) ||
-          (!svg && tikzFigureWatcher === undefined)
-        ) {
+      // Split figuresToRebuild into chunks of at most 10
+      const chunkSize = 10;
+      const chunks = [];
+      for (let i = 0; i < figuresToRebuild.length; i += chunkSize) {
+        chunks.push(figuresToRebuild.slice(i, i + chunkSize));
+      }
+
+      for (const chunk of chunks) {
+        if (!rebuildingTikzFigures) {
           break;
         }
-        await buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
-          async () => {
-            figuresBuilt += 1;
-            await cleanAuxFiles(file, workspaceRoot);
-            statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
-          },
-          () => {
-            errorFiles.push(path.basename(file, ".tikz"));
-          }
+        await Promise.all(
+          chunk.map(file =>
+            buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
+              async () => {
+                figuresBuilt += 1;
+                await cleanAuxFiles(file, workspaceRoot);
+                statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
+              },
+              () => {
+                errorFiles.push(path.basename(file, ".tikz"));
+              }
+            )
+          )
         );
       }
 
@@ -294,16 +309,17 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
       await cleanBuildDir(workspaceRoot);
     }
   }
+  rebuildingTikzFigures = false;
 }
 
 let tikzFigureWatcher: vscode.FileSystemWatcher | undefined = undefined;
 let tikzFigureSVGWatcher: vscode.FileSystemWatcher | undefined = undefined;
 
 async function syncTikzFigures(): Promise<void> {
+  stopSyncTikzFigures();
   await rebuildTikzFigures();
 
   // listen for changes in any .tikz file in the figures folder and call rebuildTikzFigures when needed
-  stopSyncTikzFigures();
   tikzFigureWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
   tikzFigureWatcher.onDidChange(() => {
     rebuildTikzFigures();
@@ -311,10 +327,10 @@ async function syncTikzFigures(): Promise<void> {
 }
 
 async function syncTikzFiguresSVG(): Promise<void> {
-  await rebuildTikzFigures(true);
-
   // listen for changes in any .tikz file in the figures folder and call rebuildTikzFigures when needed
   stopSyncTikzFigures();
+  await rebuildTikzFigures(true);
+
   tikzFigureSVGWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
   tikzFigureSVGWatcher.onDidChange(() => {
     rebuildTikzFigures(true);
@@ -330,6 +346,7 @@ async function stopSyncTikzFigures(): Promise<void> {
     tikzFigureSVGWatcher.dispose();
     tikzFigureSVGWatcher = undefined;
   }
+  rebuildingTikzFigures = false;
 }
 
 export { buildCurrentTikzFigure, syncTikzFigures, syncTikzFiguresSVG, stopSyncTikzFigures };
