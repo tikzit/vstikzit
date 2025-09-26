@@ -239,6 +239,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
           />
         </div>
         <StylePanel
+          host={host}
           tikzStyles={tikzStyles}
           editMode={false}
           error={tikzStylesError}

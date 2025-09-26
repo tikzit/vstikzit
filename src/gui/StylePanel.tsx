@@ -5,8 +5,10 @@ import Node from "./Node";
 import Edge from "./Edge";
 import { isValidDelimString } from "../lib/TikzParser";
 import { JSX } from "preact";
+import TikzitHost from "../lib/TikzitHost";
 
 interface StylePanelProps {
+  host: TikzitHost;
   tikzStyles: Styles;
   editMode: boolean;
   error: boolean;
@@ -21,6 +23,7 @@ interface StylePanelProps {
 }
 
 const StylePanel = ({
+  host,
   tikzStyles,
   editMode,
   error,
@@ -30,8 +33,6 @@ const StylePanel = ({
   onEdgeStyleChanged: setEdgeStyle,
   currentNodeLabel,
   onCurrentNodeLabelChanged: setCurrentNodeLabel,
-  onEditStyles,
-  onRefreshStyles,
 }: StylePanelProps) => {
   const sceneCoords = new SceneCoords()
     .setZoom(0)
@@ -102,10 +103,10 @@ const StylePanel = ({
             <i style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
               [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
             </i>
-            <a href="#" title="Edit styles" onClick={onEditStyles}>
+            <a href="#" title="Edit styles" onClick={(e) => { e.preventDefault(); host.openTikzStyles(); }}>
               &#9998;
             </a>
-            <a href="#" title="Refresh styles" onClick={onRefreshStyles}>
+            <a href="#" title="Refresh styles" onClick={(e) => { e.preventDefault(); host.refreshTikzStyles(); }}>
               &#10227;
             </a>
           </div>

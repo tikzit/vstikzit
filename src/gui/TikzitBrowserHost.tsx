@@ -12,9 +12,19 @@ class TikzitBrowserHost implements TikzitHost {
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
-
   public onTikzStylesUpdated(handler: (filename: string, source: string) => void) {
     this.tikzStylesUpdatedHandler = handler;
+  }
+
+  // communication with style panel
+  private valueChangedHandler: ((key: string, value: string, apply: boolean) => void) | undefined =
+    undefined;
+  public setValue(key: string, value: string, apply: boolean): void {
+    this.valueChangedHandler?.(key, value, apply);
+  }
+
+  public onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void {
+    this.valueChangedHandler = handler;
   }
 
   public setErrors(errors: ParseError[]) { }

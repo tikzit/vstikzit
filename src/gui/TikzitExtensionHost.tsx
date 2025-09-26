@@ -13,6 +13,18 @@ class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
+
+  // communication with style panel
+  private valueChangedHandler: ((key: string, value: string, apply: boolean) => void) | undefined =
+    undefined;
+  public setValue(key: string, value: string, apply: boolean): void {
+    this.valueChangedHandler?.(key, value, apply);
+  }
+
+  public onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void {
+    this.valueChangedHandler = handler;
+  }
+
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
   constructor() {

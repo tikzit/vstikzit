@@ -117,6 +117,13 @@ class BaseEditorProvider {
       }
     });
 
+    webviewPanel.onDidChangeViewState(e => {
+      if (e.webviewPanel.active) {
+        // Refresh TikZ styles when the panel becomes active
+        this.refreshTikzStyles(webviewPanel.webview);
+      }
+    });
+
     // Clean up subscriptions when webview is disposed
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();

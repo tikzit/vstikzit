@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import { StyleEditorProvider, TikzEditorProvider, currentUri } from "./editors";
 import TikzLinkProvider from "./TikzLinkProvider";
+import { TikzExplorer } from "./TikzExplorer";
 import {
   buildCurrentTikzFigure,
   stopSyncTikzFigures,
@@ -11,6 +12,12 @@ import {
 import { viewCurrentTikzFigure } from "./viewTikz";
 
 function activate(context: vscode.ExtensionContext): void {
+  // Register the TikZ Explorer tree data provider
+  const tikzExplorer = new TikzExplorer();
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider('tikzitExplorer', tikzExplorer)
+  );
+
   // register the custom tikz editor
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(

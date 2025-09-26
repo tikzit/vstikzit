@@ -152,7 +152,25 @@
         ],
         "priority": "default"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tikzit",
+          "title": "TikZiT",
+          "icon": "images/tikzit-mono.svg"
+        }
+      ]
+    },
+    "views": {
+      "tikzit": [
+        {
+          "id": "tikzitExplorer",
+          "name": "TikZ Files",
+          "icon": "$(file-text)"
+        }
+      ]
+    }
   },
   "scripts": {
     "watch": "concurrently \"vite build --mode webview --watch\" \"vite build --mode extension --watch\" \"vite build --mode test --watch\"",

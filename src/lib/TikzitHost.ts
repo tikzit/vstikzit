@@ -8,4 +8,8 @@ export default interface TikzitHost {
   refreshTikzStyles(): void;
   openTikzStyles(): void;
   openCodeEditor(position?: { line: number; column: number }): void;
+
+  // communication with style panel
+  setValue(key: string, value: string, apply: boolean): void;
+  onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void;
 }
