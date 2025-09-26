@@ -1,5 +1,12 @@
 import { ParseError } from "./TikzParser";
 
+interface StylePanelMessage {
+  nodeStyle?: string;
+  edgeStyle?: string;
+  nodeLabel?: string;
+  apply?: boolean;
+}
+
 export default interface TikzitHost {
   onUpdateToGui(handler: (source: string) => void): void;
   updateFromGui(tikz: string): void;
@@ -10,6 +17,8 @@ export default interface TikzitHost {
   openCodeEditor(position?: { line: number; column: number }): void;
 
   // communication with style panel
-  setValue(key: string, value: string, apply: boolean): void;
-  onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void;
+  messageToStylePanel(message: StylePanelMessage): void;
+  onMessageToStylePanel(handler: (message: StylePanelMessage) => void): void;
+  messageFromStylePanel(message: StylePanelMessage): void;
+  onMessageFromStylePanel(handler: (message: StylePanelMessage) => void): void;
 }
