@@ -1,11 +1,5 @@
+import { StylePanelState } from "../gui/StylePanel";
 import { ParseError } from "./TikzParser";
-
-export interface StylePanelMessage {
-  nodeStyle?: string;
-  edgeStyle?: string;
-  nodeLabel?: string;
-  apply?: boolean;
-}
 
 export default interface TikzitHost {
   onUpdateToGui(handler: (source: string) => void): void;
@@ -17,8 +11,8 @@ export default interface TikzitHost {
   openCodeEditor(position?: { line: number; column: number }): void;
 
   // communication with style panel
-  messageToStylePanel(message: StylePanelMessage): void;
-  onMessageToStylePanel(handler: (message: StylePanelMessage) => void): void;
-  messageFromStylePanel(message: StylePanelMessage): void;
-  onMessageFromStylePanel(handler: (message: StylePanelMessage) => void): void;
+  messageToStylePanel(message: StylePanelState): void;
+  onMessageToStylePanel(handler: (message: StylePanelState) => void): void;
+  messageFromStylePanel(message: StylePanelState): void;
+  onMessageFromStylePanel(handler: (message: StylePanelState) => void): void;
 }

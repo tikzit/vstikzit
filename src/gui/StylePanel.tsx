@@ -3,35 +3,56 @@ import SceneCoords from "../lib/SceneCoords";
 import Styles from "../lib/Styles";
 import Node from "./Node";
 import Edge from "./Edge";
-import { isValidDelimString } from "../lib/TikzParser";
+import { isValidDelimString, parseTikzStyles } from "../lib/TikzParser";
 import { JSX } from "preact";
 import TikzitHost from "../lib/TikzitHost";
+import { useEffect, useReducer, useState } from "preact/hooks";
+import { parse } from "path";
+
+interface StylePanelState {
+  nodeStyle?: string;
+  edgeStyle?: string;
+  nodeLabel?: string;
+  editMode?: boolean;
+  error?: boolean;
+  styleSource?: string;
+  styleFilename?: string;
+  apply?: boolean;
+}
 
 interface StylePanelProps {
   host: TikzitHost;
-  tikzStyles: Styles;
-  editMode: boolean;
-  error: boolean;
-  currentNodeStyle: string | undefined;
-  currentEdgeStyle: string | undefined;
-  onNodeStyleChanged: (style: string, apply: boolean) => void;
-  onEdgeStyleChanged: (style: string, apply: boolean) => void;
-  currentNodeLabel?: string | undefined;
-  onCurrentNodeLabelChanged?: (label: string) => void;
 }
 
-const StylePanel = ({
-  host,
-  tikzStyles,
-  editMode,
-  error,
-  currentNodeStyle,
-  currentEdgeStyle,
-  onNodeStyleChanged: setNodeStyle,
-  onEdgeStyleChanged: setEdgeStyle,
-  currentNodeLabel,
-  onCurrentNodeLabelChanged: setCurrentNodeLabel,
-}: StylePanelProps) => {
+const StylePanel = ({ host }: StylePanelProps) => {
+  const [state, updateState] = useReducer(
+    (s: StylePanelState, message: StylePanelState) => ({ ...s, ...message }),
+    {}
+  );
+
+  const [tikzStyles, setTikzStyles] = useState<Styles>(new Styles());
+
+  useEffect(() => {
+    host.onMessageToStylePanel(message => {
+      const newState = { ...message };
+      if (message.styleSource !== undefined) {
+        const parsed = parseTikzStyles(message.styleSource);
+        if (parsed.result !== undefined) {
+          setTikzStyles(parsed.result.setFilename(message.styleFilename ?? ""));
+          newState.error = false;
+        } else {
+          newState.error = true;
+        }
+      }
+      updateState(newState);
+    });
+  }, [host, updateState]);
+
+  const update = (message: StylePanelState) => {
+    updateState(message);
+    host.messageFromStylePanel(message);
+  };
+
   const sceneCoords = new SceneCoords()
     .setZoom(0)
     .setLeft(0.35)
@@ -70,7 +91,7 @@ const StylePanel = ({
         overflow: "hidden",
       }}
     >
-      {!editMode && (
+      {!state.editMode && (
         <>
           <div
             style={{
@@ -83,22 +104,19 @@ const StylePanel = ({
             <input
               id="label-field"
               style={{ width: "80%" }}
-              value={currentNodeLabel ?? ""}
-              onInput={e =>
-                setCurrentNodeLabel !== undefined &&
-                setCurrentNodeLabel((e.target as HTMLInputElement).value)
-              }
+              value={state.nodeLabel ?? ""}
+              onInput={e => update({ nodeLabel: (e.target as HTMLInputElement).value })}
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   document.getElementById("graph-editor")?.focus();
                 }
               }}
-              disabled={currentNodeLabel === undefined}
-              className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
+              disabled={state.nodeLabel === undefined}
+              className={isValidDelimString("{" + state.nodeLabel + "}") ? "" : "error"}
             />
           </div>
           <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
-            <i style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
+            <i style={{ color: state.error ? "var(--tikzit-errorForeground)" : "inherit" }}>
               [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
             </i>
             <a
@@ -128,7 +146,7 @@ const StylePanel = ({
       <div
         style={{
           overflow: "hidden",
-          height: editMode ? "calc(100% - 30px)" : "calc(100% - 100px)",
+          height: state.editMode ? "calc(100% - 30px)" : "calc(100% - 100px)",
           width: "100%",
         }}
       >
@@ -143,7 +161,7 @@ const StylePanel = ({
           }}
         >
           {tikzStyles.styles.map(style => {
-            if (style.isEdgeStyle || (editMode && style.name === "none")) {
+            if (style.isEdgeStyle || (state.editMode && style.name === "none")) {
               return null;
             }
             const shortName = style.name.length > 8 ? style.name.slice(0, 8) + "…" : style.name;
@@ -153,7 +171,7 @@ const StylePanel = ({
                 href="#"
                 draggable={false}
                 title={style.name}
-                onClick={e => setNodeStyle(style.name, e.detail > 1)}
+                onClick={e => update({ nodeStyle: style.name, apply: e.detail > 1 })}
                 style={{ outline: "none" }}
               >
                 <svg
@@ -161,7 +179,7 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px", borderWidth: 0 }}
                 >
-                  {currentNodeStyle === style.name && <rect {...selectionProps} />}
+                  {state.nodeStyle === style.name && <rect {...selectionProps} />}
                   <Node
                     data={node.setProperty("style", style.name)}
                     tikzStyles={tikzStyles}
@@ -185,7 +203,7 @@ const StylePanel = ({
           {tikzStyles.styles.map(style => {
             if (
               (style.name !== "none" && !style.isEdgeStyle) ||
-              (editMode && style.name === "none")
+              (state.editMode && style.name === "none")
             ) {
               return null;
             }
@@ -196,7 +214,7 @@ const StylePanel = ({
                 href="#"
                 draggable={false}
                 title={style.name}
-                onClick={e => setEdgeStyle(style.name, e.detail > 1)}
+                onClick={e => update({ edgeStyle: style.name, apply: e.detail > 1 })}
                 style={{ outline: "none" }}
               >
                 <svg
@@ -204,7 +222,7 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px" }}
                 >
-                  {currentEdgeStyle === style.name && <rect {...selectionProps} />}
+                  {state.edgeStyle === style.name && <rect {...selectionProps} />}
                   <Edge
                     data={edge.setProperty("style", style.name)}
                     sourceData={enode1}
@@ -224,3 +242,4 @@ const StylePanel = ({
 };
 
 export default StylePanel;
+export { StylePanelState };

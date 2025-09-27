@@ -32,7 +32,6 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
   const [parseErrors, setParseErrors] = useState<ParseError[]>(parsed.errors);
   const [tool, setTool] = useState<GraphTool>("select");
-  const [currentNodeLabel, setCurrentNodeLabel] = useState<string | undefined>(undefined);
   const [currentNodeStyle, setCurrentNodeStyle] = useState<string>("none");
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(new Set());
@@ -42,9 +41,6 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   const [tikzStyles, setTikzStyles] = useState<Styles>(
     (parsedStyles.result ?? new Styles()).setFilename(initialContent.styleFile)
   );
-  const [tikzStylesError, setTikzStylesError] = useState<boolean>(
-    parsedStyles.result === undefined
-  );
 
   useEffect(() => {
     host.onUpdateToGui(source => {
@@ -52,14 +48,33 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
     });
 
     host.onTikzStylesUpdated((filename, source) => {
+      host.messageToStylePanel({ styleSource: source, styleFilename: filename });
       const parsed = parseTikzStyles(source);
       if (parsed.result !== undefined) {
         const s = parsed.result.setFilename(filename);
         setTikzStyles(s);
-        setTikzStylesError(false);
-      } else {
-        setTikzStylesError(true);
       }
+    });
+
+    host.onMessageFromStylePanel(message => {
+      if (message.nodeStyle !== undefined) {
+        handleNodeStyleChanged(message.nodeStyle, message.apply ?? false);
+      }
+
+      if (message.edgeStyle !== undefined) {
+        handleEdgeStyleChanged(message.edgeStyle, message.apply ?? false);
+      }
+
+      if (message.nodeLabel !== undefined) {
+        handleCurrentNodeLabelChanged(message.nodeLabel);
+      }
+    });
+
+    host.messageToStylePanel({
+      styleSource: initialContent.styles,
+      styleFilename: initialContent.styleFile,
+      nodeStyle: "none",
+      edgeStyle: "none",
     });
   });
 
@@ -91,10 +106,8 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   };
 
   const handleCurrentNodeLabelChanged = (label: string) => {
-    console.log("label changed to", label);
+    // console.log("label changed to", label);
     if (selectedNodes.size === 1) {
-      setCurrentNodeLabel(label);
-
       if (graph !== undefined && isValidDelimString("{" + label + "}")) {
         const [n] = selectedNodes;
         const g = graph.updateNodeData(n, d => d.setLabel(label));
@@ -173,9 +186,10 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
 
     if (selectedNodes.size === 1) {
       const [n] = selectedNodes;
-      setCurrentNodeLabel(graph.node(n)?.label);
+      const label = graph.node(n)?.label;
+      host.messageToStylePanel({ nodeLabel: label });
     } else {
-      setCurrentNodeLabel(undefined);
+      host.messageToStylePanel({ nodeLabel: undefined });
     }
   };
 
@@ -224,18 +238,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
             currentEdgeStyle={currentEdgeStyle}
           />
         </div>
-        <StylePanel
-          host={host}
-          tikzStyles={tikzStyles}
-          editMode={false}
-          error={tikzStylesError}
-          currentNodeStyle={currentNodeStyle}
-          currentEdgeStyle={currentEdgeStyle}
-          onNodeStyleChanged={handleNodeStyleChanged}
-          onEdgeStyleChanged={handleEdgeStyleChanged}
-          currentNodeLabel={currentNodeLabel}
-          onCurrentNodeLabelChanged={handleCurrentNodeLabelChanged}
-        />
+        <StylePanel host={host} />
       </Splitpane>
     </div>
   );

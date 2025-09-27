@@ -4,7 +4,8 @@ import StyleEditor, { StyleEditorContent } from "./StyleEditor";
 import "./defaultvars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
-import TikzitHost, { StylePanelMessage } from "../lib/TikzitHost";
+import TikzitHost from "../lib/TikzitHost";
+import { StylePanelState } from "./StylePanel";
 import App from "./App";
 
 // one TikzitBrowserHost instance is created globally. This mimics the VSCode extension host API
@@ -19,20 +20,19 @@ class TikzitBrowserHost implements TikzitHost {
   }
 
   // communication with style panel
-  private messageToStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
+  private messageToStylePanelHandler: ((message: StylePanelState) => void) | undefined = undefined;
+  private messageFromStylePanelHandler: ((message: StylePanelState) => void) | undefined =
     undefined;
-  private messageFromStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
-    undefined;
-  messageToStylePanel(message: StylePanelMessage): void {
+  messageToStylePanel(message: StylePanelState): void {
     this.messageToStylePanelHandler?.(message);
   }
-  onMessageToStylePanel(handler: (message: StylePanelMessage) => void): void {
+  onMessageToStylePanel(handler: (message: StylePanelState) => void): void {
     this.messageToStylePanelHandler = handler;
   }
-  messageFromStylePanel(message: StylePanelMessage): void {
+  messageFromStylePanel(message: StylePanelState): void {
     this.messageFromStylePanelHandler?.(message);
   }
-  onMessageFromStylePanel(handler: (message: StylePanelMessage) => void): void {
+  onMessageFromStylePanel(handler: (message: StylePanelState) => void): void {
     this.messageFromStylePanelHandler = handler;
   }
 

@@ -25,8 +25,6 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
   const [currentStyleData, setCurrentStyleData] = useState<StyleData>(
     tikzStyles.style(currentStyle)
   );
-  const currentNodeStyle = currentStyleData.isEdgeStyle ? undefined : currentStyle;
-  const currentEdgeStyle = currentStyleData.isEdgeStyle ? currentStyle : undefined;
 
   // Check if current style data differs from saved style data
   const hasChanges = !currentStyleData.equals(tikzStyles.style(currentStyle));
@@ -50,6 +48,7 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
 
   const updateFromGui = (tikz: string) => {
     if (enabled) {
+      host.messageToStylePanel({ styleSource: tikz });
       host.updateFromGui(tikz);
     }
   };
@@ -57,11 +56,30 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
   useEffect(() => {
     host.onUpdateToGui(source => {
       tryParseStyles(source);
+      host.messageToStylePanel({ styleSource: source });
     });
+
+    host.onMessageFromStylePanel(message => {
+      if (message.nodeStyle !== undefined) {
+        handleCurrentStyleChange(message.nodeStyle, message.apply ?? false);
+      }
+
+      if (message.edgeStyle !== undefined) {
+        handleCurrentStyleChange(message.edgeStyle, message.apply ?? false);
+      }
+    });
+
+    host.messageToStylePanel({ styleSource: tikzStyles.tikz(), editMode: true });
   });
 
   useEffect(() => {
     setCurrentStyleData(tikzStyles.style(currentStyle));
+    const st = tikzStyles.style(currentStyle);
+    host.messageToStylePanel({
+      styleSource: tikzStyles.tikz(),
+      nodeStyle: st.isEdgeStyle ? undefined : currentStyle,
+      edgeStyle: st.isEdgeStyle ? currentStyle : undefined,
+    });
   }, [currentStyle, tikzStyles]);
 
   useEffect(() => {
@@ -173,18 +191,7 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
           </div>
           <Style data={currentStyleData} onChange={setCurrentStyleData} enabled={enabled} />
         </div>
-        <StylePanel
-          host={host}
-          tikzStyles={tikzStyles}
-          error={!enabled}
-          currentNodeLabel={undefined}
-          currentNodeStyle={currentNodeStyle}
-          currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => {}}
-          onNodeStyleChanged={handleCurrentStyleChange}
-          onEdgeStyleChanged={handleCurrentStyleChange}
-          editMode={true}
-        />
+        <StylePanel host={host} />
       </Splitpane>
     </div>
   );
