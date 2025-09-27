@@ -5,7 +5,7 @@ import "./vscodevars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
-import { StylePanelState } from "./StylePanel";
+import StylePanel, { StylePanelState } from "./StylePanel";
 
 // VSCode WebView API (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
@@ -122,6 +122,15 @@ class TikzitExtensionHost implements TikzitHost {
       render(<StyleEditor initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering StyleEditor:", error);
+      container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
+    }
+  }
+
+  public renderStylePanel(container: HTMLElement) {
+    try {
+      render(<StylePanel host={this} />, container);
+    } catch (error) {
+      console.error("Error rendering StylePanel:", error);
       container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
     }
   }

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import { getNonce } from "../lib/util";
 
 function currentUri(): vscode.Uri | undefined {
   const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
@@ -11,15 +12,6 @@ function currentUri(): vscode.Uri | undefined {
     return undefined;
   }
   return tabInput.uri as vscode.Uri;
-}
-
-function getNonce(): string {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
 }
 
 interface WebviewMessage {

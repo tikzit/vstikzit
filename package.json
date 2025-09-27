@@ -165,8 +165,9 @@
     "views": {
       "tikzit": [
         {
-          "id": "tikzitExplorer",
-          "name": "TikZ Files",
+          "type": "webview",
+          "id": "vstikzit.stylePanelView",
+          "name": "Styles",
           "icon": "$(file-text)"
         }
       ]
