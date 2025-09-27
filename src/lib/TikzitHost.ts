@@ -1,6 +1,6 @@
 import { ParseError } from "./TikzParser";
 
-interface StylePanelMessage {
+export interface StylePanelMessage {
   nodeStyle?: string;
   edgeStyle?: string;
   nodeLabel?: string;

@@ -73,20 +73,6 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
     }
   };
 
-  const refreshTikzStyles = (e: Event) => {
-    if (e) {
-      e.preventDefault();
-    }
-    host.refreshTikzStyles();
-  };
-
-  const openTikzStyles = (e: Event) => {
-    if (e) {
-      e.preventDefault();
-    }
-    host.openTikzStyles();
-  };
-
   const tryParseGraph = (tikz: string) => {
     const parsed = parseTikzPicture(tikz);
     setParseErrors(parsed.errors);
@@ -249,8 +235,6 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
           onEdgeStyleChanged={handleEdgeStyleChanged}
           currentNodeLabel={currentNodeLabel}
           onCurrentNodeLabelChanged={handleCurrentNodeLabelChanged}
-          onEditStyles={openTikzStyles}
-          onRefreshStyles={refreshTikzStyles}
         />
       </Splitpane>
     </div>

@@ -4,25 +4,34 @@ import StyleEditor, { StyleEditorContent } from "./StyleEditor";
 import "./vscodevars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
-import TikzitHost from "../lib/TikzitHost";
+import TikzitHost, { StylePanelMessage } from "../lib/TikzitHost";
 
 // VSCode WebView API (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
 
+// one TikzitExtensionHost instance is created per webview. Communication between webviews is
+// done via vscode extension messages.
 class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
 
   // communication with style panel
-  private valueChangedHandler: ((key: string, value: string, apply: boolean) => void) | undefined =
+  private messageToStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
     undefined;
-  public setValue(key: string, value: string, apply: boolean): void {
-    this.valueChangedHandler?.(key, value, apply);
+  private messageFromStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
+    undefined;
+  messageToStylePanel(message: StylePanelMessage): void {
+    this.messageToStylePanelHandler?.(message);
   }
-
-  public onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void {
-    this.valueChangedHandler = handler;
+  onMessageToStylePanel(handler: (message: StylePanelMessage) => void): void {
+    this.messageToStylePanelHandler = handler;
+  }
+  messageFromStylePanel(message: StylePanelMessage): void {
+    this.messageFromStylePanelHandler?.(message);
+  }
+  onMessageFromStylePanel(handler: (message: StylePanelMessage) => void): void {
+    this.messageFromStylePanelHandler = handler;
   }
 
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =

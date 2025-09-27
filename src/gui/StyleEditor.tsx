@@ -174,12 +174,13 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
           <Style data={currentStyleData} onChange={setCurrentStyleData} enabled={enabled} />
         </div>
         <StylePanel
+          host={host}
           tikzStyles={tikzStyles}
           error={!enabled}
           currentNodeLabel={undefined}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => { }}
+          onCurrentNodeLabelChanged={() => {}}
           onNodeStyleChanged={handleCurrentStyleChange}
           onEdgeStyleChanged={handleCurrentStyleChange}
           editMode={true}

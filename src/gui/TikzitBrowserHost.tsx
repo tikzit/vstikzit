@@ -4,9 +4,11 @@ import StyleEditor, { StyleEditorContent } from "./StyleEditor";
 import "./defaultvars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
-import TikzitHost from "../lib/TikzitHost";
+import TikzitHost, { StylePanelMessage } from "../lib/TikzitHost";
 import App from "./App";
 
+// one TikzitBrowserHost instance is created globally. This mimics the VSCode extension host API
+// by passing messages directly between editors, the StylePanel, and the DOM
 class TikzitBrowserHost implements TikzitHost {
   private updateFromGuiHandler: ((source: string) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
@@ -17,17 +19,24 @@ class TikzitBrowserHost implements TikzitHost {
   }
 
   // communication with style panel
-  private valueChangedHandler: ((key: string, value: string, apply: boolean) => void) | undefined =
+  private messageToStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
     undefined;
-  public setValue(key: string, value: string, apply: boolean): void {
-    this.valueChangedHandler?.(key, value, apply);
+  private messageFromStylePanelHandler: ((message: StylePanelMessage) => void) | undefined =
+    undefined;
+  messageToStylePanel(message: StylePanelMessage): void {
+    this.messageToStylePanelHandler?.(message);
+  }
+  onMessageToStylePanel(handler: (message: StylePanelMessage) => void): void {
+    this.messageToStylePanelHandler = handler;
+  }
+  messageFromStylePanel(message: StylePanelMessage): void {
+    this.messageFromStylePanelHandler?.(message);
+  }
+  onMessageFromStylePanel(handler: (message: StylePanelMessage) => void): void {
+    this.messageFromStylePanelHandler = handler;
   }
 
-  public onValueChanged(handler: (key: string, value: string, apply: boolean) => void): void {
-    this.valueChangedHandler = handler;
-  }
-
-  public setErrors(errors: ParseError[]) { }
+  public setErrors(errors: ParseError[]) {}
 
   public updateFromGui(tikz: string) {
     // console.log("updateFromGui: ", this.updateFromGuiHandler !== undefined);
@@ -51,11 +60,11 @@ class TikzitBrowserHost implements TikzitHost {
     this.updateToGuiHandler = handler;
   }
 
-  public refreshTikzStyles() { }
+  public refreshTikzStyles() {}
 
-  public openTikzStyles() { }
+  public openTikzStyles() {}
 
-  public openCodeEditor(position?: { line: number; column: number }) { }
+  public openCodeEditor(position?: { line: number; column: number }) {}
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {

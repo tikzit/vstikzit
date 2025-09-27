@@ -18,8 +18,6 @@ interface StylePanelProps {
   onEdgeStyleChanged: (style: string, apply: boolean) => void;
   currentNodeLabel?: string | undefined;
   onCurrentNodeLabelChanged?: (label: string) => void;
-  onEditStyles?: (e: Event) => void;
-  onRefreshStyles?: (e: Event) => void;
 }
 
 const StylePanel = ({
@@ -103,10 +101,24 @@ const StylePanel = ({
             <i style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
               [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
             </i>
-            <a href="#" title="Edit styles" onClick={(e) => { e.preventDefault(); host.openTikzStyles(); }}>
+            <a
+              href="#"
+              title="Edit styles"
+              onClick={e => {
+                e.preventDefault();
+                host.openTikzStyles();
+              }}
+            >
               &#9998;
             </a>
-            <a href="#" title="Refresh styles" onClick={(e) => { e.preventDefault(); host.refreshTikzStyles(); }}>
+            <a
+              href="#"
+              title="Refresh styles"
+              onClick={e => {
+                e.preventDefault();
+                host.refreshTikzStyles();
+              }}
+            >
               &#10227;
             </a>
           </div>
