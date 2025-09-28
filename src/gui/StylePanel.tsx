@@ -12,7 +12,7 @@ import { parse } from "path";
 interface StylePanelState {
   nodeStyle?: string;
   edgeStyle?: string;
-  nodeLabel?: string;
+  nodeLabel?: string | null;
   editMode?: boolean;
   error?: boolean;
   styleSource?: string;
@@ -31,6 +31,10 @@ const StylePanel = ({ host }: StylePanelProps) => {
   );
 
   const [tikzStyles, setTikzStyles] = useState<Styles>(new Styles());
+
+  useEffect(() => {
+    host.updateStylePanel();
+  }, [host]);
 
   useEffect(() => {
     host.onMessageToStylePanel(message => {
@@ -111,7 +115,7 @@ const StylePanel = ({ host }: StylePanelProps) => {
                   document.getElementById("graph-editor")?.focus();
                 }
               }}
-              disabled={state.nodeLabel === undefined}
+              disabled={state.nodeLabel === null}
               className={isValidDelimString("{" + state.nodeLabel + "}") ? "" : "error"}
             />
           </div>

@@ -14,6 +14,7 @@ import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
 import TikzitHost from "../lib/TikzitHost";
+import { parse } from "path";
 
 interface TikzEditorContent {
   document: string;
@@ -65,20 +66,40 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
         handleEdgeStyleChanged(message.edgeStyle, message.apply ?? false);
       }
 
-      if (message.nodeLabel !== undefined) {
+      if (message.nodeLabel !== undefined && message.nodeLabel !== null) {
         handleCurrentNodeLabelChanged(message.nodeLabel);
       }
+    });
+
+    host.onUpdateStylePanel(() => {
+      // console.log("TikzEditor activated");
+      host.messageToStylePanel({
+        editMode: false,
+        error: parsedStyles.result === undefined,
+        styleSource: tikzStyles.tikz(),
+        styleFilename: tikzStyles.filename,
+        nodeStyle: currentNodeStyle,
+        edgeStyle: currentEdgeStyle,
+        nodeLabel: selectedNodeLabel(),
+      });
     });
   });
 
   useEffect(() => {
     host.messageToStylePanel({
-      styleSource: initialContent.styles,
-      styleFilename: initialContent.styleFile,
-      nodeStyle: "none",
-      edgeStyle: "none",
+      styleSource: tikzStyles.tikz(),
+      styleFilename: tikzStyles.filename,
     });
-  }, [host, initialContent]);
+  }, [host, tikzStyles]);
+
+  // useEffect(() => {
+  //   host.messageToStylePanel({
+  //     styleSource: initialContent.styles,
+  //     styleFilename: initialContent.styleFile,
+  //     nodeStyle: "none",
+  //     edgeStyle: "none",
+  //   });
+  // }, [host, initialContent]);
 
   useEffect(() => {
     host.setErrors(parseErrors);
@@ -182,17 +203,20 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
     }
   };
 
+  const selectedNodeLabel = (selNodes?: Set<number>): string | null => {
+    const s = selNodes ?? selectedNodes;
+    if (s && s.size === 1) {
+      const [n] = s;
+      return graph.node(n)?.label ?? null;
+    } else {
+      return null;
+    }
+  };
+
   const handleSelectionChanged = (selectedNodes: Set<number>, selectedEdges: Set<number>) => {
     setSelectedNodes(selectedNodes);
     setSelectedEdges(selectedEdges);
-
-    if (selectedNodes.size === 1) {
-      const [n] = selectedNodes;
-      const label = graph.node(n)?.label;
-      host.messageToStylePanel({ nodeLabel: label });
-    } else {
-      host.messageToStylePanel({ nodeLabel: undefined });
-    }
+    host.messageToStylePanel({ nodeLabel: selectedNodeLabel(selectedNodes) });
   };
 
   const handleViewTikz = () => {

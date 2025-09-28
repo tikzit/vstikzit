@@ -32,6 +32,9 @@ class StylePanelViewProvider implements vscode.WebviewViewProvider {
         case "refreshTikzStyles":
           BaseEditorProvider.refreshTikzStyles();
           return;
+        case "updateStylePanel":
+          BaseEditorProvider.updateStylePanel();
+          return;
         case "openTikzStyles":
           BaseEditorProvider.openTikzStyles();
           return;
@@ -40,7 +43,7 @@ class StylePanelViewProvider implements vscode.WebviewViewProvider {
           return;
         }
         case "messageFromStylePanel": {
-          console.log("messageFromStylePanel", e);
+          // console.log("messageFromStylePanel", JSON.stringify(e));
           BaseEditorProvider.postMessageToActive(e);
           return;
         }

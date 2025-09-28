@@ -105,6 +105,7 @@ class BaseEditorProvider {
           return;
         }
         case "messageToStylePanel": {
+          // console.log("messageToStylePanel", JSON.stringify(e));
           StylePanelViewProvider.postMessageToAll(e);
           return;
         }
@@ -114,7 +115,7 @@ class BaseEditorProvider {
     webviewPanel.onDidChangeViewState(e => {
       if (e.webviewPanel.active) {
         BaseEditorProvider.activePanel = webviewPanel;
-        BaseEditorProvider.refreshTikzStyles();
+        webviewPanel.webview.postMessage({ type: "activated" });
       } else if (BaseEditorProvider.activePanel === webviewPanel) {
         BaseEditorProvider.activePanel = undefined;
       }
@@ -199,7 +200,7 @@ class BaseEditorProvider {
   }
 
   async setErrors(errors: { line: number; column: number; message: string }[]): Promise<void> {
-    console.log("Setting errors", JSON.stringify(errors));
+    // console.log("Setting errors", JSON.stringify(errors));
     const diagnostics: vscode.Diagnostic[] = errors.map(err => {
       const range = new vscode.Range(err.line, err.column, err.line, err.column + 1);
       const diagnostic = new vscode.Diagnostic(range, err.message, vscode.DiagnosticSeverity.Error);
@@ -265,29 +266,24 @@ class BaseEditorProvider {
     }
   }
 
-  public static async claimStylePanel(): Promise<void> {
-    if (BaseEditorProvider.activePanel) {
+  public static async refreshTikzStyles(): Promise<void> {
+    if (BaseEditorProvider.activePanel !== undefined) {
       const webview = BaseEditorProvider.activePanel.webview;
+      const [styleFile, styles] = await BaseEditorProvider.getTikzStyles();
       webview.postMessage({
-        type: "claimStylePanel",
+        type: "tikzStylesContent",
+        content: {
+          filename: path.basename(styleFile),
+          source: styles,
+        },
       });
     }
   }
 
-  public static async refreshTikzStyles(): Promise<void> {
-    if (BaseEditorProvider.activePanel === undefined) {
-      return;
+  public static async updateStylePanel(): Promise<void> {
+    if (BaseEditorProvider.activePanel !== undefined) {
+      BaseEditorProvider.activePanel.webview.postMessage({ type: "updateStylePanel" });
     }
-
-    const webview = BaseEditorProvider.activePanel.webview;
-    const [styleFile, styles] = await BaseEditorProvider.getTikzStyles();
-    webview.postMessage({
-      type: "tikzStylesContent",
-      content: {
-        filename: path.basename(styleFile),
-        source: styles,
-      },
-    });
   }
 
   public static async openTikzStyles(): Promise<void> {

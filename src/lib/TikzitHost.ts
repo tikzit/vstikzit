@@ -11,6 +11,8 @@ export default interface TikzitHost {
   openCodeEditor(position?: { line: number; column: number }): void;
 
   // communication with style panel
+  updateStylePanel(): void;
+  onUpdateStylePanel(handler: () => void): void;
   messageToStylePanel(message: StylePanelState): void;
   onMessageToStylePanel(handler: (message: StylePanelState) => void): void;
   messageFromStylePanel(message: StylePanelState): void;

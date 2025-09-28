@@ -16,6 +16,10 @@ class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
+  private updateStylePanelHandler: (() => void) | undefined = undefined;
+  public onUpdateStylePanel(handler: () => void) {
+    this.updateStylePanelHandler = handler;
+  }
 
   // communication with style panel
   private messageToStylePanelHandler: ((message: StylePanelState) => void) | undefined = undefined;
@@ -72,6 +76,12 @@ class TikzitExtensionHost implements TikzitHost {
           }
           break;
         }
+        case "updateStylePanel": {
+          if (this.updateStylePanelHandler) {
+            this.updateStylePanelHandler();
+          }
+          break;
+        }
       }
     };
 
@@ -105,6 +115,12 @@ class TikzitExtensionHost implements TikzitHost {
     this.vscode.postMessage({
       type: "updateFromGui",
       content: tikz,
+    });
+  }
+
+  public updateStylePanel(): void {
+    this.vscode.postMessage({
+      type: "updateStylePanel",
     });
   }
 

@@ -15,8 +15,15 @@ class TikzitBrowserHost implements TikzitHost {
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
+  private updateStylePanelHandler: (() => void) | undefined = undefined;
   public onTikzStylesUpdated(handler: (filename: string, source: string) => void) {
     this.tikzStylesUpdatedHandler = handler;
+  }
+  public onUpdateStylePanel(handler: () => void) {
+    this.updateStylePanelHandler = handler;
+  }
+  public updateStylePanel(): void {
+    this.updateStylePanelHandler?.();
   }
 
   // communication with style panel
