@@ -2,18 +2,17 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
 import { TikzEditorProvider } from "./editors";
-import { stat } from "fs";
 
-async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
+async function prepareBuildDir(workspaceRoot: vscode.Uri, cacheDir: vscode.Uri): Promise<string> {
   let tikzIncludes = "";
 
   // create tikz cache folder in workspaceRoot, if it doesn't exist
-  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(workspaceRoot, "cache"));
+  await vscode.workspace.fs.createDirectory(cacheDir);
 
   const cp = (f: string): Thenable<void> => {
     return vscode.workspace.fs.copy(
       vscode.Uri.joinPath(workspaceRoot, f),
-      vscode.Uri.joinPath(workspaceRoot, "cache", f),
+      vscode.Uri.joinPath(cacheDir, f),
       { overwrite: true }
     );
   };
@@ -47,27 +46,23 @@ async function prepareBuildDir(workspaceRoot: vscode.Uri): Promise<string> {
   return tikzIncludes;
 }
 
-async function cleanBuildDir(workspaceRoot: vscode.Uri): Promise<void> {
-  const files = await vscode.workspace.fs.readDirectory(
-    vscode.Uri.joinPath(workspaceRoot, "cache")
-  );
+async function cleanBuildDir(cacheDir: vscode.Uri): Promise<void> {
+  const files = await vscode.workspace.fs.readDirectory(cacheDir);
   for (const f of files) {
     if (f[0].endsWith(".sty") || f[0].endsWith(".tikzstyles") || f[0].endsWith(".tikzdefs")) {
-      await vscode.workspace.fs.delete(vscode.Uri.joinPath(workspaceRoot, "cache", f[0]), {
+      await vscode.workspace.fs.delete(vscode.Uri.joinPath(cacheDir, f[0]), {
         useTrash: false,
       });
     }
   }
 }
 
-async function cleanAuxFiles(fileName: string, workspaceRoot: vscode.Uri): Promise<void> {
+async function cleanAuxFiles(fileName: string, cacheDir: vscode.Uri): Promise<void> {
   const baseName = path.basename(fileName, ".tikz");
 
   for (const ext of [".tmp.tex", ".tmp.aux", ".tmp.log", ".tmp.out", ".tmp.pdf", ".tmp.svg"]) {
     try {
-      await vscode.workspace.fs.delete(
-        vscode.Uri.joinPath(vscode.Uri.joinPath(workspaceRoot, "cache"), baseName + ext)
-      );
+      await vscode.workspace.fs.delete(vscode.Uri.joinPath(cacheDir, baseName + ext));
     } catch (error) {
       // file probably doesn't exist, so just ignore the error
     }
@@ -97,7 +92,9 @@ async function buildTikz(
   svg: boolean = false
 ): Promise<number> {
   // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}, svg = ${svg}`);
-  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "cache");
+  const tikzCacheFolder = svg
+    ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+    : vscode.Uri.joinPath(workspaceRoot, "cache");
   // if source is null, load it from the file
   if (!source) {
     try {
@@ -177,22 +174,25 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
   }
 
   try {
-    const tikzIncludes = await prepareBuildDir(workspaceRoot);
+    const tikzCacheFolder = svg
+      ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+      : vscode.Uri.joinPath(workspaceRoot, "cache");
+    const tikzIncludes = await prepareBuildDir(workspaceRoot, tikzCacheFolder);
     // create a status bar item with a spinning arrow to show progress
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     statusBarItem.text = "$(sync~spin) Building TikZ figure";
     statusBarItem.show();
     buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes, svg).then(
       async (_: number) => {
-        await cleanAuxFiles(document.uri.fsPath, workspaceRoot);
-        await cleanBuildDir(workspaceRoot);
+        await cleanAuxFiles(document.uri.fsPath, tikzCacheFolder);
+        await cleanBuildDir(tikzCacheFolder);
         statusBarItem.dispose();
       },
       error => {
         vscode.window.showErrorMessage(`build exited with error ${error}`);
         const baseName = path.basename(document.uri.fsPath, ".tikz") ?? "tikzfigure";
         const logFile = baseName + ".tmp.log";
-        vscode.window.showTextDocument(vscode.Uri.joinPath(workspaceRoot, "cache", logFile));
+        vscode.window.showTextDocument(vscode.Uri.joinPath(tikzCacheFolder, logFile));
       }
     );
   } catch (error) {
@@ -206,7 +206,9 @@ async function getTikzFiguresToRebuild(
   svg: boolean = false
 ): Promise<string[]> {
   const figuresFolder = vscode.Uri.joinPath(workspaceRoot, "figures");
-  const tikzCacheFolder = vscode.Uri.joinPath(workspaceRoot, "cache");
+  const tikzCacheFolder = svg
+    ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+    : vscode.Uri.joinPath(workspaceRoot, "cache");
   const outExt = svg ? ".svg" : ".pdf";
 
   // Get all files in the figures folder
@@ -261,9 +263,12 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
 
   for (const folder of workspaceFolders) {
     const workspaceRoot = folder.uri;
+    const tikzCacheFolder = svg
+      ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
+      : vscode.Uri.joinPath(workspaceRoot, "cache");
     const figuresToRebuild = await getTikzFiguresToRebuild(workspaceRoot, svg);
     if (figuresToRebuild.length > 0) {
-      const tikzIncludes = await prepareBuildDir(workspaceRoot);
+      const tikzIncludes = await prepareBuildDir(workspaceRoot, tikzCacheFolder);
       let figuresBuilt = 0;
       const errorFiles: string[] = [];
       const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -286,7 +291,7 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
             buildTikz(workspaceRoot, file, undefined, tikzIncludes, svg).then(
               async () => {
                 figuresBuilt += 1;
-                await cleanAuxFiles(file, workspaceRoot);
+                await cleanAuxFiles(file, tikzCacheFolder);
                 statusBarItem.text = `$(sync~spin) Rebuilding TikZ figures: ${figuresBuilt}/${figuresToRebuild.length}`;
               },
               () => {
@@ -306,7 +311,7 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
         }
         vscode.window.showErrorMessage(errorMessage);
       }
-      await cleanBuildDir(workspaceRoot);
+      await cleanBuildDir(tikzCacheFolder);
     }
   }
   rebuildingTikzFigures = false;
