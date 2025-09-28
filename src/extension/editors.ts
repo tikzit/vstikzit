@@ -265,6 +265,15 @@ class BaseEditorProvider {
     }
   }
 
+  public static async claimStylePanel(): Promise<void> {
+    if (BaseEditorProvider.activePanel) {
+      const webview = BaseEditorProvider.activePanel.webview;
+      webview.postMessage({
+        type: "claimStylePanel",
+      });
+    }
+  }
+
   public static async refreshTikzStyles(): Promise<void> {
     if (BaseEditorProvider.activePanel === undefined) {
       return;

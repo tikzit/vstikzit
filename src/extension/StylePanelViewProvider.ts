@@ -40,6 +40,7 @@ class StylePanelViewProvider implements vscode.WebviewViewProvider {
           return;
         }
         case "messageFromStylePanel": {
+          console.log("messageFromStylePanel", e);
           BaseEditorProvider.postMessageToActive(e);
           return;
         }

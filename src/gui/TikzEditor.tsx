@@ -69,14 +69,16 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
         handleCurrentNodeLabelChanged(message.nodeLabel);
       }
     });
+  });
 
+  useEffect(() => {
     host.messageToStylePanel({
       styleSource: initialContent.styles,
       styleFilename: initialContent.styleFile,
       nodeStyle: "none",
       edgeStyle: "none",
     });
-  });
+  }, [host, initialContent]);
 
   useEffect(() => {
     host.setErrors(parseErrors);
@@ -214,32 +216,27 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <Splitpane splitRatio={0.8} orientation="horizontal">
-        <div style={{ height: "100%" }}>
-          <Toolbar
-            tool={tool}
-            onToolChanged={t => {
-              setTool(t);
-              document.getElementById("graph-editor")?.focus();
-            }}
-          />
-          <GraphEditor
-            tool={tool}
-            onToolChanged={setTool}
-            enabled={enabled}
-            graph={graph}
-            onGraphChange={handleGraphChange}
-            selectedNodes={selectedNodes}
-            selectedEdges={selectedEdges}
-            onSelectionChanged={handleSelectionChanged}
-            onViewTikz={handleViewTikz}
-            tikzStyles={tikzStyles}
-            currentNodeStyle={currentNodeStyle}
-            currentEdgeStyle={currentEdgeStyle}
-          />
-        </div>
-        <StylePanel host={host} />
-      </Splitpane>
+      <Toolbar
+        tool={tool}
+        onToolChanged={t => {
+          setTool(t);
+          document.getElementById("graph-editor")?.focus();
+        }}
+      />
+      <GraphEditor
+        tool={tool}
+        onToolChanged={setTool}
+        enabled={enabled}
+        graph={graph}
+        onGraphChange={handleGraphChange}
+        selectedNodes={selectedNodes}
+        selectedEdges={selectedEdges}
+        onSelectionChanged={handleSelectionChanged}
+        onViewTikz={handleViewTikz}
+        tikzStyles={tikzStyles}
+        currentNodeStyle={currentNodeStyle}
+        currentEdgeStyle={currentEdgeStyle}
+      />
     </div>
   );
 };

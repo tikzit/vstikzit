@@ -22,13 +22,19 @@ class TikzitExtensionHost implements TikzitHost {
   private messageFromStylePanelHandler: ((message: StylePanelState) => void) | undefined =
     undefined;
   messageToStylePanel(message: StylePanelState): void {
-    this.messageToStylePanelHandler?.(message);
+    this.vscode.postMessage({
+      type: "messageToStylePanel",
+      content: message,
+    });
   }
   onMessageToStylePanel(handler: (message: StylePanelState) => void): void {
     this.messageToStylePanelHandler = handler;
   }
   messageFromStylePanel(message: StylePanelState): void {
-    this.messageFromStylePanelHandler?.(message);
+    this.vscode.postMessage({
+      type: "messageFromStylePanel",
+      content: message,
+    });
   }
   onMessageFromStylePanel(handler: (message: StylePanelState) => void): void {
     this.messageFromStylePanelHandler = handler;
@@ -36,6 +42,7 @@ class TikzitExtensionHost implements TikzitHost {
 
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
+
   constructor() {
     this.vscode = acquireVsCodeApi();
     this.listener = (event: MessageEvent) => {
@@ -50,6 +57,18 @@ class TikzitExtensionHost implements TikzitHost {
         case "tikzStylesContent": {
           if (message.content && this.tikzStylesUpdatedHandler) {
             this.tikzStylesUpdatedHandler(message.content.filename, message.content.source);
+          }
+          break;
+        }
+        case "messageToStylePanel": {
+          if (message.content && this.messageToStylePanelHandler) {
+            this.messageToStylePanelHandler(message.content);
+          }
+          break;
+        }
+        case "messageFromStylePanel": {
+          if (message.content && this.messageFromStylePanelHandler) {
+            this.messageFromStylePanelHandler(message.content);
           }
           break;
         }
