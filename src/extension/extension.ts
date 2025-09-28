@@ -11,6 +11,11 @@ import {
 import { viewCurrentTikzFigure } from "./viewTikz";
 import StylePanelViewProvider from "./StylePanelViewProvider";
 
+interface WebviewMessage {
+  type: string;
+  content?: any;
+}
+
 function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -119,4 +124,4 @@ function deactivate(): void {
   stopSyncTikzFigures();
 }
 
-export { activate, deactivate };
+export { activate, deactivate, WebviewMessage };

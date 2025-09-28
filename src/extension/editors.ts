@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { getNonce } from "../lib/util";
+import StylePanelViewProvider from "./StylePanelViewProvider";
+import { WebviewMessage } from "./extension";
 
 function currentUri(): vscode.Uri | undefined {
   const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
@@ -14,13 +16,9 @@ function currentUri(): vscode.Uri | undefined {
   return tabInput.uri as vscode.Uri;
 }
 
-interface WebviewMessage {
-  type: string;
-  content?: any;
-}
-
 class BaseEditorProvider {
   private static openDocuments = new Set<vscode.TextDocument>();
+  public static activePanel: vscode.WebviewPanel | undefined = undefined;
   private context: vscode.ExtensionContext;
   private isUpdatingFromGui: boolean = false;
   protected entryPoint: string = "unknown";
@@ -89,13 +87,13 @@ class BaseEditorProvider {
           this.updateFromGui(document, e.content);
           return;
         case "refreshTikzStyles":
-          this.refreshTikzStyles(webviewPanel.webview);
+          BaseEditorProvider.refreshTikzStyles();
           return;
         case "openTikzStyles":
-          this.openTikzStyles();
+          BaseEditorProvider.openTikzStyles();
           return;
         case "openCodeEditor": {
-          this.openCodeEditor(e.content.line, e.content.column);
+          BaseEditorProvider.openCodeEditor(e.content.line, e.content.column);
           return;
         }
         case "setErrors": {
@@ -106,13 +104,19 @@ class BaseEditorProvider {
           vscode.commands.executeCommand("workbench.panel.markers.view.focus");
           return;
         }
+        case "messageToStylePanel": {
+          StylePanelViewProvider.postMessageToAll(e);
+          return;
+        }
       }
     });
 
     webviewPanel.onDidChangeViewState(e => {
       if (e.webviewPanel.active) {
-        // Refresh TikZ styles when the panel becomes active
-        this.refreshTikzStyles(webviewPanel.webview);
+        BaseEditorProvider.activePanel = webviewPanel;
+        BaseEditorProvider.refreshTikzStyles();
+      } else if (BaseEditorProvider.activePanel === webviewPanel) {
+        BaseEditorProvider.activePanel = undefined;
       }
     });
 
@@ -122,6 +126,12 @@ class BaseEditorProvider {
       // Remove from tracking set
       BaseEditorProvider.openDocuments.delete(document);
     });
+  }
+
+  public static postMessageToActive(message: WebviewMessage) {
+    if (BaseEditorProvider.activePanel) {
+      BaseEditorProvider.activePanel.webview.postMessage(message);
+    }
   }
 
   async getHtmlForWebview(webview: vscode.Webview, contentJson: string): Promise<string> {
@@ -218,7 +228,7 @@ class BaseEditorProvider {
     }
   }
 
-  async getTikzStyles(withContent: boolean = true): Promise<[string, string]> {
+  public static async getTikzStyles(withContent: boolean = true): Promise<[string, string]> {
     try {
       const document = TikzEditorProvider.currentDocument();
       // console.log("Building current TikZ figure...", document?.uri.fsPath);
@@ -255,8 +265,13 @@ class BaseEditorProvider {
     }
   }
 
-  async refreshTikzStyles(webview: vscode.Webview): Promise<void> {
-    const [styleFile, styles] = await this.getTikzStyles();
+  public static async refreshTikzStyles(): Promise<void> {
+    if (BaseEditorProvider.activePanel === undefined) {
+      return;
+    }
+
+    const webview = BaseEditorProvider.activePanel.webview;
+    const [styleFile, styles] = await BaseEditorProvider.getTikzStyles();
     webview.postMessage({
       type: "tikzStylesContent",
       content: {
@@ -266,12 +281,12 @@ class BaseEditorProvider {
     });
   }
 
-  async openTikzStyles(): Promise<void> {
-    const [styleFile, _] = await this.getTikzStyles(false);
+  public static async openTikzStyles(): Promise<void> {
+    const [styleFile, _] = await BaseEditorProvider.getTikzStyles(false);
     vscode.commands.executeCommand("vscode.open", vscode.Uri.file(styleFile));
   }
 
-  async openCodeEditor(line: number, column: number): Promise<void> {
+  public static async openCodeEditor(line: number, column: number): Promise<void> {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
     if (!activeTab?.input) {
@@ -309,7 +324,7 @@ class TikzEditorProvider extends BaseEditorProvider implements vscode.CustomText
   }
 
   protected async initialContent(document: vscode.TextDocument): Promise<string> {
-    const [styleFile, styles] = await this.getTikzStyles();
+    const [styleFile, styles] = await BaseEditorProvider.getTikzStyles();
     const content = {
       styleFile: path.basename(styleFile),
       styles: styles,
@@ -326,4 +341,4 @@ class StyleEditorProvider extends BaseEditorProvider implements vscode.CustomTex
   }
 }
 
-export { currentUri, TikzEditorProvider, StyleEditorProvider };
+export { currentUri, BaseEditorProvider, TikzEditorProvider, StyleEditorProvider };

@@ -1,8 +1,12 @@
 import * as vscode from "vscode";
 import { getNonce } from "../lib/util";
+import { StylePanelState } from "../gui/StylePanel";
+import { WebviewMessage } from "./extension";
+import { BaseEditorProvider } from "./editors";
 
 class StylePanelViewProvider implements vscode.WebviewViewProvider {
   private context: vscode.ExtensionContext;
+  private static views: Set<vscode.WebviewView> = new Set();
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
   }
@@ -15,6 +19,38 @@ class StylePanelViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
     };
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+
+    StylePanelViewProvider.views.add(webviewView);
+    webviewView.onDidDispose(() => {
+      StylePanelViewProvider.views.delete(webviewView);
+    });
+
+    // Handle messages from the webview
+    webviewView.webview.onDidReceiveMessage((e: WebviewMessage) => {
+      // console.log(`Received message from webview: ${e.type}`, e);
+      switch (e.type) {
+        case "refreshTikzStyles":
+          BaseEditorProvider.refreshTikzStyles();
+          return;
+        case "openTikzStyles":
+          BaseEditorProvider.openTikzStyles();
+          return;
+        case "openCodeEditor": {
+          BaseEditorProvider.openCodeEditor(e.content.line, e.content.column);
+          return;
+        }
+        case "messageFromStylePanel": {
+          BaseEditorProvider.postMessageToActive(e);
+          return;
+        }
+      }
+    });
+  }
+
+  public static postMessageToAll(message: WebviewMessage) {
+    for (const view of StylePanelViewProvider.views) {
+      view.webview.postMessage(message);
+    }
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
