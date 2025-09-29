@@ -83,7 +83,6 @@ const StylePanel = ({
           >
             <input
               id="label-field"
-              style={{ width: "80%" }}
               value={currentNodeLabel ?? ""}
               onInput={e =>
                 setCurrentNodeLabel !== undefined &&
@@ -98,16 +97,16 @@ const StylePanel = ({
               className={isValidDelimString("{" + currentNodeLabel + "}") ? "" : "error"}
             />
           </div>
-          <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
-            <i style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
-              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
-            </i>
+          <div class="style-info">
             <a href="#" title="Edit styles" onClick={onEditStyles}>
               &#9998;
             </a>
             <a href="#" title="Refresh styles" onClick={onRefreshStyles}>
               &#10227;
             </a>
+            <span style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
+              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
+            </span>
           </div>
         </>
       )}

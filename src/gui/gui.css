@@ -149,11 +149,17 @@ input[type="range"]::-moz-range-thumb {
 .style-info {
   margin-top: 10px;
   margin-bottom: 10px;
+  width: calc(100% - 20px);
+  overflow: hidden;
 }
 
 .style-info a {
   text-decoration: none;
-  font-size: 1.5em;
+  font-size: 1.25em;
   outline: none;
-  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#label-field {
+  width: calc(100% - 20px);
 }
