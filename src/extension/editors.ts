@@ -273,25 +273,14 @@ class BaseEditorProvider {
   }
 
   async openCodeEditor(line: number, column: number): Promise<void> {
-    const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-
-    if (!activeTab?.input) {
+    const documentUri = currentUri();
+    if (documentUri === undefined) {
       return;
     }
 
-    // Type guard to check if input has uri property
-    const tabInput = activeTab.input as any;
-    if (!tabInput.uri) {
-      return;
-    }
+    const editor = await vscode.window.showTextDocument(documentUri);
 
-    const documentUri = tabInput.uri as vscode.Uri;
-
-    const editor = await vscode.window.showTextDocument(documentUri, {
-      viewColumn: vscode.ViewColumn.Beside,
-    });
-
-    // Force cursor positioning
+    // Set cursor position
     if (editor) {
       const position = new vscode.Position(line, column);
       editor.selection = new vscode.Selection(position, position);
