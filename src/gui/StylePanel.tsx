@@ -107,7 +107,6 @@ const StylePanel = ({ host }: StylePanelProps) => {
           >
             <input
               id="label-field"
-              style={{ width: "80%" }}
               value={state.nodeLabel ?? ""}
               onInput={e => update({ nodeLabel: (e.target as HTMLInputElement).value })}
               onKeyDown={e => {
@@ -119,10 +118,7 @@ const StylePanel = ({ host }: StylePanelProps) => {
               className={isValidDelimString("{" + state.nodeLabel + "}") ? "" : "error"}
             />
           </div>
-          <div class="style-info" style={{ marginBottom: "10px", marginTop: "10px" }}>
-            <i style={{ color: state.error ? "var(--tikzit-errorForeground)" : "inherit" }}>
-              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
-            </i>
+          <div class="style-info">
             <a
               href="#"
               title="Edit styles"
@@ -143,6 +139,9 @@ const StylePanel = ({ host }: StylePanelProps) => {
             >
               &#10227;
             </a>
+            <span style={{ color: state.error ? "var(--tikzit-errorForeground)" : "inherit" }}>
+              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
+            </span>
           </div>
         </>
       )}
