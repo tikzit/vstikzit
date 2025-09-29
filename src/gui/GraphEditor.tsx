@@ -68,8 +68,7 @@ const GraphEditor = ({
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
 
-  // refs used to pass data from node/edge components to the graph editor
-  const clickedNode = useRef<number | undefined>(undefined);
+  // refs used to pass data from edge components to the graph editor
   const clickedEdge = useRef<number | undefined>(undefined);
   const clickedControlPoint = useRef<[number, 1 | 2] | undefined>(undefined);
 
@@ -153,12 +152,16 @@ const GraphEditor = ({
     event.currentTarget.focus();
 
     const p = mousePositionToCoord(event);
+    const p1 = sceneCoords.coordFromScreen(p);
+    const clickedNode = graph.nodes.find(
+      d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
+    )?.id;
     updateUIState({ mouseDownPos: p, draggingNodes: false });
 
     let currentTool = tool;
     // if right click, activate smart tool temporarily
     if (tool === "select" && event.button === 2) {
-      if (clickedNode.current !== undefined) {
+      if (clickedNode !== undefined) {
         currentTool = "edge";
       } else {
         currentTool = "vertex";
@@ -172,22 +175,22 @@ const GraphEditor = ({
       case "select":
         if (clickedControlPoint.current !== undefined) {
           updateUIState({ prevGraph: graph });
-        } else if (clickedNode.current !== undefined) {
+        } else if (clickedNode !== undefined) {
           // select a node single node and/or prepare to drag nodes
           if (event.shiftKey) {
-            if (selectedNodes.has(clickedNode.current)) {
+            if (selectedNodes.has(clickedNode)) {
               const sel = new Set(selectedNodes);
-              sel.delete(clickedNode.current);
+              sel.delete(clickedNode);
               updateSelection(sel, selectedEdges);
             } else {
               const sel = new Set(selectedNodes);
-              sel.add(clickedNode.current);
+              sel.add(clickedNode);
               updateSelection(sel, selectedEdges);
             }
           } else {
             updateUIState({ prevGraph: graph, draggingNodes: true });
-            if (!selectedNodes.has(clickedNode.current)) {
-              updateSelection(new Set([clickedNode.current]), new Set());
+            if (!selectedNodes.has(clickedNode)) {
+              updateSelection(new Set([clickedNode]), new Set());
             }
           }
         } else if (clickedEdge.current !== undefined) {
@@ -218,7 +221,7 @@ const GraphEditor = ({
         // nothing to do
         break;
       case "edge":
-        updateUIState({ edgeStartNode: clickedNode.current, edgeEndNode: clickedNode.current });
+        updateUIState({ edgeStartNode: clickedNode, edgeEndNode: clickedNode });
         break;
     }
   };
@@ -362,12 +365,16 @@ const GraphEditor = ({
       return;
     }
     const p = mousePositionToCoord(event);
+    const p1 = sceneCoords.coordFromScreen(p);
+    const clickedNode = graph.nodes.find(
+      d => Math.abs(d.coord.x - p1.x) < 0.22 && Math.abs(d.coord.y - p1.y) < 0.22
+    )?.id;
 
     switch (tool) {
       case "select":
         if (event.detail === 2) {
           // double click
-          if (clickedNode.current !== undefined) {
+          if (clickedNode !== undefined) {
             document.getElementById("label-field")?.focus();
           } else if (clickedEdge.current !== undefined) {
             let d = graph.edge(clickedEdge.current)!;
@@ -421,10 +428,9 @@ const GraphEditor = ({
         break;
       case "vertex":
         {
-          const p1 = sceneCoords.coordFromScreen(p).snapToGrid(4);
           const node = new NodeData()
             .setId(graph.freshNodeId)
-            .setCoord(p1)
+            .setCoord(p1.snapToGrid(4))
             .setProperty("style", currentNodeStyle);
           updateGraph(graph.addNodeWithData(node), true);
         }
@@ -456,7 +462,6 @@ const GraphEditor = ({
       setTool("select");
     }
 
-    clickedNode.current = undefined;
     clickedEdge.current = undefined;
     clickedControlPoint.current = undefined;
     updateUIState("reset");
@@ -758,7 +763,6 @@ const GraphEditor = ({
               tikzStyles={tikzStyles}
               selected={selectedNodes.has(data.id)}
               highlight={uiState.edgeStartNode === data.id || uiState.edgeEndNode === data.id}
-              onMouseDown={() => (clickedNode.current = data.id)}
               sceneCoords={sceneCoords}
             />
           ))}

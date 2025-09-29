@@ -10,11 +10,10 @@ interface NodeProps {
   tikzStyles: Styles;
   selected?: boolean;
   highlight?: boolean;
-  onMouseDown?: () => void;
   sceneCoords: SceneCoords;
 }
 
-const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords }: NodeProps) => {
+const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps) => {
   const style = tikzStyles.style(data.property("style"));
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
@@ -30,11 +29,7 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
   }, [data, labelRef]);
 
   return (
-    <g
-      id={`node-${data.id}`}
-      transform={`translate(${coord.x}, ${coord.y})`}
-      onMouseDown={onMouseDown}
-    >
+    <g id={`node-${data.id}`} transform={`translate(${coord.x}, ${coord.y})`}>
       {style.isNone ? (
         <g>
           <circle r={sceneCoords.scale * 0.035} fill="#aaa" />
@@ -57,7 +52,12 @@ const Node = ({ data, tikzStyles, selected, highlight, onMouseDown, sceneCoords 
           stroke-width={sceneCoords.scale * 0.025}
         />
       ) : (
-        <circle r={r} fill={fillColor} stroke={drawColor} stroke-width={sceneCoords.scale * 0.025} />
+        <circle
+          r={r}
+          fill={fillColor}
+          stroke={drawColor}
+          stroke-width={sceneCoords.scale * 0.025}
+        />
       )}
       {data.label !== "" && (
         <g>
