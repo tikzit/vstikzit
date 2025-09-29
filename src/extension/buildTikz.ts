@@ -69,17 +69,12 @@ async function cleanAuxFiles(fileName: string, cacheDir: vscode.Uri): Promise<vo
   }
 }
 
-async function sh(path: string, command: string, args: string[]): Promise<number> {
+async function sh(path: string, command: string, args: string[]): Promise<number | null> {
   const cmd = spawn(command, args, { cwd: path, shell: false });
-
-  return new Promise((resolve, reject) => {
-    cmd.on("close", async code => {
+  return new Promise(resolve => {
+    cmd.on("close", code => {
       // console.log(`${command} exited with code ${code}`);
-      if (code === 0) {
-        resolve(code);
-      } else {
-        reject(code);
-      }
+      resolve(code);
     });
   });
 }
@@ -90,7 +85,7 @@ async function buildTikz(
   source: string | undefined,
   tikzIncludes: string,
   svg: boolean = false
-): Promise<number> {
+): Promise<number | null> {
   // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}, svg = ${svg}`);
   const tikzCacheFolder = svg
     ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
@@ -116,50 +111,49 @@ async function buildTikz(
   // if this document has a file name, get the base name
   const baseName = path.basename(fileName, ".tikz") ?? "tikzfigure";
   const texFile = baseName + ".tmp.tex";
+  let code: number | null = null;
 
   await vscode.workspace.fs.writeFile(
     vscode.Uri.joinPath(tikzCacheFolder, texFile),
     Buffer.from(tex)
   );
 
-  try {
-    await sh(tikzCacheFolder.fsPath, "pdflatex", [
-      "-interaction=nonstopmode",
-      "-halt-on-error",
-      texFile,
+  code = await sh(tikzCacheFolder.fsPath, "pdflatex", [
+    "-interaction=nonstopmode",
+    "-halt-on-error",
+    texFile,
+  ]);
+  if (code !== 0) {
+    throw code;
+  }
+
+  let outExt = "pdf";
+  if (svg) {
+    outExt = "svg";
+    code = await sh(tikzCacheFolder.fsPath, "dvisvgm", [
+      "--pdf",
+      "--no-fonts",
+      "--scale=2,2",
+      baseName + ".tmp.pdf",
+      "-o",
+      baseName + ".tmp.svg",
     ]);
-
-    let outExt = "pdf";
-    if (svg) {
-      outExt = "svg";
-      await sh(tikzCacheFolder.fsPath, "dvisvgm", [
-        "--pdf",
-        "--no-fonts",
-        "--scale=2,2",
-        baseName + ".tmp.pdf",
-        "-o",
-        baseName + ".tmp.svg",
-      ]);
-    }
-
-    // copy the contents of FILE.tmp.(pdf|svg) into FILE.(pdf|svg)
-    // console.log(`Copying ${baseName}.tmp.${outExt} to ${baseName}.${outExt}`);
-    const outContent = await vscode.workspace.fs.readFile(
-      vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.tmp.${outExt}`)
-    );
-    await vscode.workspace.fs.writeFile(
-      vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.${outExt}`),
-      outContent
-    );
-
-    return 0;
-  } catch (err) {
-    if (typeof err === "number") {
-      return err;
-    } else {
-      throw err;
+    if (code !== 0) {
+      throw code;
     }
   }
+
+  // copy the contents of FILE.tmp.(pdf|svg) into FILE.(pdf|svg)
+  // console.log(`Copying ${baseName}.tmp.${outExt} to ${baseName}.${outExt}`);
+  const outContent = await vscode.workspace.fs.readFile(
+    vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.tmp.${outExt}`)
+  );
+  await vscode.workspace.fs.writeFile(
+    vscode.Uri.joinPath(tikzCacheFolder, `${baseName}.${outExt}`),
+    outContent
+  );
+
+  return 0;
 }
 
 async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
@@ -183,7 +177,7 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
     statusBarItem.text = "$(sync~spin) Building TikZ figure";
     statusBarItem.show();
     buildTikz(workspaceRoot, document.uri.fsPath, document.getText(), tikzIncludes, svg).then(
-      async (_: number) => {
+      async _ => {
         await cleanAuxFiles(document.uri.fsPath, tikzCacheFolder);
         await cleanBuildDir(tikzCacheFolder);
         statusBarItem.dispose();
@@ -193,6 +187,7 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
         const baseName = path.basename(document.uri.fsPath, ".tikz") ?? "tikzfigure";
         const logFile = baseName + ".tmp.log";
         vscode.window.showTextDocument(vscode.Uri.joinPath(tikzCacheFolder, logFile));
+        statusBarItem.dispose();
       }
     );
   } catch (error) {
