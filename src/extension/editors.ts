@@ -190,7 +190,7 @@ class BaseEditorProvider {
   }
 
   async setErrors(errors: { line: number; column: number; message: string }[]): Promise<void> {
-    console.log("Setting errors", JSON.stringify(errors));
+    // console.log("Setting errors", JSON.stringify(errors));
     const diagnostics: vscode.Diagnostic[] = errors.map(err => {
       const range = new vscode.Range(err.line, err.column, err.line, err.column + 1);
       const diagnostic = new vscode.Diagnostic(range, err.message, vscode.DiagnosticSeverity.Error);

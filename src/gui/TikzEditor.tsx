@@ -105,7 +105,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   };
 
   const handleCurrentNodeLabelChanged = (label: string) => {
-    console.log("label changed to", label);
+    // console.log("label changed to", label);
     if (selectedNodes.size === 1) {
       setCurrentNodeLabel(label);
 
