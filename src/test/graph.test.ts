@@ -849,7 +849,7 @@ describe("Graph", () => {
       assert.strictEqual(mergedGraph.numNodes, 2, "Graph should have 2 nodes after merging");
       assert.strictEqual(mergedGraph.numEdges, 1, "Graph should have 1 edge after merging");
       assert.strictEqual(mergedGraph.edge(1)?.source, 1, "Remaining edge should have source 1");
-      assert.strictEqual(mergedGraph.edge(1)?.target, 2, "Remaining edge should have target 2");
+      assert.strictEqual(mergedGraph.edge(1)?.target, 3, "Remaining edge should have target 3");
     });
   });
 });

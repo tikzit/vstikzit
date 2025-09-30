@@ -265,7 +265,7 @@ class Graph {
       }
     }
 
-    return g.removeDanglingPaths();
+    return g.fixPaths();
   }
 
   public removeEdges(edges: Iterable<number>): Graph {
@@ -275,7 +275,7 @@ class Graph {
     for (const e of remove) {
       g._edgeData.delete(e);
     }
-    return g.removeDanglingPaths();
+    return g.fixPaths();
   }
 
   public removePath(pathId: number): Graph {
@@ -285,50 +285,48 @@ class Graph {
     return g;
   }
 
-  // after removing edges, cut paths into multiple pieces where edges are missing
-  // and remove any empty paths
-  private removeDanglingPaths(): Graph {
+  // after modifying or removing edges, cut paths into multiple pieces where edges are missing
+  // or non-contiguous, and remove any empty paths
+  private fixPaths(): Graph {
     let g = new Graph(this);
     const paths = Array.from(g._pathData.values());
 
     for (const pd of paths) {
-      let edges: number[] = [];
-      let newPath = false;
+      // split path into parts where edges are present and contiguous
+      const pathParts: number[][] = [[]];
       for (const e of pd.edges) {
+        let es = pathParts[pathParts.length - 1];
         if (g._edgeData.has(e)) {
-          edges.push(e);
-        } else {
-          if (edges.length > 0) {
-            if (!newPath) {
-              g = g.updatePathData(pd.id, p => p.setEdges(edges));
-            } else {
-              const pathId = g.freshPathId;
-              g = g.addPathWithData(new PathData().setId(pathId).setEdges(edges));
-              edges.forEach(e => {
-                g = g.updateEdgeData(e, ed => ed.setPath(pathId));
-              });
+          if (es.length > 0) {
+            const lastE = g._edgeData.get(es[es.length - 1])!;
+            if (lastE.target !== g._edgeData.get(e)!.source) {
+              pathParts.push([]);
+              es = pathParts[pathParts.length - 1];
             }
-            newPath = true;
-            edges = [];
           }
+          es.push(e);
+        } else if (es.length > 0) {
+          pathParts.push([]);
         }
       }
 
-      if (edges.length > 0) {
-        if (!newPath) {
-          g = g.updatePathData(pd.id, p => p.setEdges(edges));
-        } else {
-          const pathId = g.freshPathId;
-          g = g.addPathWithData(new PathData().setId(pathId).setEdges(edges));
-          edges.forEach(e => {
-            g = g.updateEdgeData(e, ed => ed.setPath(pathId));
-          });
-        }
-        newPath = true;
+      if (pathParts[pathParts.length - 1].length === 0) {
+        pathParts.pop();
       }
 
-      if (!newPath) {
+      if (pathParts.length === 0) {
         g = g.removePath(pd.id);
+        continue;
+      }
+
+      let pathId = pd.id;
+      for (const part of pathParts) {
+        // reuse the existing path ID for the first part
+        g = g.addPathWithData(new PathData().setId(pathId).setEdges(part));
+        part.forEach(e => {
+          g = g.updateEdgeData(e, ed => ed.setPath(pathId));
+        });
+        pathId = g.freshPathId;
       }
     }
     return g;
@@ -477,14 +475,14 @@ class Graph {
     return this.mapNodeData(d => d.setCoord(d.coord.shift(dx, dy)));
   }
 
-  // merge nodes that are in identical positions within the given selection
+  // merge nodes that are at identical positions within the given selection
   public mergeNodes(sel: Set<number>): Graph {
     let g = new Graph(this);
-    const posMap: Map<[number, number], number[]> = new Map();
+    const posMap: Map<string, number[]> = new Map();
     const mergeMap: Map<number, number> = new Map();
 
     for (const n of g.nodes) {
-      const key: [number, number] = [Math.round(n.coord.x * 40), Math.round(n.coord.y * 40)];
+      const key = `${Math.round(n.coord.x * 40)},${Math.round(n.coord.y * 40)}`;
       if (!posMap.has(key)) {
         posMap.set(key, [n.id]);
       } else {
@@ -492,6 +490,9 @@ class Graph {
       }
     }
 
+    // console.log(JSON.stringify(Array.from(posMap.entries())));
+
+    const removeNodes = [];
     for (let ids of posMap.values()) {
       if (ids.length > 1) {
         ids.reverse();
@@ -503,7 +504,7 @@ class Graph {
           for (const id of ids) {
             mergeMap.set(id, target);
           }
-          g = g.removeNodes(ids);
+          removeNodes.push(...ids);
         }
       }
     }
@@ -524,7 +525,7 @@ class Graph {
       }
     }
 
-    g = g.removeDanglingPaths();
+    g = g.removeNodes(removeNodes);
     return g;
   }
 
