@@ -349,7 +349,7 @@ class Graph {
     const pd = this._pathData.get(pathId)!;
 
     if (pd.edges.length > 1) {
-      graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.slice(0, 1)).setIsCycle(false));
+      graph = graph.updatePathData(pathId, p => p.setEdges(pd.edges.slice(0, 1)));
       for (const e of pd.edges.slice(1)) {
         const newPathId = graph.freshPathId;
         graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges([e]));
@@ -427,10 +427,6 @@ class Graph {
       } else {
         return this;
       }
-    }
-
-    if (graph.pathSource(path) === graph.pathTarget(path)) {
-      graph = graph.updatePathData(path, p => p.setIsCycle(true));
     }
     return graph;
   }
@@ -627,6 +623,7 @@ class Graph {
       for (const edgeId of pd.edges.slice(1)) {
         d = this.edge(edgeId)!;
         edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
+        // TODO: deal with cycles properly here
         result += ` to${d.tikz()}${edgeNode} ${d.targetRef}`;
       }
       result += ";\n";

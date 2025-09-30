@@ -430,7 +430,6 @@ class TikzParser extends EmbeddedActionsParser {
           this.ACTION(() => {
             const d = this.d as EdgeData;
             if (this.currentPath && this.currentPath.edges.length > 0) {
-              this.currentPath = this.currentPath.setIsCycle(true);
               const firstEdge = this.currentPath.edges[0];
               this.d = d.setTarget(this.graph?.edge(firstEdge)?.source ?? -1);
             } else {

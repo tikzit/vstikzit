@@ -526,9 +526,6 @@ describe("Graph", () => {
         "Second path should contain edge 2"
       );
       assert.strictEqual(splitGraph.edge(2)?.path, newPathId);
-
-      // Original path should no longer be a cycle
-      assert.strictEqual(splitGraph.path(1)?.isCycle, false);
     });
 
     it("should split a multi-edge path into individual single-edge paths", () => {
@@ -571,15 +568,12 @@ describe("Graph", () => {
       graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
       graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(1));
-      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]).setIsCycle(true));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       const splitGraph = graph.splitPath(1);
 
       assert.strictEqual(splitGraph.numPaths, 3);
       assert.strictEqual(splitGraph.numEdges, 3);
-
-      // Original path should no longer be a cycle after splitting
-      assert.strictEqual(splitGraph.path(1)?.isCycle, false);
     });
   });
 
@@ -743,7 +737,6 @@ describe("Graph", () => {
       assert.strictEqual(joinedGraph.numEdges, 3);
 
       // Should form a cycle
-      assert.strictEqual(joinedGraph.path(1)?.isCycle, true, "Joined path should be a cycle");
       assert.ok(
         arrayEquals(joinedGraph.path(1)?.edges, [1, 2, 3]),
         "Joined path should contain all edges"

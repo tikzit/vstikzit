@@ -369,20 +369,14 @@ class EdgeData extends Data<EdgeData> {
 class PathData {
   private _id: number;
   private _edges: number[];
-  private _isCycle: boolean;
 
   constructor(data?: PathData) {
     this._id = data?._id ?? -1;
     this._edges = data?._edges ?? [];
-    this._isCycle = data?._isCycle ?? false;
   }
 
   public equals(other: PathData): boolean {
-    return (
-      this._id === other._id &&
-      arrayEquals(this._edges, other._edges) &&
-      this._isCycle === other._isCycle
-    );
+    return this._id === other._id && arrayEquals(this._edges, other._edges);
   }
 
   public get id(): number {
@@ -391,10 +385,6 @@ class PathData {
 
   public get edges(): number[] {
     return this._edges;
-  }
-
-  public get isCycle(): boolean {
-    return this._isCycle;
   }
 
   public setId(id: number): PathData {
@@ -406,12 +396,6 @@ class PathData {
   public setEdges(edges: number[]): PathData {
     const p = new PathData(this);
     p._edges = edges;
-    return p;
-  }
-
-  public setIsCycle(isCycle: boolean): PathData {
-    const p = new PathData(this);
-    p._isCycle = isCycle;
     return p;
   }
 
