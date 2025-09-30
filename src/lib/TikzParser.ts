@@ -160,6 +160,8 @@ class TikzParser extends EmbeddedActionsParser {
   });
 
   public tikzPicture = this.RULE("tikzPicture", () => {
+    // entry point for parsing a tikz picture. Note we make begin/end statements
+    // optional so we can parse empty files
     this.ACTION(() => {
       this.graph = new Graph();
       this.nodeIds = new Map();
@@ -519,6 +521,17 @@ function parseTikz(
     return {
       errors: lexResult.errors.map(e => new ParseError(e.line || 1, e.column || 1, e.message)),
     };
+  }
+
+  // empty input
+  if (lexResult.tokens.length === 0) {
+    if (parseStyles) {
+      // return styles with just "none" style
+      return { result: new Styles().addStyle(new StyleData()), errors: [] };
+    } else {
+      // return empty graph
+      return { result: new Graph(), errors: [] };
+    }
   }
 
   parser.input = lexResult.tokens;

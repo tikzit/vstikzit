@@ -486,7 +486,7 @@ class Graph {
       }
     }
 
-    // console.log(JSON.stringify(Array.from(posMap.entries())));
+    console.log(JSON.stringify(Array.from(posMap.entries())));
 
     const removeNodes = [];
     for (let ids of posMap.values()) {
