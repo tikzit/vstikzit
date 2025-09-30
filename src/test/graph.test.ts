@@ -835,4 +835,21 @@ describe("Graph", () => {
       assert.ok(!joinedGraph.hasPath(3), "Path 3 should be removed");
     });
   });
+
+  describe("Node merging operations", () => {
+    it("should merge two nodes correctly", () => {
+      let graph = new Graph();
+      graph = graph.addNodeWithData(new NodeData().setId(1).setCoord(new Coord(0, 0)));
+      graph = graph.addNodeWithData(new NodeData().setId(2).setCoord(new Coord(1, 0)));
+      graph = graph.addNodeWithData(new NodeData().setId(3).setCoord(new Coord(1, 0)));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2]));
+      const mergedGraph = graph.mergeNodes(new Set([3]));
+      assert.strictEqual(mergedGraph.numNodes, 2, "Graph should have 2 nodes after merging");
+      assert.strictEqual(mergedGraph.numEdges, 1, "Graph should have 1 edge after merging");
+      assert.strictEqual(mergedGraph.edge(1)?.source, 1, "Remaining edge should have source 1");
+      assert.strictEqual(mergedGraph.edge(1)?.target, 2, "Remaining edge should have target 2");
+    });
+  });
 });

@@ -477,6 +477,57 @@ class Graph {
     return this.mapNodeData(d => d.setCoord(d.coord.shift(dx, dy)));
   }
 
+  // merge nodes that are in identical positions within the given selection
+  public mergeNodes(sel: Set<number>): Graph {
+    let g = new Graph(this);
+    const posMap: Map<[number, number], number[]> = new Map();
+    const mergeMap: Map<number, number> = new Map();
+
+    for (const n of g.nodes) {
+      const key: [number, number] = [Math.round(n.coord.x * 40), Math.round(n.coord.y * 40)];
+      if (!posMap.has(key)) {
+        posMap.set(key, [n.id]);
+      } else {
+        posMap.get(key)!.push(n.id);
+      }
+    }
+
+    for (let ids of posMap.values()) {
+      if (ids.length > 1) {
+        ids.reverse();
+
+        // the merge target is chosen to be the frontmost selected node, if any
+        const target = ids.find(id => sel.has(id));
+        ids = ids.filter(id => id !== target);
+        if (target !== undefined) {
+          for (const id of ids) {
+            mergeMap.set(id, target);
+          }
+          g = g.removeNodes(ids);
+        }
+      }
+    }
+
+    for (const e of g.edges) {
+      if (mergeMap.has(e.source) || mergeMap.has(e.target)) {
+        const newSource = mergeMap.get(e.source) ?? e.source;
+        const newTarget = mergeMap.get(e.target) ?? e.target;
+        const newEdge = e.setSource(newSource).setTarget(newTarget);
+        const createsLoop = e.source !== e.target && newSource === newTarget;
+
+        // only keep the edge if it doesn't already exist and it isn't creating a new self-loop
+        if (!createsLoop && g.edges.find(ed => newEdge.hasSameData(ed)) === undefined) {
+          g = g.setEdgeData(e.id, newEdge);
+        } else {
+          g = g.removeEdges([e.id]);
+        }
+      }
+    }
+
+    g = g.removeDanglingPaths();
+    return g;
+  }
+
   public get freshNodeId(): number {
     return this.maxNodeId + 1;
   }

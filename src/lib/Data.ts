@@ -238,14 +238,21 @@ class EdgeData extends Data<EdgeData> {
   }
 
   public equals(other: EdgeData): boolean {
+    return this.id === other.id && this.hasSameData(other);
+  }
+
+  public hasSameData(other: EdgeData): boolean {
     return (
-      super.equals(other) &&
+      mapEquals(this._map, other._map) &&
       this._source === other._source &&
       this._target === other._target &&
       this._path === other._path &&
       this._sourceAnchor === other._sourceAnchor &&
       this._targetAnchor === other._targetAnchor &&
-      this._edgeNode === other._edgeNode
+      (this._edgeNode === other._edgeNode ||
+        (this._edgeNode !== undefined &&
+          other._edgeNode !== undefined &&
+          this._edgeNode.equals(other._edgeNode)))
     );
   }
 
@@ -372,7 +379,9 @@ class PathData {
 
   public equals(other: PathData): boolean {
     return (
-      this._id === other._id && arrayEquals(this._edges, other._edges) && this._isCycle === other._isCycle
+      this._id === other._id &&
+      arrayEquals(this._edges, other._edges) &&
+      this._isCycle === other._isCycle
     );
   }
 

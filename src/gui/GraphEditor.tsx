@@ -688,6 +688,15 @@ const GraphEditor = ({
         }
         break;
       }
+      case "vstikzit.mergeNodes": {
+        if (selectedNodes.size > 0) {
+          const g = graph.mergeNodes(selectedNodes);
+          if (!g.equals(graph)) {
+            updateGraph(g, true);
+          }
+        }
+        break;
+      }
       case "vstikzit.showHelp": {
         updateUIState({ helpVisible: true });
         break;
