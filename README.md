@@ -1,5 +1,7 @@
 # TikZiT for VS Code
 
+![TikZiT for VS Code screenshot](https://raw.githubusercontent.com/tikzit/vstikzit/main/images/screenshot.png)
+
 [TikZiT](https://tikzit.github.io) is a simple GUI editor for graphs and diagrams. Its native file format is a subset of PGF/TikZ, which means TikZiT files can be included directly in papers typeset using LaTeX. It is a stand-alone application that has been around for about 15 years. This is a VS Code extension that provides a very similar UI to TikZiT directly inside of the editor.
 
 This is still experimental, with some features, bugfixes, and documentation still to come. However, the main features of TikZiT have been implemented, along with some new goodies that make use of the VS Code environment. Please try it and tell me what you think! As usual, you can report issues on the [issue tracker](https://github.com/tikzit/vstikzit/issues).
@@ -17,6 +19,22 @@ Once the extension is installed, `.tikz` files will automatically open in the Ti
 TikZiT expects your workspace to be a LaTeX project set up similarly to the [TikZiT template](https://github.com/tikzit/template-quantum). Namely, `.tikz` files are stored in a `figures/` subdirectory, and the route directory additionally contains [tikzit.sty](https://github.com/tikzit/template-quantum/blob/master/tikzit.sty), as well as a `.tikzstyles`, and optionally a `.tikzdefs`.
 
 The `.tikzstyles` file is used to define styles for nodes and edges. This is used both by the TikZiT UI and should be `\input`-ed directly into your LaTeX document. To edit styles, simply open the `.tikzstyles` file in VS Code. All of the properties TikZiT recognizes are editable in the the style editor UI, but may also want to edit this file directly. Double-clicking any style in the style editor will open the source code at the appropriate line.
+
+## Toggling TikZ source view
+
+With a TikZiT tab open, you can press `Ctrl+Alt+T` (or `Cmd+Alt+T` on Mac) to toggle between the graphical editor and the TikZ source code. If a node or edge is selected, the cursor will jump to the corresponding line in the source view. This is the only way to edit PGF/TikZ properties on a picture, node, or edge that are not used by TikZiT. Editing the source code will be reflected immediately in the UI, but you should still save changes before closing the source tab otherwise VS Code might revert them because of how it handles multiple editors open for the same file.
+
+## Open in TikZiT
+
+If you have a TeX file open, any `\tikzfig` or `\ctikzfig` commands will be detected and turned into links you can Alt+Click (or Cmd+Click on Mac) to open the corresponding `.tikz` file in the TikZiT editor. With the cursor over such a command, you can also run the "TikZiT: Open Figure" command from the command palette (Ctrl+Alt+T or Cmd+Alt+T by default). If you use the VIM extension, you can bind a normal mode key to this command, e.g.:
+
+```json
+  "vim.normalModeKeyBindings": [
+    { "before": ["<leader>", "t"], "commands": ["vstikzit.openTikzEditor"] },
+  ],
+```
+This command will also jump to the graphical TikZ editor if you are viewing the source of a `.tikz` file.
+
 
 ## Preview and Sync
 
