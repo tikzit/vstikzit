@@ -8,7 +8,7 @@ This is still experimental, with some features, bugfixes, and documentation stil
 
 TikZiT for VS Code is not yet available on the VS Code marketplace, however it is still easy to install via VSIX file.
 
-Download the latest `.vsix` file from the [releases page](https://github.com/tikzit/vstikzit/releases). Then, in VS Code, open the command palette (Ctrl+Shift+P or Cmd+Shift+P) and select "Extensions: Install from VSIX...". Select the downloaded file and follow the prompts to install the extension.
+Download the latest `.vsix` file from the [releases page](https://github.com/tikzit/vstikzit/releases) by expanding the "Assets" section and clicking on `vstikzit-X.Y.Z.vsix`. Then, in VS Code, open the command palette (Ctrl+Shift+P or Cmd+Shift+P) and select "Extensions: Install from VSIX...". Select the downloaded file and follow the prompts to install the extension.
 
 ## Usage
 
@@ -30,7 +30,7 @@ For TikZ previews, I find it is most convenient to configure the LaTeX Workshop 
 
 Unlike the desktop application, the VS Code extension has features to automatically sync your entire figures directory with prebuild PDFs in `cache`. This is especially useful if you are using draft mode for `tikzit.sty`, via `\usepackage[draft]{tikzit}`. In draft mode, the LaTeX document will include prebuilt PDFs instead of the full TikZ code (if available), which can significantly reduce build time.
 
-To start syncing, open the command palette (Ctrl+Shift+P or Cmd+Shift+P) and select "TikZiT: Sync TikZ Figures". This will watch your `figures/` directory for changes to `.tikz` files, and automatically build the corresponding PDFs in `cache/`. You can stop syncing at any time by selecting "TikZiT: Stop Syncing Figures" from the command palette. 
+To start syncing, open the command palette and select "TikZiT: Sync TikZ Figures". This will watch your `figures/` directory for changes to `.tikz` files, and automatically build the corresponding PDFs in `cache/`. You can stop syncing at any time by selecting "TikZiT: Stop Syncing Figures" from the command palette. 
 
 Both the build and sync commands have variants that will build to SVG instead of PDF, e.g. for use on the web or in [HTML slides](https://www.cs.ox.ac.uk/people/aleks.kissinger/slides/zx/pqs-zx-seminar-sept2025-60min.html). These are both available from the command palette.
 
