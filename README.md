@@ -60,6 +60,7 @@ The extension is nearly at feature parity with the desktop application, but ther
 - [ ] Move nodes/edges up and down in the Z-order
 - [ ] More UI support and testing for multi-edge/filled paths
 - [ ] Customization via user settings (colors, paths, keybindings, etc)
+- [ ] Support for labels next to nodes via `label=` property
 - [ ] Automatically crash editor when `B` key is pressed (currently not planned)
 
 ## Development
