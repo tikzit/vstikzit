@@ -42,4 +42,16 @@ The extension is nearly at feature parity with the desktop application, but ther
 - [ ] Move nodes/edges up and down in the Z-order
 - [ ] More UI support and testing for multi-edge/filled paths
 - [ ] Customization via user settings (colors, paths, keybindings, etc)
-- [ ] Automatically crash editor when `B` key is pressed (currently not planned)
+- [-] Automatically crash editor when `B` key is pressed (currently not planned)
+
+## Development
+
+To set up a development environment, you just need `npm` and `git`. Clone the repository, then run `npm install` to install dependencies. You can then open the project in VS Code and press `F5` to launch a new VS Code window with the extension loaded. Open a `.tikz` file to try it out. Useful `npm` scripts are:
+
+- `npm run build` - Build the extension and webview
+- `npm run watch` - Build the extension and webview, then watch for changes
+- `npm run lint` - Run the linter
+- `npm run test` - Run unit tests
+- `npm run package` - Create a `.vsix` file for distribution
+
+There are also build scripts for a standalone version that runs in the browser. This can be run using `npm run preview`. This is currently just experimental, but I may find some use for it in the future.
