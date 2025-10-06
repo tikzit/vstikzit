@@ -140,4 +140,19 @@ describe("Tikzstyles parser", () => {
     // TODO: fix this. It currently doesn't output the spacing of numbers with unit of measure correctly.
     assert.strictEqual(strip(styles.tikz()), strip(input));
   });
+
+  it("should parse a tikz style with xcolor mix", () => {
+    const input = `\\tikzstyle{dot}=[fill=black!10, draw=red!30!blue]`;
+    const parsed = parseTikzStyles(input);
+    if (parsed.errors.length > 0) {
+      console.error("Parsing errors found:");
+      parsed.errors.forEach(error => {
+        console.error(`${error.line}(${error.column}): ${error.message}`);
+      });
+    }
+    assert.notStrictEqual(parsed.result, undefined);
+    const styles = parsed.result!;
+    assert.strictEqual(strip(styles.tikz()), strip(input));
+  });
 });
+
