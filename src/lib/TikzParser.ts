@@ -86,7 +86,7 @@ const Int = createToken({ name: "Int", pattern: /-?\d+/ });
 const Float = createToken({ name: "Float", pattern: /-?\d+\.\d+/ });
 const Identifier = createToken({ name: "Identifier", pattern: /[0-9a-zA-Z\-']+/ });
 
-const PropertyVal = createToken({ name: "PropertyVal", pattern: /[0-9a-zA-Z<>\-'.]+/ });
+const PropertyVal = createToken({ name: "PropertyVal", pattern: /[0-9a-zA-Z<>\-'.!]+/ });
 
 const allTokens = {
   modes: {
@@ -586,7 +586,7 @@ function isValidPropertyVal(value: string): boolean {
   // return parser.errors.length === 0;
 
   // pattern should be (PropertyVal | Whitespace)+
-  const pattern = /^[0-9a-zA-Z<>\-'. \t\n\r]+$/;
+  const pattern = /^[0-9a-zA-Z<>\-'.! \t\n\r]+$/;
   return pattern.test(value);
 }
 
