@@ -6,6 +6,7 @@ function currentUri(): vscode.Uri | undefined {
   if (!activeTab?.input) {
     return undefined;
   }
+  console.log(activeTab.input);
   const tabInput = activeTab.input as any;
   if (!tabInput.uri) {
     return undefined;
@@ -29,6 +30,7 @@ interface WebviewMessage {
 
 class BaseEditorProvider {
   private static openDocuments = new Set<vscode.TextDocument>();
+  private static openPanels = new Set<vscode.WebviewPanel>();
   private context: vscode.ExtensionContext;
   private isUpdatingFromGui: boolean = false;
   protected entryPoint: string = "unknown";
@@ -50,6 +52,10 @@ class BaseEditorProvider {
     return BaseEditorProvider.documentWithUri(uri);
   }
 
+  static currentPanel(): vscode.WebviewPanel | undefined {
+    return Array.from(BaseEditorProvider.openPanels).find(panel => panel.active && panel.visible);
+  }
+
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection("tikz");
@@ -65,6 +71,7 @@ class BaseEditorProvider {
     _token: vscode.CancellationToken
   ): Promise<void> {
     BaseEditorProvider.openDocuments.add(document);
+    BaseEditorProvider.openPanels.add(webviewPanel);
 
     // Setup webview options
     webviewPanel.webview.options = {
@@ -122,6 +129,7 @@ class BaseEditorProvider {
       changeDocumentSubscription.dispose();
       // Remove from tracking set
       BaseEditorProvider.openDocuments.delete(document);
+      BaseEditorProvider.openPanels.delete(webviewPanel);
     });
   }
 
