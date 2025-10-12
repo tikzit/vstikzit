@@ -13,6 +13,7 @@ class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
+  private commandHandler: ((command: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
   constructor() {
@@ -32,6 +33,12 @@ class TikzitExtensionHost implements TikzitHost {
           }
           break;
         }
+        case "command": {
+          if (message.content && this.commandHandler) {
+            this.commandHandler(message.content);
+          }
+          break;
+        }
       }
     };
 
@@ -48,6 +55,10 @@ class TikzitExtensionHost implements TikzitHost {
 
   public onTikzStylesUpdated(handler: (filename: string, source: string) => void) {
     this.tikzStylesUpdatedHandler = handler;
+  }
+
+  public onCommand(handler: (command: string) => void) {
+    this.commandHandler = handler;
   }
 
   public setErrors(errors: ParseError[]) {

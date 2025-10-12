@@ -10,6 +10,7 @@ import App from "./App";
 class TikzitBrowserHost implements TikzitHost {
   private updateFromGuiHandler: ((source: string) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
+  private commandHandler: ((command: string) => void) | undefined = undefined;
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
 
@@ -17,19 +18,23 @@ class TikzitBrowserHost implements TikzitHost {
     this.tikzStylesUpdatedHandler = handler;
   }
 
-  public setErrors(errors: ParseError[]) { }
+  public setErrors(errors: ParseError[]) {}
 
   public updateFromGui(tikz: string) {
-    // console.log("updateFromGui: ", this.updateFromGuiHandler !== undefined);
     if (this.updateFromGuiHandler) {
       this.updateFromGuiHandler(tikz);
     }
   }
 
   public updateToGui(tikz: string) {
-    // console.log("updateToGui: ", this.updateToGuiHandler !== undefined);
     if (this.updateToGuiHandler) {
       this.updateToGuiHandler(tikz);
+    }
+  }
+
+  public sendCommand(command: string) {
+    if (this.commandHandler) {
+      this.commandHandler(command);
     }
   }
 
@@ -41,11 +46,15 @@ class TikzitBrowserHost implements TikzitHost {
     this.updateToGuiHandler = handler;
   }
 
-  public refreshTikzStyles() { }
+  public onCommand(handler: (command: string) => void) {
+    this.commandHandler = handler;
+  }
 
-  public openTikzStyles() { }
+  public refreshTikzStyles() {}
 
-  public openCodeEditor(position?: { line: number; column: number }) { }
+  public openTikzStyles() {}
+
+  public openCodeEditor(position?: { line: number; column: number }) {}
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {

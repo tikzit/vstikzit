@@ -12,10 +12,12 @@ import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import { getCommandFromShortcut } from "../lib/commands";
 import Help from "./Help";
+import TikzitHost from "../lib/TikzitHost";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
 interface GraphEditorProps {
+  host: TikzitHost;
   tool: GraphTool;
   onToolChanged: (tool: GraphTool) => void;
   enabled: boolean;
@@ -52,6 +54,7 @@ const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
 };
 
 const GraphEditor = ({
+  host,
   tool,
   onToolChanged: setTool,
   enabled,
@@ -113,6 +116,10 @@ const GraphEditor = ({
       resizeObserver.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    host.onCommand(command => handleCommand(command));
+  }, [host]);
 
   useEffect(() => {
     // Draw the background grid
