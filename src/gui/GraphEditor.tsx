@@ -467,29 +467,7 @@ const GraphEditor = ({
     updateUIState("reset");
   };
 
-  const handleKeyDown = async (event: KeyboardEvent) => {
-    if (!enabled) {
-      return;
-    }
-
-    // ignore key events if focus is in an input field
-    if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
-      return;
-    }
-
-    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
-    const combo = [];
-    if (event.getModifierState(CTRL)) combo.push("Ctrl");
-    if (event.getModifierState("Alt")) combo.push("Alt");
-    if (event.getModifierState("Shift")) combo.push("Shift");
-    let key: string;
-    if (event.key.length === 1) {
-      key = event.key === "+" ? "Plus" : event.key.toUpperCase();
-    } else {
-      key = event.key;
-    }
-    combo.push(key);
-
+  const handleCommand = async (command: string) => {
     let capture = true;
 
     const moveSelectedNodes = (dx: number, dy: number) => {
@@ -501,45 +479,7 @@ const GraphEditor = ({
       }
     };
 
-    switch (getCommandFromShortcut(combo.join("+"))?.name) {
-      case "vstikzit.copy": {
-        if (selectedNodes.size !== 0) {
-          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-        }
-        break;
-      }
-      case "vstikzit.cut": {
-        if (selectedNodes.size !== 0) {
-          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-          const g = graph.removeNodes(selectedNodes);
-          updateGraph(g, true);
-          updateSelection(new Set(), new Set());
-        }
-        break;
-      }
-      case "vstikzit.paste": {
-        const pastedData = await window.navigator.clipboard.readText();
-        const parsed = parseTikzPicture(pastedData);
-        if (parsed.result !== undefined) {
-          let g = parsed.result;
-          const nodes = g.nodeIds;
-          if (nodes.length !== 0) {
-            const n = nodes[0];
-            while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
-              g = g.shiftGraph(0.5, -0.5);
-            }
-          }
-
-          const g1 = graph.insertGraph(g);
-          const sel = new Set(g1.nodeIds);
-          for (const n of graph.nodeIds) {
-            sel.delete(n);
-          }
-          updateGraph(g1, true);
-          updateSelection(sel, new Set());
-        }
-        break;
-      }
+    switch (command) {
       case "vstikzit.viewTikzSource": {
         viewTikz();
         break;
@@ -574,24 +514,6 @@ const GraphEditor = ({
       }
       case "vstikzit.nudgeDown": {
         moveSelectedNodes(0, -0.025);
-        break;
-      }
-      case "vstikzit.selectTool": {
-        setTool("select");
-        break;
-      }
-      case "vstikzit.nodeTool": {
-        setTool("vertex");
-        break;
-      }
-      case "vstikzit.edgeTool": {
-        setTool("edge");
-        break;
-      }
-      case "vstikzit.delete": {
-        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
-        updateGraph(g, true);
-        updateSelection(new Set(), new Set());
         break;
       }
       case "vstikzit.zoomOut": {
@@ -704,6 +626,93 @@ const GraphEditor = ({
       default: {
         capture = false;
         break;
+      }
+    }
+    return capture;
+  };
+
+  const handleKeyDown = async (event: KeyboardEvent) => {
+    if (!enabled) {
+      return;
+    }
+
+    // ignore key events if focus is in an input field
+    if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
+      return;
+    }
+
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
+    let capture = true;
+
+    if (event.getModifierState(CTRL)) {
+      switch (event.key) {
+        case "c": {
+          if (selectedNodes.size !== 0) {
+            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+          }
+          break;
+        }
+        case "x": {
+          if (selectedNodes.size !== 0) {
+            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+            const g = graph.removeNodes(selectedNodes);
+            updateGraph(g, true);
+            updateSelection(new Set(), new Set());
+          }
+          break;
+        }
+        case "v": {
+          const pastedData = await window.navigator.clipboard.readText();
+          const parsed = parseTikzPicture(pastedData);
+          if (parsed.result !== undefined) {
+            let g = parsed.result;
+            const nodes = g.nodeIds;
+            if (nodes.length !== 0) {
+              const n = nodes[0];
+              while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
+                g = g.shiftGraph(0.5, -0.5);
+              }
+            }
+
+            const g1 = graph.insertGraph(g);
+            const sel = new Set(g1.nodeIds);
+            for (const n of graph.nodeIds) {
+              sel.delete(n);
+            }
+            updateGraph(g1, true);
+            updateSelection(sel, new Set());
+          }
+          break;
+        }
+        default: {
+          capture = false;
+          break;
+        }
+      }
+    } else {
+      switch (event.key) {
+        case "s": {
+          setTool("select");
+          break;
+        }
+        case "n": {
+          setTool("vertex");
+          break;
+        }
+        case "e": {
+          setTool("edge");
+          break;
+        }
+        case "Delete": {
+          const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+          updateGraph(g, true);
+          updateSelection(new Set(), new Set());
+          break;
+        }
+        default: {
+          capture = false;
+          break;
+        }
       }
     }
 
