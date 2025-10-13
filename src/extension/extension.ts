@@ -86,8 +86,27 @@ function activate(context: vscode.ExtensionContext): void {
   );
 
   // graph editor commands
-  const commands = ["vstikzit.moveLeft"];
-  for (const command of commands) {
+  const graphCommands = [
+    "vstikzit.viewTikzSource",
+    "vstikzit.selectAll",
+    "vstikzit.deselectAll",
+    "vstikzit.extendSelectionLeft",
+    "vstikzit.extendSelectionRight",
+    "vstikzit.extendSelectionUp",
+    "vstikzit.extendSelectionDown",
+    "vstikzit.moveLeft",
+    "vstikzit.moveRight",
+    "vstikzit.moveUp",
+    "vstikzit.moveDown",
+    "vstikzit.nudgeLeft",
+    "vstikzit.nudgeRight",
+    "vstikzit.nudgeUp",
+    "vstikzit.nudgeDown",
+    "vstikzit.joinPaths",
+    "vstikzit.splitPaths",
+    "vstikzit.mergeNodes",
+  ];
+  for (const command of graphCommands) {
     context.subscriptions.push(
       vscode.commands.registerCommand(command, () => sendCommand(command))
     );

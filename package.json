@@ -22,47 +22,31 @@
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "vstikzit.buildCurrentTikzFigure",
-        "title": "Build TikZ figure",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.buildCurrentTikzFigureSVG",
-        "title": "Build TikZ figure as SVG",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.viewCurrentTikzFigure",
-        "title": "View TikZ figure",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.syncTikzFigures",
-        "title": "Sync TikZ Figures",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.syncTikzFiguresSVG",
-        "title": "Sync TikZ Figures with SVGs",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.openTikzEditor",
-        "title": "Open TikZ Editor",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.stopSyncingTikzFigures",
-        "title": "Stop Syncing TikZ Figures",
-        "category": "TikZiT"
-      },
-      {
-        "command": "vstikzit.moveLeft",
-        "title": "Graph > Move Nodes Left",
-        "category": "TikZiT",
-        "when": "resourceExtname == .tikz"
-      }
+      { "command": "vstikzit.buildCurrentTikzFigure", "title": "Build > Build TikZ figure", "category": "TikZiT" },
+      { "command": "vstikzit.buildCurrentTikzFigureSVG", "title": "Build > Build TikZ figure as SVG", "category": "TikZiT" },
+      { "command": "vstikzit.viewCurrentTikzFigure", "title": "Build > View TikZ figure", "category": "TikZiT" },
+      { "command": "vstikzit.syncTikzFigures", "title": "Build > Sync TikZ Figures", "category": "TikZiT" },
+      { "command": "vstikzit.syncTikzFiguresSVG", "title": "Build > Sync TikZ Figures with SVGs", "category": "TikZiT" },
+      { "command": "vstikzit.openTikzEditor", "title": "Build > Open TikZ Editor", "category": "TikZiT" },
+      { "command": "vstikzit.stopSyncingTikzFigures", "title": "Build > Stop Syncing TikZ Figures", "category": "TikZiT" },
+      { "command": "vstikzit.viewTikzSource", "title": "Edit > View TikZ Source", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.selectAll", "title": "Edit > Select All", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.deselectAll", "title": "Edit > Deselect All", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.extendSelectionLeft", "title": "Edit > Extend Selection Left", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.extendSelectionRight", "title": "Edit > Extend Selection Right", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.extendSelectionUp", "title": "Edit > Extend Selection Up", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.extendSelectionDown", "title": "Edit > Extend Selection Down", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.moveLeft", "title": "Edit > Move Nodes Left", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.moveRight", "title": "Edit > Move Nodes Right", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.moveUp", "title": "Edit > Move Nodes Up", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.moveDown", "title": "Edit > Move Nodes Down", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.nudgeLeft", "title": "Edit > Nudge Nodes Left", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.nudgeRight", "title": "Edit > Nudge Nodes Right", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.nudgeUp", "title": "Edit > Nudge Nodes Up", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.nudgeDown", "title": "Edit > Nudge Nodes Down", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.joinPaths", "title": "Edit > Join Paths", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.splitPaths", "title": "Edit > Split Paths", "category": "TikZiT", "when": "resourceExtname == .tikz" },
+      { "command": "vstikzit.mergeNodes", "title": "Edit > Merge Nodes", "category": "TikZiT", "when": "resourceExtname == .tikz "}
     ],
     "keybindings": [
       {
@@ -87,6 +71,7 @@
       {
         "command": "vstikzit.moveLeft",
         "key": "ctrl+left",
+        "mac": "cmd+left",
         "when": "resourceExtname == .tikz"
       }
     ],
