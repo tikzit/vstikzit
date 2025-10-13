@@ -114,9 +114,9 @@ function activate(context: vscode.ExtensionContext): void {
 }
 
 function sendCommand(command: string): void {
-  console.log("Got command", command);
   const panel = TikzEditorProvider.currentPanel();
-  console.log("Panel:", panel);
+  // console.log("Got command", command);
+  // console.log("Panel:", panel);
   if (panel) {
     panel.webview.postMessage({ type: "command", content: command });
   }
