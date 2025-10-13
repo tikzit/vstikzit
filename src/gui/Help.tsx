@@ -1,5 +1,4 @@
 import { useEffect } from "preact/hooks";
-import { commands } from "../lib/commands";
 
 interface HelpProps {
   visible: boolean;
@@ -37,6 +36,19 @@ const Help = ({ visible, onClose }: HelpProps) => {
 
     return fancyShortcut;
   };
+
+  const commands = [
+    { name: "vstikzit.showHelp", shortcuts: ["Shift+?"], description: "Show help" },
+    { name: "vstikzit.selectTool", shortcuts: ["S"], description: "Select tool" },
+    { name: "vstikzit.nodeTool", shortcuts: ["N"], description: "Node tool" },
+    { name: "vstikzit.edgeTool", shortcuts: ["E"], description: "Edge tool" },
+    { name: "vstikzit.zoomOut", shortcuts: ["-", "_"], description: "Zoom out" },
+    { name: "vstikzit.zoomIn", shortcuts: ["=", "+"], description: "Zoom in" },
+    { name: "vstikzit.cut", shortcuts: ["Ctrl+X"], description: "Cut" },
+    { name: "vstikzit.copy", shortcuts: ["Ctrl+C"], description: "Copy" },
+    { name: "vstikzit.paste", shortcuts: ["Ctrl+V"], description: "Paste" },
+    { name: "vstikzit.delete", shortcuts: ["Delete"], description: "Delete items" },
+  ];
 
   return (
     <div
@@ -93,9 +105,11 @@ const Help = ({ visible, onClose }: HelpProps) => {
         <div>
           <h2>Help</h2>
           <p>
-            To see TikZiT commands for opening, building, and previewing TikZ files, open the
-            command palette (Ctrl+Shift+P or Cmd+Shift+P) and type "TikZiT". Key bindings for the
-            graph editor are as follows:
+            Most commands can be accessed via the command palette (Ctrl+Shift+P or Cmd+Shift+P on
+            Mac) and typing "tikzit". To view and edit keybindings for those commands, run
+            "Preferences: Open Keyboard Shortcuts" from the command palette and search for "tikzit".
+            A few commands are built-in to the graph editor and not customisable. They are as
+            follows:
           </p>
           <br />
           <div>

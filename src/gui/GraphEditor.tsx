@@ -523,24 +523,6 @@ const GraphEditor = ({
         moveSelectedNodes(0, -0.025);
         break;
       }
-      case "vstikzit.zoomOut": {
-        const coords = sceneCoords.zoomOut();
-        const viewport = document.getElementById("graph-editor-viewport")!;
-        if (
-          coords.screenWidth >= viewport.clientWidth &&
-          coords.screenHeight >= viewport.clientHeight
-        ) {
-          updateSceneCoords(coords);
-        }
-        break;
-      }
-      case "vstikzit.zoomIn": {
-        const coords = sceneCoords.zoomIn();
-        if (coords.scale <= 1024) {
-          updateSceneCoords(coords);
-        }
-        break;
-      }
       case "vstikzit.joinPaths": {
         if (selectedPaths.size > 1) {
           const g = graph.joinPaths(selectedPaths);
@@ -626,10 +608,6 @@ const GraphEditor = ({
         }
         break;
       }
-      case "vstikzit.showHelp": {
-        updateUIState({ helpVisible: true });
-        break;
-      }
       default: {
         capture = false;
         break;
@@ -706,10 +684,34 @@ const GraphEditor = ({
           setTool("edge");
           break;
         }
+        case "?": {
+          updateUIState({ helpVisible: true });
+          break;
+        }
         case "Delete": {
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
           updateGraph(g, true);
           updateSelection(new Set(), new Set());
+          break;
+        }
+        case "_":
+        case "-": {
+          const coords = sceneCoords.zoomOut();
+          const viewport = document.getElementById("graph-editor-viewport")!;
+          if (
+            coords.screenWidth >= viewport.clientWidth &&
+            coords.screenHeight >= viewport.clientHeight
+          ) {
+            updateSceneCoords(coords);
+          }
+          break;
+        }
+        case "+":
+        case "=": {
+          const coords = sceneCoords.zoomIn();
+          if (coords.scale <= 1024) {
+            updateSceneCoords(coords);
+          }
           break;
         }
       }
