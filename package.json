@@ -86,8 +86,7 @@
       },
       {
         "command": "vstikzit.moveLeft",
-        "key": "ctrl+leftarrow",
-        "mac": "cmd+leftarrow",
+        "key": "ctrl+left",
         "when": "resourceExtname == .tikz"
       }
     ],

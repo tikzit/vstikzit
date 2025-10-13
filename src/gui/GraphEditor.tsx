@@ -119,7 +119,7 @@ const GraphEditor = ({
 
   useEffect(() => {
     host.onCommand(command => handleCommand(command));
-  }, [host]);
+  });
 
   useEffect(() => {
     // Draw the background grid
