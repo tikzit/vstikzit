@@ -84,6 +84,23 @@ function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor)
   );
+
+  // graph editor commands
+  const commands = ["vstikzit.moveLeft"];
+  for (const command of commands) {
+    context.subscriptions.push(
+      vscode.commands.registerCommand(command, () => sendCommand(command))
+    );
+  }
+}
+
+function sendCommand(command: string): void {
+  console.log("Got command", command);
+  const panel = TikzEditorProvider.currentPanel();
+  console.log("Panel:", panel);
+  if (panel) {
+    panel.webview.postMessage({ type: "command", content: command });
+  }
 }
 
 async function showError(uri: string, line?: number, column?: number): Promise<void> {

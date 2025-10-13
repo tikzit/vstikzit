@@ -6,7 +6,6 @@ function currentUri(): vscode.Uri | undefined {
   if (!activeTab?.input) {
     return undefined;
   }
-  console.log(activeTab.input);
   const tabInput = activeTab.input as any;
   if (!tabInput.uri) {
     return undefined;

@@ -56,6 +56,12 @@
         "command": "vstikzit.stopSyncingTikzFigures",
         "title": "Stop Syncing TikZ Figures",
         "category": "TikZiT"
+      },
+      {
+        "command": "vstikzit.moveLeft",
+        "title": "Graph > Move Nodes Left",
+        "category": "TikZiT",
+        "when": "resourceExtname == .tikz"
       }
     ],
     "keybindings": [
@@ -77,6 +83,12 @@
         "command": "vstikzit.openTikzEditor",
         "key": "ctrl+alt+t",
         "when": "resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html"
+      },
+      {
+        "command": "vstikzit.moveLeft",
+        "key": "ctrl+leftarrow",
+        "mac": "cmd+leftarrow",
+        "when": "resourceExtname == .tikz"
       }
     ],
     "languages": [

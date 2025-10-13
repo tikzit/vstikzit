@@ -20,6 +20,7 @@ class TikzitExtensionHost implements TikzitHost {
     this.vscode = acquireVsCodeApi();
     this.listener = (event: MessageEvent) => {
       const message = event.data;
+      console.log("Received message:", message);
       switch (message.type) {
         case "updateToGui": {
           if (message.content && this.updateToGuiHandler) {
