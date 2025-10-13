@@ -3,7 +3,6 @@
   "type": "module",
   "displayName": "TikZiT for VS Code",
   "description": "TikZiT-like GUI for editing tikz files in VS Code",
-  "publisher": "Aleks Kissinger",
   "repository": {
     "type": "git",
     "url": "https://github.com/tikzit/vstikzit.git"
