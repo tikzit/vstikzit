@@ -649,7 +649,7 @@ const GraphEditor = ({
     }
 
     const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
-    let capture = true;
+    event.preventDefault();
 
     if (event.getModifierState(CTRL)) {
       switch (event.key) {
@@ -691,10 +691,6 @@ const GraphEditor = ({
           }
           break;
         }
-        default: {
-          capture = false;
-          break;
-        }
       }
     } else {
       switch (event.key) {
@@ -716,16 +712,7 @@ const GraphEditor = ({
           updateSelection(new Set(), new Set());
           break;
         }
-        default: {
-          capture = false;
-          break;
-        }
       }
-    }
-
-    if (capture) {
-      event.preventDefault();
-      event.stopPropagation();
     }
   };
 
