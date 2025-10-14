@@ -8,9 +8,10 @@ This is still experimental, with some features, bugfixes, and documentation stil
 
 ## Installation
 
-TikZiT for VS Code is not yet available on the VS Code marketplace, however it is still easy to install via VSIX file.
+You can install the latest release of TikZiT for VS Code from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=AleksKissinger.vstikzit).
 
-Download the latest `.vsix` file from the [releases page](https://github.com/tikzit/vstikzit/releases) by expanding the "Assets" section and clicking on `vstikzit-X.Y.Z.vsix`. Then, in VS Code, open the command palette (Ctrl+Shift+P or Cmd+Shift+P) and select "Extensions: Install from VSIX...". Select the downloaded file and follow the prompts to install the extension.
+To install the latest development version, clone the [Git repo](https://github.com/tikzit/vstikzit) and follow the instructions in the [Development](#development) section to build a `.vsix` file. Then, in VS Code, open the command palette (Ctrl+Shift+P or Cmd+Shift+P) and select "Extensions: Install from VSIX...". Select the generated file and follow the prompts to install the extension.
+
 
 ## Usage
 
