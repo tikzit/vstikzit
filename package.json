@@ -1,5 +1,7 @@
 {
   "name": "vstikzit",
+  "publisher": "AleksKissinger",
+  "icon": "./images/tikzit.png",
   "type": "module",
   "displayName": "TikZiT for VS Code",
   "description": "TikZiT-like GUI for editing tikz files in VS Code",
@@ -7,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/tikzit/vstikzit.git"
   },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -182,7 +184,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.103.0",
-    "@vscode/vsce": "^3.6.0",
+    "@vscode/vsce": "^3.6.2",
     "chai": "^6.0.1",
     "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
