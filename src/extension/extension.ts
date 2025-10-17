@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { StyleEditorProvider, TikzEditorProvider, currentUri } from "./editors";
-import TikzLinkProvider from "./TikzLinkProvider";
+import TikzLinkProvider, { registerTikzLinkProvider } from "./TikzLinkProvider";
 import {
   buildCurrentTikzFigure,
   stopSyncTikzFigures,
@@ -9,6 +9,7 @@ import {
   syncTikzFiguresSVG,
 } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
+import path from "path";
 
 function activate(context: vscode.ExtensionContext): void {
   // register the custom tikz editor
@@ -35,20 +36,6 @@ function activate(context: vscode.ExtensionContext): void {
         },
         supportsMultipleEditorsPerDocument: false,
       }
-    )
-  );
-
-  // register the tikz link provider for LaTeX files
-  context.subscriptions.push(
-    vscode.languages.registerDocumentLinkProvider(
-      [
-        { language: "tex", scheme: "file" },
-        { language: "latex", scheme: "file" },
-        { language: "html", scheme: "file" },
-        { pattern: "**/*.tex", scheme: "file" },
-        { pattern: "**/*.html", scheme: "file" },
-      ],
-      new TikzLinkProvider()
     )
   );
 
@@ -84,6 +71,26 @@ function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("vstikzit.openTikzEditor", openTikzEditor)
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("vstikzit.openOrCreateTikz", openOrCreateTikz)
+  );
+
+  // // register the tikz link provider for LaTeX files
+  // context.subscriptions.push(
+  //   vscode.languages.registerDocumentLinkProvider(
+  //     [
+  //       { language: "tex", scheme: "file" },
+  //       { language: "latex", scheme: "file" },
+  //       { language: "html", scheme: "file" },
+  //       { pattern: "**/*.tex", scheme: "file" },
+  //       { pattern: "**/*.html", scheme: "file" },
+  //     ],
+  //     new TikzLinkProvider()
+  //   )
+  // );
+
+  registerTikzLinkProvider(context);
 
   // graph editor commands
   const graphCommands = [
@@ -141,6 +148,29 @@ function openTikzEditor(): void {
       vscode.commands.executeCommand("editor.action.openLink");
     }
   }
+}
+
+async function openOrCreateTikz(uriStr: string): Promise<void> {
+  const fileUri = vscode.Uri.file(uriStr);
+  try {
+    // Check existence
+    await vscode.workspace.fs.stat(fileUri);
+  } catch {
+    // Not found -> ask to create
+    const fileName = fileUri.path.split("/").pop();
+    const choice = await vscode.window.showInformationMessage(
+      `${fileName} does not exist. Create it?`,
+      "Create",
+      "Cancel"
+    );
+    if (choice === "Create") {
+      await vscode.workspace.fs.writeFile(fileUri, new Uint8Array());
+    } else {
+      return; // User cancelled
+    }
+  }
+  // Open the file with the TikZ Editor
+  vscode.commands.executeCommand("vscode.openWith", fileUri, "vstikzit.tikzEditor");
 }
 
 function deactivate(): void {
