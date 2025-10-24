@@ -37,6 +37,7 @@ interface UIState {
   draggingNodes?: boolean;
   prevGraph?: Graph;
   mouseDownPos?: Coord;
+  mouseMoved?: boolean;
   selectionRect?: { x: number; y: number; width: number; height: number };
   edgeStartNode?: number;
   edgeEndNode?: number;
@@ -80,8 +81,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(d => d.path)
+        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+        .map(d => d.path)
   );
 
   useEffect(() => {
@@ -195,7 +196,7 @@ const GraphEditor = ({
               updateSelection(sel, selectedEdges);
             }
           } else {
-            updateUIState({ prevGraph: graph, draggingNodes: true });
+            updateUIState({ prevGraph: graph, draggingNodes: true, mouseMoved: false });
             if (!selectedNodes.has(clickedNode)) {
               updateSelection(new Set([clickedNode]), new Set());
             }
@@ -243,6 +244,7 @@ const GraphEditor = ({
       return;
     }
     const p = mousePositionToCoord(event);
+    updateUIState({ mouseMoved: true });
 
     switch (tool) {
       case "select":
@@ -424,7 +426,12 @@ const GraphEditor = ({
 
           updateSelection(sel, selectedEdges);
         } else if (uiState.draggingNodes) {
-          if (!uiState.prevGraph?.equals(graph)) {
+          if (!uiState.mouseMoved) {
+            // if multiple nodes are selected and I've clicked one of them without dragging, select only that node
+            if (clickedNode !== undefined) {
+              updateSelection(new Set([clickedNode]), new Set());
+            }
+          } else if (!uiState.prevGraph?.equals(graph)) {
             updateGraph(graph, true);
           }
         } else if (clickedControlPoint.current !== undefined) {
