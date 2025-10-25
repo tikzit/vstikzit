@@ -688,6 +688,7 @@ const GraphEditor = ({
           updateUIState({ helpVisible: true });
           break;
         }
+        case "Backspace":
         case "Delete": {
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
           updateGraph(g, true);
