@@ -20,6 +20,16 @@ class SceneCoords {
     }
   }
 
+  public equals(other: SceneCoords): boolean {
+    return (
+      this._zoom === other._zoom &&
+      this._left === other._left &&
+      this._right === other._right &&
+      this._up === other._up &&
+      this._down === other._down
+    );
+  }
+
   // Getters
   public get zoom(): number {
     return this._zoom;

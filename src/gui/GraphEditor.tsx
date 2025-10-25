@@ -70,6 +70,7 @@ const GraphEditor = ({
   currentEdgeStyle,
 }: GraphEditorProps) => {
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
+  const oldSceneCoords = useRef<SceneCoords>(sceneCoords);
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
 
   // refs used to pass data from edge components to the graph editor
@@ -126,6 +127,18 @@ const GraphEditor = ({
     // Draw the background grid
     const editor = document.getElementById("graph-editor")!;
     drawGrid(editor, sceneCoords);
+
+    if (!oldSceneCoords.current.equals(sceneCoords)) {
+      const viewport = document.getElementById("graph-editor-viewport")!;
+      const c0 = new Coord(
+        viewport.scrollLeft + viewport.clientWidth / 2,
+        viewport.scrollTop + viewport.clientHeight / 2
+      );
+      const c1 = sceneCoords.coordToScreen(oldSceneCoords.current.coordFromScreen(c0));
+      viewport.scrollLeft += c1.x - c0.x;
+      viewport.scrollTop += c1.y - c0.y;
+      oldSceneCoords.current = sceneCoords;
+    }
   }, [sceneCoords]);
 
   const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
@@ -137,14 +150,6 @@ const GraphEditor = ({
 
   const updateSceneCoords = useCallback(
     (coords: SceneCoords) => {
-      const viewport = document.getElementById("graph-editor-viewport")!;
-      const c0 = new Coord(
-        viewport.scrollLeft + viewport.clientWidth / 2,
-        viewport.scrollTop + viewport.clientHeight / 2
-      );
-      const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
-      viewport.scrollLeft += c1.x - c0.x;
-      viewport.scrollTop += c1.y - c0.y;
       setSceneCoords(coords);
     },
     [sceneCoords, setSceneCoords]
@@ -733,6 +738,22 @@ const GraphEditor = ({
     }
   };
 
+  const handleScrollWheel = (event: JSX.TargetedWheelEvent<SVGSVGElement>) => {
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
+    if (event.getModifierState(CTRL)) {
+      event.preventDefault();
+      const delta = event.deltaY;
+      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta * -0.1);
+      const viewport = document.getElementById("graph-editor-viewport")!;
+      if (
+        coords.screenWidth >= viewport.clientWidth &&
+        coords.screenHeight >= viewport.clientHeight
+      ) {
+        updateSceneCoords(coords);
+      }
+    }
+  };
+
   return (
     <div
       id="graph-editor-viewport"
@@ -763,6 +784,7 @@ const GraphEditor = ({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onWheel={handleScrollWheel}
         onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
           event.preventDefault();
