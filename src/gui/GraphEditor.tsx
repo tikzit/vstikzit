@@ -81,8 +81,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-        .map(d => d.path)
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
   );
 
   useEffect(() => {
@@ -558,54 +558,6 @@ const GraphEditor = ({
         updateSelection(new Set(), new Set());
         break;
       }
-      case "vstikzit.extendSelectionLeft": {
-        if (selectedNodes.size !== 0) {
-          const maxX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionRight": {
-        if (selectedNodes.size !== 0) {
-          const minX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionUp": {
-        if (selectedNodes.size !== 0) {
-          const minY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionDown": {
-        if (selectedNodes.size !== 0) {
-          const maxY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
       case "vstikzit.mergeNodes": {
         if (selectedNodes.size > 0) {
           const g = graph.mergeNodes(selectedNodes);
@@ -673,6 +625,57 @@ const GraphEditor = ({
             }
             updateGraph(g1, true);
             updateSelection(sel, new Set());
+          }
+          break;
+        }
+      }
+    } else if (event.getModifierState("Shift")) {
+      switch (event.key) {
+        case "ArrowLeft": {
+          if (selectedNodes.size !== 0) {
+            const maxX = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.x ?? 0)
+              .reduce((a, b) => (a > b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowRight": {
+          if (selectedNodes.size !== 0) {
+            const minX = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.x ?? 0)
+              .reduce((a, b) => (a < b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowUp": {
+          if (selectedNodes.size !== 0) {
+            const minY = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.y ?? 0)
+              .reduce((a, b) => (a < b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowDown": {
+          if (selectedNodes.size !== 0) {
+            const maxY = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.y ?? 0)
+              .reduce((a, b) => (a > b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
+              selectedEdges
+            );
           }
           break;
         }
