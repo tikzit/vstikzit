@@ -95,8 +95,18 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
       g.inheritDataFrom(graph);
       setEnabled(true);
       setGraph(g);
-      setSelectedNodes(sel => new Set(Array.from(sel).filter(id => g.hasNode(id))));
+
+      // update selection to remove any nodes/edges that no longer exist. n.b. we don't use handleSelectionChanged
+      // as "setGraph" is async and hasn't updated the graph yet
+      const newSelectedNodes = new Set(Array.from(selectedNodes).filter(id => g.hasNode(id)));
+      setSelectedNodes(newSelectedNodes);
       setSelectedEdges(sel => new Set(Array.from(sel).filter(id => g.hasEdge(id))));
+      if (newSelectedNodes.size === 1) {
+        const [n] = newSelectedNodes;
+        setCurrentNodeLabel(g.node(n)?.label);
+      } else {
+        setCurrentNodeLabel(undefined);
+      }
     } else {
       setEnabled(false);
       setSelectedNodes(new Set());
