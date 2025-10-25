@@ -26,7 +26,6 @@ const Help = ({ visible, onClose }: HelpProps) => {
 
     // replace common symbols
     fancyShortcut = fancyShortcut.replace(/Shift\+\?/g, "?");
-    fancyShortcut = fancyShortcut.replace(/Plus\+\?/g, "+");
 
     // replace arrow keys
     fancyShortcut = fancyShortcut.replace(/\bArrowLeft\b/g, "&#8592;");
@@ -38,16 +37,20 @@ const Help = ({ visible, onClose }: HelpProps) => {
   };
 
   const commands = [
-    { name: "vstikzit.showHelp", shortcuts: ["Shift+?"], description: "Show help" },
-    { name: "vstikzit.selectTool", shortcuts: ["S"], description: "Select tool" },
-    { name: "vstikzit.nodeTool", shortcuts: ["N"], description: "Node tool" },
-    { name: "vstikzit.edgeTool", shortcuts: ["E"], description: "Edge tool" },
-    { name: "vstikzit.zoomOut", shortcuts: ["-", "_"], description: "Zoom out" },
-    { name: "vstikzit.zoomIn", shortcuts: ["=", "+"], description: "Zoom in" },
-    { name: "vstikzit.cut", shortcuts: ["Ctrl+X"], description: "Cut" },
-    { name: "vstikzit.copy", shortcuts: ["Ctrl+C"], description: "Copy" },
-    { name: "vstikzit.paste", shortcuts: ["Ctrl+V"], description: "Paste" },
-    { name: "vstikzit.delete", shortcuts: ["Delete"], description: "Delete items" },
+    { shortcuts: ["Shift+?"], description: "Show help" },
+    { shortcuts: ["s"], description: "Select tool" },
+    { shortcuts: ["n"], description: "Node tool" },
+    { shortcuts: ["e"], description: "Edge tool" },
+    { shortcuts: ["-", "_"], description: "Zoom out" },
+    { shortcuts: ["=", "+"], description: "Zoom in" },
+    { shortcuts: ["Ctrl+x"], description: "Cut" },
+    { shortcuts: ["Ctrl+c"], description: "Copy" },
+    { shortcuts: ["Ctrl+v"], description: "Paste" },
+    { shortcuts: ["Delete"], description: "Delete items" },
+    { shortcuts: ["Shift+ArrowUp"], description: "Extend selection up" },
+    { shortcuts: ["Shift+ArrowDown"], description: "Extend selection down" },
+    { shortcuts: ["Shift+ArrowLeft"], description: "Extend selection left" },
+    { shortcuts: ["Shift+ArrowRight"], description: "Extend selection right" },
   ];
 
   return (
@@ -113,10 +116,10 @@ const Help = ({ visible, onClose }: HelpProps) => {
           </p>
           <br />
           <div>
-            <table style={{ width: "300px", margin: "0 auto" }}>
+            <table style={{ width: "400px", margin: "0 auto" }}>
               {commands.map(command => (
-                <tr key={command.name} style={{ marginBottom: "4px", display: "block" }}>
-                  <td width="150" style={{ fontStyle: "italic" }}>
+                <tr key={command.description} style={{ marginBottom: "4px", display: "block" }}>
+                  <td width="250" style={{ fontStyle: "italic" }}>
                     {command.description}
                   </td>
                   <td>

@@ -679,6 +679,10 @@ const GraphEditor = ({
           }
           break;
         }
+        case "?": {
+          updateUIState({ helpVisible: true });
+          break;
+        }
       }
     } else {
       switch (event.key) {
