@@ -105,7 +105,13 @@ async function buildTikz(
   let tex = "\\documentclass{article}\n";
   tex += tikzIncludes;
   tex += "\\begin{document}\n\n";
-  tex += source;
+
+  if (!source?.includes("\\begin{tikzpicture}")) {
+    tex += "\\begin{tikzpicture}\n";
+    tex += "\\end{tikzpicture}\n";
+  } else {
+    tex += source;
+  }
   tex += "\n\\end{document}\n";
 
   // if this document has a file name, get the base name
@@ -321,6 +327,9 @@ async function syncTikzFigures(): Promise<void> {
 
   // listen for changes in any .tikz file in the figures folder and call rebuildTikzFigures when needed
   tikzFigureWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
+  tikzFigureWatcher.onDidCreate(() => {
+    rebuildTikzFigures();
+  });
   tikzFigureWatcher.onDidChange(() => {
     rebuildTikzFigures();
   });
@@ -332,6 +341,9 @@ async function syncTikzFiguresSVG(): Promise<void> {
   await rebuildTikzFigures(true);
 
   tikzFigureSVGWatcher = vscode.workspace.createFileSystemWatcher("**/figures/*.tikz");
+  tikzFigureSVGWatcher.onDidCreate(() => {
+    rebuildTikzFigures(true);
+  });
   tikzFigureSVGWatcher.onDidChange(() => {
     rebuildTikzFigures(true);
   });
