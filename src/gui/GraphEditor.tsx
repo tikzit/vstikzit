@@ -738,7 +738,7 @@ const GraphEditor = ({
     if (event.getModifierState(CTRL)) {
       event.preventDefault();
       const delta = event.deltaY;
-      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta * -0.1);
+      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta * -0.01);
       const viewport = document.getElementById("graph-editor-viewport")!;
       if (
         coords.screenWidth >= viewport.clientWidth &&
