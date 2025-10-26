@@ -43,6 +43,7 @@ const Help = ({ visible, onClose }: HelpProps) => {
     { shortcuts: ["e"], description: "Edge tool" },
     { shortcuts: ["-", "_"], description: "Zoom out" },
     { shortcuts: ["=", "+"], description: "Zoom in" },
+    { shortcuts: ["0"], description: "Center on the origin" },
     { shortcuts: ["Ctrl+x"], description: "Cut" },
     { shortcuts: ["Ctrl+c"], description: "Copy" },
     { shortcuts: ["Ctrl+v"], description: "Paste" },

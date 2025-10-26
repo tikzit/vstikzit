@@ -131,17 +131,19 @@ const GraphEditor = ({
   };
 
   const updateSceneCoords = useCallback(
-    (coords: SceneCoords) => {
+    (coords: SceneCoords, focalPoint: Coord | undefined = undefined) => {
       if (!sceneCoords.equals(coords)) {
         setSceneCoords(coords);
         const editor = document.getElementById("graph-editor")!;
         drawGrid(editor, coords);
 
         const viewport = document.getElementById("graph-editor-viewport")!;
-        const c0 = new Coord(
-          viewport.scrollLeft + viewport.clientWidth / 2,
-          viewport.scrollTop + viewport.clientHeight / 2
-        );
+        const c0 =
+          focalPoint ??
+          new Coord(
+            viewport.scrollLeft + viewport.clientWidth / 2,
+            viewport.scrollTop + viewport.clientHeight / 2
+          );
         const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
         viewport.scrollLeft += c1.x - c0.x;
         viewport.scrollTop += c1.y - c0.y;
@@ -729,6 +731,12 @@ const GraphEditor = ({
           }
           break;
         }
+        case "0": {
+          const viewport = document.getElementById("graph-editor-viewport")!;
+          viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
+          viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
+          break;
+        }
       }
     }
   };
@@ -737,14 +745,19 @@ const GraphEditor = ({
     const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     if (event.getModifierState(CTRL)) {
       event.preventDefault();
-      const delta = event.deltaY;
-      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta * -0.01);
+      let delta = event.deltaY * -0.01;
+      if (delta > 1) {
+        delta = 1;
+      } else if (delta < -1) {
+        delta = -1;
+      }
+      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta);
       const viewport = document.getElementById("graph-editor-viewport")!;
       if (
         coords.screenWidth >= viewport.clientWidth &&
         coords.screenHeight >= viewport.clientHeight
       ) {
-        updateSceneCoords(coords);
+        updateSceneCoords(coords, mousePositionToCoord(event));
       }
     }
   };
