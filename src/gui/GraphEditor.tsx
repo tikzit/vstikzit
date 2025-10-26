@@ -70,7 +70,6 @@ const GraphEditor = ({
   currentEdgeStyle,
 }: GraphEditorProps) => {
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
-  const oldSceneCoords = useRef<SceneCoords>(sceneCoords);
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
 
   // refs used to pass data from edge components to the graph editor
@@ -100,6 +99,7 @@ const GraphEditor = ({
     let prevH = viewport.clientHeight;
     viewport.scrollLeft = initCoords.originX - prevW / 2;
     viewport.scrollTop = initCoords.originY - prevH / 2;
+    drawGrid(editor, initCoords);
 
     const resizeObserver = new ResizeObserver(() => {
       const w = viewport.clientWidth;
@@ -123,24 +123,6 @@ const GraphEditor = ({
     host.onCommand(command => handleCommand(command));
   });
 
-  useEffect(() => {
-    // Draw the background grid
-    const editor = document.getElementById("graph-editor")!;
-    drawGrid(editor, sceneCoords);
-
-    if (!oldSceneCoords.current.equals(sceneCoords)) {
-      const viewport = document.getElementById("graph-editor-viewport")!;
-      const c0 = new Coord(
-        viewport.scrollLeft + viewport.clientWidth / 2,
-        viewport.scrollTop + viewport.clientHeight / 2
-      );
-      const c1 = sceneCoords.coordToScreen(oldSceneCoords.current.coordFromScreen(c0));
-      viewport.scrollLeft += c1.x - c0.x;
-      viewport.scrollTop += c1.y - c0.y;
-      oldSceneCoords.current = sceneCoords;
-    }
-  }, [sceneCoords]);
-
   const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -150,7 +132,20 @@ const GraphEditor = ({
 
   const updateSceneCoords = useCallback(
     (coords: SceneCoords) => {
-      setSceneCoords(coords);
+      if (!sceneCoords.equals(coords)) {
+        setSceneCoords(coords);
+        const editor = document.getElementById("graph-editor")!;
+        drawGrid(editor, coords);
+
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        const c0 = new Coord(
+          viewport.scrollLeft + viewport.clientWidth / 2,
+          viewport.scrollTop + viewport.clientHeight / 2
+        );
+        const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
+        viewport.scrollLeft += c1.x - c0.x;
+        viewport.scrollTop += c1.y - c0.y;
+      }
     },
     [sceneCoords, setSceneCoords]
   );
