@@ -10,7 +10,6 @@ import Styles from "../lib/Styles";
 import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
-import { getCommandFromShortcut } from "../lib/commands";
 import Help from "./Help";
 import TikzitHost from "../lib/TikzitHost";
 
