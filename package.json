@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/tikzit/vstikzit.git"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -26,21 +26,15 @@
     "commands": [
       { "command": "vstikzit.openTikzEditor", "title": "Open TikZ Editor", "category": "TikZiT",
         "when": "(resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html) && activeCustomEditorId != vstikzit.tikzEditor" },
-
       { "command": "vstikzit.syncTikzFigures", "title": "Sync > TikZ Figures", "category": "TikZiT" },
       { "command": "vstikzit.syncTikzFiguresSVG", "title": "Sync > TikZ Figures with SVGs", "category": "TikZiT" },
       { "command": "vstikzit.stopSyncingTikzFigures", "title": "Sync > Stop Syncing", "category": "TikZiT" },
-
       { "command": "vstikzit.buildCurrentTikzFigure", "title": "Build > Build TikZ figure", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.buildCurrentTikzFigureSVG", "title": "Build > Build TikZ figure as SVG", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewCurrentTikzFigure", "title": "Build > View TikZ figure PDF", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewTikzSource", "title": "Edit > View TikZ Source", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.selectAll", "title": "Edit > Select All", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.deselectAll", "title": "Edit > Deselect All", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionLeft", "title": "Edit > Extend Selection Left", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionRight", "title": "Edit > Extend Selection Right", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionUp", "title": "Edit > Extend Selection Up", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionDown", "title": "Edit > Extend Selection Down", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveLeft", "title": "Edit > Move Nodes Left", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveRight", "title": "Edit > Move Nodes Right", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveUp", "title": "Edit > Move Nodes Up", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
@@ -57,16 +51,10 @@
       { "command": "vstikzit.openTikzEditor", "key": "ctrl+alt+t", "mac": "cmd+alt+t",
          "when": "(resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html) && activeCustomEditorId != vstikzit.tikzEditor" },
       { "command": "vstikzit.viewTikzSource", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-
       { "command": "vstikzit.buildCurrentTikzFigure", "key": "ctrl+alt+b", "mac": "cmd+alt+b", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewCurrentTikzFigure", "key": "ctrl+alt+v", "mac": "cmd+alt+v", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-
       { "command": "vstikzit.selectAll", "key": "ctrl+a", "mac": "cmd+a", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.deselectAll", "key": "ctrl+d", "mac": "cmd+d", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionLeft", "key": "shift+left", "mac": "shift+left", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionRight", "key": "shift+right", "mac": "shift+right", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionUp", "key": "shift+up", "mac": "shift+up", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.extendSelectionDown", "key": "shift+down", "mac": "shift+down", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveLeft", "key": "ctrl+left", "mac": "cmd+left", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveRight", "key": "ctrl+right", "mac": "cmd+right", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveUp", "key": "ctrl+up", "mac": "cmd+up", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
@@ -155,44 +143,45 @@
     ]
   },
   "scripts": {
-    "watch": "concurrently \"vite build --mode webview --watch\" \"vite build --mode extension --watch\" \"vite build --mode test --watch\"",
+    "watch": "concurrently \"vite build --mode webview --watch\" \"vite build --mode extension --watch\"",
     "watch-webview": "vite build --mode webview --watch",
     "watch-extension": "vite build --mode extension --watch",
     "watch-test": "vite build --mode test --watch",
     "watch-browser": "vite build --mode test --watch",
-    "build": "vite build --mode webview && vite build --mode extension && vite build --mode test",
+    "build": "vite build --mode webview && vite build --mode extension",
     "build-webview": "vite build --mode webview",
     "build-extension": "vite build --mode extension",
     "build-test": "vite build --mode test",
     "build-browser": "vite build --mode browser",
     "lint": "tsc && eslint .",
-    "preview": "concurrently \"vite build --mode browser --watch\" \"vite preview\"",
+    "preview-browser": "concurrently \"vite build --mode browser --watch\" \"vite preview\"",
     "test": "mocha dist/tests.js",
     "pretest": "npm run build-test",
     "package": "rm -r -f dist && vite build --mode webview && vite build --mode extension && vsce package",
-    "analyze": "vite-bundle-analyzer"
+    "analyze": "vite-bundle-analyzer",
+    "publish": "vsce publish"
   },
   "dependencies": {
     "@preact/preset-vite": "^2.10.2",
     "chevrotain": "^11.0.3",
-    "monaco-editor": "^0.53.0",
-    "preact": "^10.27.1"
+    "monaco-editor": "^0.54.0",
+    "preact": "^10.27.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.33.0",
-    "@types/chai": "^5.2.2",
+    "@eslint/js": "^9.38.0",
+    "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.103.0",
     "@vscode/vsce": "^3.6.2",
-    "chai": "^6.0.1",
+    "chai": "^6.2.0",
     "concurrently": "^9.2.1",
-    "eslint": "^9.33.0",
-    "globals": "^16.3.0",
-    "mocha": "^11.7.2",
-    "typescript": "~5.9.2",
-    "typescript-eslint": "^8.42.0",
-    "vite": "^7.1.5",
+    "eslint": "^9.38.0",
+    "globals": "^16.4.0",
+    "mocha": "^11.7.4",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "vite": "^7.1.12",
     "vite-bundle-analyzer": "^1.2.3"
   }
 }

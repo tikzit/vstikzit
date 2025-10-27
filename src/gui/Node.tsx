@@ -85,8 +85,30 @@ const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps)
           </text>
         </g>
       )}
-      {selected && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
-      {highlight && <circle r={r} stroke="rgb(100, 0, 200)" fill="none" stroke-width={4} />}
+      {selected && shape === "circle" && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
+      {selected && shape === "rectangle" && (
+        <rect
+          x={-r - 4}
+          y={-r - 4}
+          width={2 * (r + 4)}
+          height={2 * (r + 4)}
+          fill="rgba(150, 200, 255, 0.4)"
+        />
+      )}
+      {highlight && shape === "circle" && (
+        <circle r={r} stroke="rgb(100, 0, 200)" fill="none" stroke-width={4} />
+      )}
+      {highlight && shape === "rectangle" && (
+        <rect
+          x={-r}
+          y={-r}
+          width={2 * r}
+          height={2 * r}
+          stroke="rgb(100, 0, 200)"
+          fill="none"
+          stroke-width={4}
+        />
+      )}
     </g>
   );
 };

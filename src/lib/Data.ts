@@ -353,8 +353,6 @@ class EdgeData extends Data<EdgeData> {
       d = d.setProperty("bend left", -bend);
     } else if (bend > 0) {
       d = d.setProperty("bend right", bend);
-    } else if (bend === 0) {
-      d = d.unset("looseness");
     }
     return d;
   }

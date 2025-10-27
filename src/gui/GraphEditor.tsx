@@ -10,7 +10,6 @@ import Styles from "../lib/Styles";
 import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
-import { getCommandFromShortcut } from "../lib/commands";
 import Help from "./Help";
 import TikzitHost from "../lib/TikzitHost";
 
@@ -81,8 +80,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-        .map(d => d.path)
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
   );
 
   useEffect(() => {
@@ -99,6 +98,7 @@ const GraphEditor = ({
     let prevH = viewport.clientHeight;
     viewport.scrollLeft = initCoords.originX - prevW / 2;
     viewport.scrollTop = initCoords.originY - prevH / 2;
+    drawGrid(editor, initCoords);
 
     const resizeObserver = new ResizeObserver(() => {
       const w = viewport.clientWidth;
@@ -122,12 +122,6 @@ const GraphEditor = ({
     host.onCommand(command => handleCommand(command));
   });
 
-  useEffect(() => {
-    // Draw the background grid
-    const editor = document.getElementById("graph-editor")!;
-    drawGrid(editor, sceneCoords);
-  }, [sceneCoords]);
-
   const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -136,16 +130,23 @@ const GraphEditor = ({
   };
 
   const updateSceneCoords = useCallback(
-    (coords: SceneCoords) => {
-      const viewport = document.getElementById("graph-editor-viewport")!;
-      const c0 = new Coord(
-        viewport.scrollLeft + viewport.clientWidth / 2,
-        viewport.scrollTop + viewport.clientHeight / 2
-      );
-      const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
-      viewport.scrollLeft += c1.x - c0.x;
-      viewport.scrollTop += c1.y - c0.y;
-      setSceneCoords(coords);
+    (coords: SceneCoords, focalPoint: Coord | undefined = undefined) => {
+      if (!sceneCoords.equals(coords)) {
+        setSceneCoords(coords);
+        const editor = document.getElementById("graph-editor")!;
+        drawGrid(editor, coords);
+
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        const c0 =
+          focalPoint ??
+          new Coord(
+            viewport.scrollLeft + viewport.clientWidth / 2,
+            viewport.scrollTop + viewport.clientHeight / 2
+          );
+        const c1 = coords.coordToScreen(sceneCoords.coordFromScreen(c0));
+        viewport.scrollLeft += c1.x - c0.x;
+        viewport.scrollTop += c1.y - c0.y;
+      }
     },
     [sceneCoords, setSceneCoords]
   );
@@ -385,8 +386,12 @@ const GraphEditor = ({
           // double click
           if (clickedNode !== undefined) {
             document.getElementById("label-field")?.focus();
-          } else if (clickedEdge.current !== undefined) {
-            let d = graph.edge(clickedEdge.current)!;
+          } else if (
+            clickedEdge.current !== undefined ||
+            clickedControlPoint.current !== undefined
+          ) {
+            const edge = clickedEdge.current ?? clickedControlPoint.current![0];
+            let d = graph.edge(edge)!;
             const sCoord = graph.node(d.source)!.coord;
             const tCoord = graph.node(d.target)!.coord;
             const baseAngle =
@@ -558,54 +563,6 @@ const GraphEditor = ({
         updateSelection(new Set(), new Set());
         break;
       }
-      case "vstikzit.extendSelectionLeft": {
-        if (selectedNodes.size !== 0) {
-          const maxX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionRight": {
-        if (selectedNodes.size !== 0) {
-          const minX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionUp": {
-        if (selectedNodes.size !== 0) {
-          const minY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "vstikzit.extendSelectionDown": {
-        if (selectedNodes.size !== 0) {
-          const maxY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
       case "vstikzit.mergeNodes": {
         if (selectedNodes.size > 0) {
           const g = graph.mergeNodes(selectedNodes);
@@ -677,6 +634,61 @@ const GraphEditor = ({
           break;
         }
       }
+    } else if (event.getModifierState("Shift")) {
+      switch (event.key) {
+        case "ArrowLeft": {
+          if (selectedNodes.size !== 0) {
+            const maxX = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.x ?? 0)
+              .reduce((a, b) => (a > b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowRight": {
+          if (selectedNodes.size !== 0) {
+            const minX = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.x ?? 0)
+              .reduce((a, b) => (a < b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowUp": {
+          if (selectedNodes.size !== 0) {
+            const minY = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.y ?? 0)
+              .reduce((a, b) => (a < b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "ArrowDown": {
+          if (selectedNodes.size !== 0) {
+            const maxY = Array.from(selectedNodes)
+              .map(n => graph.node(n)?.coord.y ?? 0)
+              .reduce((a, b) => (a > b ? a : b));
+            updateSelection(
+              new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
+              selectedEdges
+            );
+          }
+          break;
+        }
+        case "?": {
+          updateUIState({ helpVisible: true });
+          break;
+        }
+      }
     } else {
       switch (event.key) {
         case "s": {
@@ -695,6 +707,7 @@ const GraphEditor = ({
           updateUIState({ helpVisible: true });
           break;
         }
+        case "Backspace":
         case "Delete": {
           const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
           updateGraph(g, true);
@@ -721,6 +734,33 @@ const GraphEditor = ({
           }
           break;
         }
+        case "0": {
+          const viewport = document.getElementById("graph-editor-viewport")!;
+          viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
+          viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
+          break;
+        }
+      }
+    }
+  };
+
+  const handleScrollWheel = (event: JSX.TargetedWheelEvent<SVGSVGElement>) => {
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
+    if (event.getModifierState(CTRL)) {
+      event.preventDefault();
+      let delta = event.deltaY * -0.01;
+      if (delta > 1) {
+        delta = 1;
+      } else if (delta < -1) {
+        delta = -1;
+      }
+      const coords = sceneCoords.setZoom(sceneCoords.zoom + delta);
+      const viewport = document.getElementById("graph-editor-viewport")!;
+      if (
+        coords.screenWidth >= viewport.clientWidth &&
+        coords.screenHeight >= viewport.clientHeight
+      ) {
+        updateSceneCoords(coords, mousePositionToCoord(event));
       }
     }
   };
@@ -755,6 +795,7 @@ const GraphEditor = ({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onWheel={handleScrollWheel}
         onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
           event.preventDefault();

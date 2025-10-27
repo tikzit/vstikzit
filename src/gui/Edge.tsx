@@ -76,12 +76,8 @@ const Edge = ({
   const [highlightOpacity, setHighlightOpacity] = useState(0);
 
   return (
-    <g>
-      <g
-        onMouseDown={onMouseDown}
-        onMouseOver={() => setHighlightOpacity(0.3)}
-        onMouseOut={() => setHighlightOpacity(0)}
-      >
+    <g onMouseOver={() => setHighlightOpacity(0.3)} onMouseOut={() => setHighlightOpacity(0)}>
+      <g onMouseDown={onMouseDown}>
         {bezier ? (
           <g>
             <path
