@@ -158,7 +158,8 @@
     "test": "mocha dist/tests.js",
     "pretest": "npm run build-test",
     "package": "rm -r -f dist && vite build --mode webview && vite build --mode extension && vsce package",
-    "analyze": "vite-bundle-analyzer"
+    "analyze": "vite-bundle-analyzer",
+    "publish": "vsce publish"
   },
   "dependencies": {
     "@preact/preset-vite": "^2.10.2",
