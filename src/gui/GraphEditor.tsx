@@ -386,8 +386,12 @@ const GraphEditor = ({
           // double click
           if (clickedNode !== undefined) {
             document.getElementById("label-field")?.focus();
-          } else if (clickedEdge.current !== undefined) {
-            let d = graph.edge(clickedEdge.current)!;
+          } else if (
+            clickedEdge.current !== undefined ||
+            clickedControlPoint.current !== undefined
+          ) {
+            const edge = clickedEdge.current ?? clickedControlPoint.current![0];
+            let d = graph.edge(edge)!;
             const sCoord = graph.node(d.source)!.coord;
             const tCoord = graph.node(d.target)!.coord;
             const baseAngle =
