@@ -1,7 +1,7 @@
-import { JSX } from "preact/jsx-runtime";
+import { CSSProperties } from "preact";
 
 interface InputWithOptionsProps {
-  style?: JSX.CSSProperties;
+  style?: CSSProperties;
   value: string;
   options: string[];
   onChange: (value: string) => void;

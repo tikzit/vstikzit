@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "preact/hooks";
-import { ComponentChildren, JSX } from "preact";
+import { ComponentChildren, TargetedMouseEvent } from "preact";
 
 interface SplitpaneProps {
   children: [ComponentChildren, ComponentChildren];
@@ -13,7 +13,7 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
   const splitpaneRef = useRef<HTMLDivElement>(null);
   const separatorRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = useCallback((e: JSX.TargetedMouseEvent<HTMLElement>) => {
+  const handleMouseDown = useCallback((e: TargetedMouseEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(true);
   }, []);

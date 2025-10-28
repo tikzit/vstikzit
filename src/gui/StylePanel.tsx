@@ -4,7 +4,7 @@ import Styles from "../lib/Styles";
 import Node from "./Node";
 import Edge from "./Edge";
 import { isValidDelimString } from "../lib/TikzParser";
-import { JSX } from "preact";
+import { SVGAttributes } from "preact";
 
 interface StylePanelProps {
   tikzStyles: Styles;
@@ -39,7 +39,7 @@ const StylePanel = ({
     .setRight(0.35)
     .setUp(0.25)
     .setDown(0.25);
-  const labelProps: JSX.SVGAttributes<SVGTextElement> = {
+  const labelProps: SVGAttributes<SVGTextElement> = {
     x: 22,
     y: 38,
     "text-anchor": "middle",

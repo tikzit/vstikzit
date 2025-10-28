@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "preact/hooks";
-import { JSX } from "preact";
+import { TargetedMouseEvent, TargetedWheelEvent } from "preact";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -122,7 +122,7 @@ const GraphEditor = ({
     host.onCommand(command => handleCommand(command));
   });
 
-  const mousePositionToCoord = (event: JSX.TargetedMouseEvent<SVGSVGElement>): Coord => {
+  const mousePositionToCoord = (event: TargetedMouseEvent<SVGSVGElement>): Coord => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -151,7 +151,7 @@ const GraphEditor = ({
     [sceneCoords, setSceneCoords]
   );
 
-  const handleMouseDown = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = (event: TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -160,6 +160,8 @@ const GraphEditor = ({
     // Focus the SVG element to enable keyboard events
     event.currentTarget.focus();
 
+    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
+    const multiSelect = event.getModifierState(CTRL) || event.shiftKey;
     const p = mousePositionToCoord(event);
     const p1 = sceneCoords.coordFromScreen(p);
     const clickedNode = graph.nodes.find(
@@ -186,7 +188,7 @@ const GraphEditor = ({
           updateUIState({ prevGraph: graph });
         } else if (clickedNode !== undefined) {
           // select a node single node and/or prepare to drag nodes
-          if (event.shiftKey) {
+          if (multiSelect) {
             if (selectedNodes.has(clickedNode)) {
               const sel = new Set(selectedNodes);
               sel.delete(clickedNode);
@@ -204,13 +206,13 @@ const GraphEditor = ({
           }
         } else if (clickedEdge.current !== undefined) {
           // select a single edge
-          if (event.shiftKey) {
+          if (multiSelect) {
             updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
           } else {
             updateSelection(new Set(), new Set([clickedEdge.current]));
           }
         } else {
-          if (!event.shiftKey) {
+          if (!multiSelect) {
             updateSelection(new Set(), new Set());
           }
 
@@ -235,7 +237,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseMove = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
+  const handleMouseMove = (event: TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -365,7 +367,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseUp = (event: JSX.TargetedMouseEvent<SVGSVGElement>) => {
+  const handleMouseUp = (event: TargetedMouseEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -691,10 +693,12 @@ const GraphEditor = ({
       }
     } else {
       switch (event.key) {
+        case "Escape":
         case "s": {
           setTool("select");
           break;
         }
+        case "v":
         case "n": {
           setTool("vertex");
           break;
@@ -744,7 +748,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleScrollWheel = (event: JSX.TargetedWheelEvent<SVGSVGElement>) => {
+  const handleScrollWheel = (event: TargetedWheelEvent<SVGSVGElement>) => {
     const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     if (event.getModifierState(CTRL)) {
       event.preventDefault();
