@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "preact/hooks";
-import { TargetedMouseEvent, TargetedWheelEvent } from "preact";
+import { TargetedMouseEvent, TargetedPointerEvent, TargetedWheelEvent } from "preact";
 
 import Graph from "../lib/Graph";
 import { drawGrid } from "../lib/grid";
@@ -151,7 +151,8 @@ const GraphEditor = ({
     [sceneCoords, setSceneCoords]
   );
 
-  const handleMouseDown = (event: TargetedMouseEvent<SVGSVGElement>) => {
+  const handlePointerDown = (event: TargetedPointerEvent<SVGSVGElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
     event.preventDefault();
     if (!enabled) {
       return;
@@ -237,7 +238,7 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseMove = (event: TargetedMouseEvent<SVGSVGElement>) => {
+  const handlePointerMove = (event: TargetedPointerEvent<SVGSVGElement>) => {
     event.preventDefault();
     if (!enabled) {
       return;
@@ -367,7 +368,8 @@ const GraphEditor = ({
     }
   };
 
-  const handleMouseUp = (event: TargetedMouseEvent<SVGSVGElement>) => {
+  const handlePointerUp = (event: TargetedPointerEvent<SVGSVGElement>) => {
+    event.currentTarget.releasePointerCapture(event.pointerId);
     event.preventDefault();
     if (!enabled) {
       return;
@@ -796,9 +798,9 @@ const GraphEditor = ({
         }}
         tabindex={0}
         onKeyDown={handleKeyDown}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
         onWheel={handleScrollWheel}
         onContextMenu={event => {
           // Prevent context menu when using smart tool with right-click
