@@ -559,14 +559,6 @@ const GraphEditor = ({
         }
         break;
       }
-      case "vstikzit.selectAll": {
-        updateSelection(new Set(graph.nodeIds), new Set());
-        break;
-      }
-      case "vstikzit.deselectAll": {
-        updateSelection(new Set(), new Set());
-        break;
-      }
       case "vstikzit.mergeNodes": {
         if (selectedNodes.size > 0) {
           const g = graph.mergeNodes(selectedNodes);
@@ -594,158 +586,168 @@ const GraphEditor = ({
       return;
     }
 
-    const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
     event.preventDefault();
+    event.stopPropagation();
 
-    if (event.getModifierState(CTRL)) {
-      switch (event.key) {
-        case "c": {
-          if (selectedNodes.size !== 0) {
-            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-          }
-          break;
-        }
-        case "x": {
-          if (selectedNodes.size !== 0) {
-            window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-            const g = graph.removeNodes(selectedNodes);
-            updateGraph(g, true);
-            updateSelection(new Set(), new Set());
-          }
-          break;
-        }
-        case "v": {
-          const pastedData = await window.navigator.clipboard.readText();
-          const parsed = parseTikzPicture(pastedData);
-          if (parsed.result !== undefined) {
-            let g = parsed.result;
-            const nodes = g.nodeIds;
-            if (nodes.length !== 0) {
-              const n = nodes[0];
-              while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
-                g = g.shiftGraph(0.5, -0.5);
-              }
-            }
+    const keys = [];
+    if (event.getModifierState(window.navigator.platform.includes("Mac") ? "Meta" : "Control")) {
+      keys.push("Ctrl");
+    }
+    if (event.getModifierState("Alt")) {
+      keys.push("Alt");
+    }
+    if (event.getModifierState("Shift")) {
+      keys.push("Shift");
+    }
 
-            const g1 = graph.insertGraph(g);
-            const sel = new Set(g1.nodeIds);
-            for (const n of graph.nodeIds) {
-              sel.delete(n);
-            }
-            updateGraph(g1, true);
-            updateSelection(sel, new Set());
-          }
-          break;
+    keys.push(event.key);
+
+    switch (keys.join("+")) {
+      case "Ctrl+c": {
+        if (selectedNodes.size !== 0) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
         }
+        break;
       }
-    } else if (event.getModifierState("Shift")) {
-      switch (event.key) {
-        case "ArrowLeft": {
-          if (selectedNodes.size !== 0) {
-            const maxX = Array.from(selectedNodes)
-              .map(n => graph.node(n)?.coord.x ?? 0)
-              .reduce((a, b) => (a > b ? a : b));
-            updateSelection(
-              new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
-              selectedEdges
-            );
-          }
-          break;
-        }
-        case "ArrowRight": {
-          if (selectedNodes.size !== 0) {
-            const minX = Array.from(selectedNodes)
-              .map(n => graph.node(n)?.coord.x ?? 0)
-              .reduce((a, b) => (a < b ? a : b));
-            updateSelection(
-              new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
-              selectedEdges
-            );
-          }
-          break;
-        }
-        case "ArrowUp": {
-          if (selectedNodes.size !== 0) {
-            const minY = Array.from(selectedNodes)
-              .map(n => graph.node(n)?.coord.y ?? 0)
-              .reduce((a, b) => (a < b ? a : b));
-            updateSelection(
-              new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
-              selectedEdges
-            );
-          }
-          break;
-        }
-        case "ArrowDown": {
-          if (selectedNodes.size !== 0) {
-            const maxY = Array.from(selectedNodes)
-              .map(n => graph.node(n)?.coord.y ?? 0)
-              .reduce((a, b) => (a > b ? a : b));
-            updateSelection(
-              new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
-              selectedEdges
-            );
-          }
-          break;
-        }
-        case "?": {
-          updateUIState({ helpVisible: true });
-          break;
-        }
-      }
-    } else {
-      switch (event.key) {
-        case "Escape":
-        case "s": {
-          setTool("select");
-          break;
-        }
-        case "v":
-        case "n": {
-          setTool("vertex");
-          break;
-        }
-        case "e": {
-          setTool("edge");
-          break;
-        }
-        case "?": {
-          updateUIState({ helpVisible: true });
-          break;
-        }
-        case "Backspace":
-        case "Delete": {
-          const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+      case "Ctrl+x": {
+        if (selectedNodes.size !== 0) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+          const g = graph.removeNodes(selectedNodes);
           updateGraph(g, true);
           updateSelection(new Set(), new Set());
-          break;
         }
-        case "_":
-        case "-": {
-          const coords = sceneCoords.zoomOut();
-          const viewport = document.getElementById("graph-editor-viewport")!;
-          if (
-            coords.screenWidth >= viewport.clientWidth &&
-            coords.screenHeight >= viewport.clientHeight
-          ) {
-            updateSceneCoords(coords);
+        break;
+      }
+      case "Ctrl+v": {
+        const pastedData = await window.navigator.clipboard.readText();
+        const parsed = parseTikzPicture(pastedData);
+        if (parsed.result !== undefined) {
+          let g = parsed.result;
+          const nodes = g.nodeIds;
+          if (nodes.length !== 0) {
+            const n = nodes[0];
+            while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
+              g = g.shiftGraph(0.5, -0.5);
+            }
           }
-          break;
-        }
-        case "+":
-        case "=": {
-          const coords = sceneCoords.zoomIn();
-          if (coords.scale <= 1024) {
-            updateSceneCoords(coords);
+
+          const g1 = graph.insertGraph(g);
+          const sel = new Set(g1.nodeIds);
+          for (const n of graph.nodeIds) {
+            sel.delete(n);
           }
-          break;
+          updateGraph(g1, true);
+          updateSelection(sel, new Set());
         }
-        case "0": {
-          const viewport = document.getElementById("graph-editor-viewport")!;
-          viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
-          viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
-          break;
+        break;
+      }
+      case "Ctrl+a": {
+        updateSelection(new Set(graph.nodeIds), new Set());
+        break;
+      }
+      case "Ctrl+d": {
+        updateSelection(new Set(), new Set());
+        break;
+      }
+      case "Shift+ArrowLeft": {
+        if (selectedNodes.size !== 0) {
+          const maxX = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.x ?? 0)
+            .reduce((a, b) => (a > b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
+            selectedEdges
+          );
         }
+        break;
+      }
+      case "Shift+ArrowRight": {
+        if (selectedNodes.size !== 0) {
+          const minX = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.x ?? 0)
+            .reduce((a, b) => (a < b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "Shift+ArrowUp": {
+        if (selectedNodes.size !== 0) {
+          const minY = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.y ?? 0)
+            .reduce((a, b) => (a < b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "Shift+ArrowDown": {
+        if (selectedNodes.size !== 0) {
+          const maxY = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.y ?? 0)
+            .reduce((a, b) => (a > b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "Shift+?":
+      case "?": {
+        updateUIState({ helpVisible: true });
+        break;
+      }
+      case "Escape":
+      case "s": {
+        setTool("select");
+        break;
+      }
+      case "v":
+      case "n": {
+        setTool("vertex");
+        break;
+      }
+      case "e": {
+        setTool("edge");
+        break;
+      }
+      case "Backspace":
+      case "Delete": {
+        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+        updateGraph(g, true);
+        updateSelection(new Set(), new Set());
+        break;
+      }
+      case "_":
+      case "-": {
+        const coords = sceneCoords.zoomOut();
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        if (
+          coords.screenWidth >= viewport.clientWidth &&
+          coords.screenHeight >= viewport.clientHeight
+        ) {
+          updateSceneCoords(coords);
+        }
+        break;
+      }
+      case "+":
+      case "=": {
+        const coords = sceneCoords.zoomIn();
+        if (coords.scale <= 1024) {
+          updateSceneCoords(coords);
+        }
+        break;
+      }
+      case "0": {
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
+        viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
+        break;
       }
     }
   };

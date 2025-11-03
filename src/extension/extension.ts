@@ -95,8 +95,6 @@ function activate(context: vscode.ExtensionContext): void {
   // graph editor commands
   const graphCommands = [
     "vstikzit.viewTikzSource",
-    "vstikzit.selectAll",
-    "vstikzit.deselectAll",
     "vstikzit.moveLeft",
     "vstikzit.moveRight",
     "vstikzit.moveUp",

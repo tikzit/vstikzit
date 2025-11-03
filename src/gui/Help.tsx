@@ -48,6 +48,8 @@ const Help = ({ visible, onClose }: HelpProps) => {
     { shortcuts: ["Ctrl+c"], description: "Copy" },
     { shortcuts: ["Ctrl+v"], description: "Paste" },
     { shortcuts: ["Delete"], description: "Delete items" },
+    { shortcuts: ["Ctrl+a"], description: "Select all" },
+    { shortcuts: ["Ctrl+d"], description: "Deselect all" },
     { shortcuts: ["Shift+ArrowUp"], description: "Extend selection up" },
     { shortcuts: ["Shift+ArrowDown"], description: "Extend selection down" },
     { shortcuts: ["Shift+ArrowLeft"], description: "Extend selection left" },
