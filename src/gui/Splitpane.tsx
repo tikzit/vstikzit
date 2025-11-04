@@ -85,6 +85,7 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
           width: orientation === "horizontal" ? `${percent}%` : "100%",
           height: orientation === "horizontal" ? "100%" : `${percent}%`,
           overflow: "hidden",
+          display: "block",
         }}
       >
         {children[0]}
@@ -120,6 +121,7 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
         style={{
           flex: "1",
           overflow: "hidden",
+          display: "block",
         }}
       >
         {children[1]}

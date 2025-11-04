@@ -114,14 +114,15 @@ const StylePanel = ({
       <div
         style={{
           overflow: "hidden",
-          height: editMode ? "calc(100% - 30px)" : "calc(100% - 100px)",
+          height: editMode ? "calc(100% - 30px)" : "calc(100% - 96px)",
           width: "100%",
         }}
       >
         <div
           id="node-styles"
+          class="frame"
           style={{
-            height: "calc(70% - 5px)",
+            height: "calc(70% - 7px)",
             overflowY: "scroll",
             backgroundColor: "#fff",
             color: "#000",
@@ -161,8 +162,9 @@ const StylePanel = ({
         </div>
         <div
           id="edge-styles"
+          class="frame"
           style={{
-            height: "calc(30% - 5px)",
+            height: "calc(30% - 7px)",
             overflowY: "scroll",
             backgroundColor: "#fff",
             color: "#000",

@@ -792,6 +792,7 @@ const GraphEditor = ({
   return (
     <div
       id="graph-editor-viewport"
+      class="frame"
       style={{
         height: "calc(100% - 50px)",
         maxHeight: "calc(100% - 50px)",

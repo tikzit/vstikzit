@@ -163,3 +163,7 @@ input[type="range"]::-moz-range-thumb {
 #label-field {
   width: calc(100% - 20px);
 }
+
+.frame {
+  border: 1px solid var(--tikzit-panel-border);
+}
