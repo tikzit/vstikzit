@@ -592,7 +592,6 @@ const GraphEditor = ({
       return;
     }
 
-    event.preventDefault();
 
     let capture = true;
     const keys = [];
@@ -762,6 +761,7 @@ const GraphEditor = ({
     }
 
     if (capture) {
+      event.preventDefault();
       event.stopPropagation();
     }
   };
