@@ -70,6 +70,7 @@ const GraphEditor = ({
 }: GraphEditorProps) => {
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
+  const numClicks = useRef<number>(0);
 
   // refs used to pass data from edge components to the graph editor
   const clickedEdge = useRef<number | undefined>(undefined);
@@ -80,8 +81,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(d => d.path)
+        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+        .map(d => d.path)
   );
 
   useEffect(() => {
@@ -371,6 +372,11 @@ const GraphEditor = ({
   const handlePointerUp = (event: TargetedPointerEvent<SVGSVGElement>) => {
     event.currentTarget.releasePointerCapture(event.pointerId);
     event.preventDefault();
+
+    // handle double-clicks/taps manually, since we're using the pointer events API
+    numClicks.current += 1;
+    setTimeout(() => { numClicks.current = 0; }, 400);
+
     if (!enabled) {
       return;
     }
@@ -386,7 +392,7 @@ const GraphEditor = ({
 
     switch (tool) {
       case "select":
-        if (event.detail === 2) {
+        if (numClicks.current >= 2) {
           // double click
           if (clickedNode !== undefined) {
             document.getElementById("label-field")?.focus();
@@ -587,8 +593,8 @@ const GraphEditor = ({
     }
 
     event.preventDefault();
-    event.stopPropagation();
 
+    let capture = true;
     const keys = [];
     if (event.getModifierState(window.navigator.platform.includes("Mac") ? "Meta" : "Control")) {
       keys.push("Ctrl");
@@ -749,6 +755,14 @@ const GraphEditor = ({
         viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
         break;
       }
+      default: {
+        capture = false;
+        break;
+      }
+    }
+
+    if (capture) {
+      event.stopPropagation();
     }
   };
 
@@ -819,8 +833,8 @@ const GraphEditor = ({
               targetData={graph.node(data.target)!}
               tikzStyles={tikzStyles}
               selected={selectedEdges.has(data.id)}
-              onMouseDown={() => (clickedEdge.current = data.id)}
-              onControlPointMouseDown={i => (clickedControlPoint.current = [data.id, i])}
+              onPointerDown={() => (clickedEdge.current = data.id)}
+              onControlPointPointerDown={i => (clickedControlPoint.current = [data.id, i])}
               sceneCoords={sceneCoords}
             />
           ))}

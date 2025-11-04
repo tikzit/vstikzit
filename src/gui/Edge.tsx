@@ -11,8 +11,8 @@ interface EdgeProps {
   targetData: NodeData;
   tikzStyles: Styles;
   selected?: boolean;
-  onMouseDown?: () => void;
-  onControlPointMouseDown?: (cp: 1 | 2) => void;
+  onPointerDown?: () => void;
+  onControlPointPointerDown?: (cp: 1 | 2) => void;
   sceneCoords: SceneCoords;
 }
 
@@ -22,8 +22,8 @@ const Edge = ({
   targetData,
   tikzStyles,
   selected,
-  onMouseDown,
-  onControlPointMouseDown,
+  onPointerDown,
+  onControlPointPointerDown,
   sceneCoords,
 }: EdgeProps) => {
   const style = tikzStyles.style(data.property("style"));
@@ -77,7 +77,7 @@ const Edge = ({
 
   return (
     <g onMouseOver={() => setHighlightOpacity(0.3)} onMouseOut={() => setHighlightOpacity(0)}>
-      <g onMouseDown={onMouseDown}>
+      <g onPointerDown={onPointerDown}>
         {bezier ? (
           <g>
             <path
@@ -159,7 +159,7 @@ const Edge = ({
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
             stroke-width={2}
-            onMouseDown={() => onControlPointMouseDown?.(1)}
+            onPointerDown={() => onControlPointPointerDown?.(1)}
           />
           <circle
             cx={nodeCoord2.x}
@@ -184,7 +184,7 @@ const Edge = ({
             fill="rgba(255, 255, 255, 0.8)"
             stroke={controlColor1}
             stroke-width={2}
-            onMouseDown={() => onControlPointMouseDown?.(2)}
+            onPointerDown={() => onControlPointPointerDown?.(2)}
           />
         </g>
       )}
