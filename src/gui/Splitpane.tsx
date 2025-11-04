@@ -5,9 +5,10 @@ interface SplitpaneProps {
   children: [ComponentChildren, ComponentChildren];
   splitRatio?: number; // percentage (0-100)
   orientation?: "horizontal" | "vertical";
+  showSecondPanel?: boolean;
 }
 
-const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: SplitpaneProps) => {
+const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal", showSecondPanel = true }: SplitpaneProps) => {
   const [percent, setPercent] = useState(splitRatio * 100);
   const [isDragging, setIsDragging] = useState(false);
   const splitpaneRef = useRef<HTMLDivElement>(null);
@@ -82,8 +83,8 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
       <div
         style={{
           flex: "none",
-          width: orientation === "horizontal" ? `${percent}%` : "100%",
-          height: orientation === "horizontal" ? "100%" : `${percent}%`,
+          width: orientation === "horizontal" && showSecondPanel ? `${percent}%` : "100%",
+          height: orientation !== "horizontal" && showSecondPanel ? `${percent}%` : "100%",
           overflow: "hidden",
           display: "block",
         }}
@@ -121,7 +122,7 @@ const Splitpane = ({ children, splitRatio = 0.5, orientation = "horizontal" }: S
         style={{
           flex: "1",
           overflow: "hidden",
-          display: "block",
+          display: showSecondPanel ? "block" : "none",
         }}
       >
         {children[1]}

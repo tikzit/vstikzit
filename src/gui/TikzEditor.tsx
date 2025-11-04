@@ -37,6 +37,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
   const [currentEdgeStyle, setCurrentEdgeStyle] = useState<string>("none");
   const [selectedNodes, setSelectedNodes] = useState<Set<number>>(new Set());
   const [selectedEdges, setSelectedEdges] = useState<Set<number>>(new Set());
+  const [showSecondPanel, setShowSecondPanel] = useState<boolean>(true);
 
   const parsedStyles = parseTikzStyles(initialContent.styles);
   const [tikzStyles, setTikzStyles] = useState<Styles>(
@@ -85,6 +86,14 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
       e.preventDefault();
     }
     host.openTikzStyles();
+  };
+
+  const toggleStylePanel = (show: boolean | undefined = undefined) => {
+    if (show !== undefined) {
+      setShowSecondPanel(show);
+    } else {
+      setShowSecondPanel(!showSecondPanel);
+    }
   };
 
   const tryParseGraph = (tikz: string) => {
@@ -224,7 +233,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <Splitpane splitRatio={0.8} orientation="horizontal">
+      <Splitpane splitRatio={0.8} orientation="horizontal" showSecondPanel={showSecondPanel}>
         <div style={{ height: "100%" }}>
           <Toolbar
             tool={tool}
@@ -247,6 +256,7 @@ const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
             tikzStyles={tikzStyles}
             currentNodeStyle={currentNodeStyle}
             currentEdgeStyle={currentEdgeStyle}
+            toggleStylePanel={toggleStylePanel}
           />
         </div>
         <StylePanel

@@ -29,6 +29,7 @@ interface GraphEditorProps {
   tikzStyles: Styles;
   currentNodeStyle: string;
   currentEdgeStyle: string;
+  toggleStylePanel: (show: boolean | undefined) => void;
 }
 
 interface UIState {
@@ -67,6 +68,7 @@ const GraphEditor = ({
   tikzStyles,
   currentNodeStyle,
   currentEdgeStyle,
+  toggleStylePanel,
 }: GraphEditorProps) => {
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
@@ -395,9 +397,12 @@ const GraphEditor = ({
         if (numClicks.current >= 2) {
           // double click
           if (clickedNode !== undefined) {
-            const labelField = document.getElementById("label-field") as HTMLInputElement;
-            labelField.focus();
-            labelField.select();
+            toggleStylePanel(true);
+            setTimeout(() => {
+              const labelField = document.getElementById("label-field") as HTMLInputElement;
+              labelField.focus();
+              labelField.select();
+            }, 10);
           } else if (
             clickedEdge.current !== undefined ||
             clickedControlPoint.current !== undefined
@@ -574,6 +579,10 @@ const GraphEditor = ({
             updateGraph(g, true);
           }
         }
+        break;
+      }
+      case "vstikzit.toggleStylePanel": {
+        toggleStylePanel(undefined);
         break;
       }
       default: {

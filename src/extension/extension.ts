@@ -106,6 +106,7 @@ function activate(context: vscode.ExtensionContext): void {
     "vstikzit.joinPaths",
     "vstikzit.splitPaths",
     "vstikzit.mergeNodes",
+    "vstikzit.toggleStylePanel",
   ];
   for (const command of graphCommands) {
     context.subscriptions.push(

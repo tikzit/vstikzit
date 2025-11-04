@@ -31,8 +31,6 @@
       { "command": "vstikzit.stopSyncingTikzFigures", "title": "Sync > Stop Syncing", "category": "TikZiT" },
       { "command": "vstikzit.buildCurrentTikzFigure", "title": "Build > Build TikZ figure", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.buildCurrentTikzFigureSVG", "title": "Build > Build TikZ figure as SVG", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.viewCurrentTikzFigure", "title": "Build > View TikZ figure PDF", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.viewTikzSource", "title": "Edit > View TikZ Source", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveLeft", "title": "Edit > Move Nodes Left", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveRight", "title": "Edit > Move Nodes Right", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveUp", "title": "Edit > Move Nodes Up", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
@@ -43,14 +41,15 @@
       { "command": "vstikzit.nudgeDown", "title": "Edit > Nudge Nodes Down", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.joinPaths", "title": "Edit > Join Paths", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.splitPaths", "title": "Edit > Split Paths", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.mergeNodes", "title": "Edit > Merge Nodes", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" }
+      { "command": "vstikzit.mergeNodes", "title": "Edit > Merge Nodes", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.viewCurrentTikzFigure", "title": "View > TikZ figure PDF", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.viewTikzSource", "title": "View > TikZ Source", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.toggleStylePanel", "title": "View > Toggle Style Panel", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" }
     ],
     "keybindings": [
       { "command": "vstikzit.openTikzEditor", "key": "ctrl+alt+t", "mac": "cmd+alt+t",
          "when": "(resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html) && activeCustomEditorId != vstikzit.tikzEditor" },
-      { "command": "vstikzit.viewTikzSource", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.buildCurrentTikzFigure", "key": "ctrl+alt+b", "mac": "cmd+alt+b", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.viewCurrentTikzFigure", "key": "ctrl+alt+v", "mac": "cmd+alt+v", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveLeft", "key": "ctrl+left", "mac": "cmd+left", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveRight", "key": "ctrl+right", "mac": "cmd+right", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.moveUp", "key": "ctrl+up", "mac": "cmd+up", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
@@ -61,7 +60,10 @@
       { "command": "vstikzit.nudgeDown", "key": "ctrl+shift+down", "mac": "cmd+shift+down", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.joinPaths", "key": "ctrl+alt+p", "mac": "cmd+option+p", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.splitPaths", "key": "ctrl+alt+shift+p", "mac": "cmd+option+shift+p", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
-      { "command": "vstikzit.mergeNodes", "key": "ctrl+m", "mac": "cmd+m", "when": "activeCustomEditorId == vstikzit.tikzEditor" }
+      { "command": "vstikzit.mergeNodes", "key": "ctrl+m", "mac": "cmd+m", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.viewCurrentTikzFigure", "key": "ctrl+alt+v", "mac": "cmd+alt+v", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.viewTikzSource", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.toggleStylePanel", "key": "ctrl+alt+s", "mac": "cmd+alt+s", "when": "activeCustomEditorId == vstikzit.tikzEditor" }
     ],
     "languages": [
       {

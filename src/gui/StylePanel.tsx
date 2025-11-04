@@ -104,8 +104,8 @@ const StylePanel = ({
             <a href="#" title="Refresh styles" onClick={onRefreshStyles}>
               &#10227;
             </a>
-            <span style={{ color: error ? "var(--tikzit-errorForeground)" : "inherit" }}>
-              [{tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}]
+            <span style={{ color: error ? "var(--tikzit-errorForeground)" : "var(--tikzit-editorCodeLens-foreground)", fontStyle: "italic", fontSize: "0.9em" }}>
+              {tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}
             </span>
           </div>
         </>
