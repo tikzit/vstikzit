@@ -134,24 +134,48 @@ const Edge = ({
           />
         )}
       </g>
+      <g
+        style={{
+          pointerEvents: "none",
+          opacity: selected ? 1 : 0,
+          transition: "opacity 0.3s ease-out",
+        }}
+      >
+        <circle
+          cx={nodeCoord1.x}
+          cy={nodeCoord1.y}
+          r={cpDist}
+          fill="none"
+          stroke-width={2}
+          style={{ stroke: controlColor2, transition: "stroke 0.3s ease-out" }}
+        />
+        <line
+          x1={nodeCoord1.x}
+          y1={nodeCoord1.y}
+          x2={cp1.x}
+          y2={cp1.y}
+          stroke-width={2}
+          style={{ stroke: controlColor1, transition: "stroke 0.3s ease-out" }}
+        />
+        <circle
+          cx={nodeCoord2.x}
+          cy={nodeCoord2.y}
+          r={cpDist}
+          fill="none"
+          stroke-width={2}
+          style={{ stroke: controlColor2, transition: "stroke 0.3s ease-out" }}
+        />
+        <line
+          x1={nodeCoord2.x}
+          y1={nodeCoord2.y}
+          x2={cp2.x}
+          y2={cp2.y}
+          stroke-width={2}
+          style={{ stroke: controlColor1, transition: "stroke 0.3s ease-out" }}
+        />
+      </g>
       {selected && (
         <g>
-          <circle
-            cx={nodeCoord1.x}
-            cy={nodeCoord1.y}
-            r={cpDist}
-            fill="none"
-            stroke={controlColor2}
-            stroke-width={2}
-          />
-          <line
-            x1={nodeCoord1.x}
-            y1={nodeCoord1.y}
-            x2={cp1.x}
-            y2={cp1.y}
-            stroke={controlColor1}
-            stroke-width={2}
-          />
           <circle
             cx={cp1.x}
             cy={cp1.y}
@@ -160,22 +184,6 @@ const Edge = ({
             stroke={controlColor1}
             stroke-width={2}
             onPointerDown={() => onControlPointPointerDown?.(1)}
-          />
-          <circle
-            cx={nodeCoord2.x}
-            cy={nodeCoord2.y}
-            r={cpDist}
-            fill="none"
-            stroke={controlColor2}
-            stroke-width={2}
-          />
-          <line
-            x1={nodeCoord2.x}
-            y1={nodeCoord2.y}
-            x2={cp2.x}
-            y2={cp2.y}
-            stroke={controlColor1}
-            stroke-width={2}
           />
           <circle
             cx={cp2.x}

@@ -38,6 +38,7 @@ interface UIState {
   prevGraph?: Graph;
   mouseDownPos?: Coord;
   mouseMoved?: boolean;
+  showSelectionRect?: boolean;
   selectionRect?: { x: number; y: number; width: number; height: number };
   edgeStartNode?: number;
   edgeEndNode?: number;
@@ -48,7 +49,7 @@ interface UIState {
 
 const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
   if (action === "reset") {
-    return {};
+    return { selectionRect: state.selectionRect };
   } else {
     return { ...state, ...action };
   }
@@ -83,8 +84,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-        .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-        .map(d => d.path)
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
   );
 
   useEffect(() => {
@@ -222,6 +223,7 @@ const GraphEditor = ({
 
           // start rubber band selection
           updateUIState({
+            showSelectionRect: true,
             selectionRect: {
               x: p.x,
               y: p.y,
@@ -255,7 +257,7 @@ const GraphEditor = ({
 
     switch (tool) {
       case "select":
-        if (uiState.selectionRect !== undefined) {
+        if (uiState.showSelectionRect) {
           updateUIState({
             selectionRect: {
               x: Math.min(uiState.mouseDownPos.x, p.x),
@@ -377,7 +379,9 @@ const GraphEditor = ({
 
     // handle double-clicks/taps manually, since we're using the pointer events API
     numClicks.current += 1;
-    setTimeout(() => { numClicks.current = 0; }, 400);
+    setTimeout(() => {
+      numClicks.current = 0;
+    }, 400);
 
     if (!enabled) {
       return;
@@ -431,7 +435,7 @@ const GraphEditor = ({
 
             updateGraph(graph.setEdgeData(d.id, d), true);
           }
-        } else if (uiState.selectionRect !== undefined) {
+        } else if (uiState.showSelectionRect) {
           const sel = new Set(selectedNodes);
           for (const d of graph.nodes) {
             const c = sceneCoords.coordToScreen(d.coord);
@@ -602,7 +606,6 @@ const GraphEditor = ({
     if (event.target instanceof HTMLElement && event.target.tagName === "INPUT") {
       return;
     }
-
 
     let capture = true;
     const keys = [];
@@ -864,14 +867,20 @@ const GraphEditor = ({
           ))}
         </g>
         <g id="selectionLayer">
-          {uiState.selectionRect && (
-            <rect
-              {...uiState.selectionRect}
-              fill="rgba(150, 150, 200, 0.2)"
-              stroke="rgba(150, 150, 200, 1)"
-              stroke-dasharray="5,2"
-            />
-          )}
+          <rect
+            x={uiState.selectionRect?.x ?? 0}
+            y={uiState.selectionRect?.y ?? 0}
+            width={uiState.selectionRect?.width ?? 0}
+            height={uiState.selectionRect?.height ?? 0}
+            fill="rgba(150, 150, 200, 0.2)"
+            stroke="rgba(150, 150, 200, 1)"
+            stroke-dasharray="5,2"
+            style={{
+              opacity: uiState.showSelectionRect ? 1 : 0,
+              pointerEvents: "none",
+              transition: "opacity 0.3s ease-out",
+            }}
+          />
         </g>
         <g id="control-layer">
           {uiState.addEdgeLineStart !== undefined && uiState.addEdgeLineEnd !== undefined && (
