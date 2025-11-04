@@ -395,7 +395,9 @@ const GraphEditor = ({
         if (numClicks.current >= 2) {
           // double click
           if (clickedNode !== undefined) {
-            document.getElementById("label-field")?.focus();
+            const labelField = document.getElementById("label-field") as HTMLInputElement;
+            labelField.focus();
+            labelField.select();
           } else if (
             clickedEdge.current !== undefined ||
             clickedControlPoint.current !== undefined
