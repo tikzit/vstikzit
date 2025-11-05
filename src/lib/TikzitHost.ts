@@ -9,4 +9,5 @@ export default interface TikzitHost {
   refreshTikzStyles(): void;
   openTikzStyles(): void;
   openCodeEditor(position?: { line: number; column: number }): void;
+  getConfig(key: string): boolean;
 }

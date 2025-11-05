@@ -8,6 +8,7 @@ import TikzitHost from "../lib/TikzitHost";
 import App from "./App";
 
 class TikzitBrowserHost implements TikzitHost {
+  private config: { [key: string]: any } = {};
   private updateFromGuiHandler: ((source: string) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private commandHandler: ((command: string) => void) | undefined = undefined;
@@ -24,6 +25,10 @@ class TikzitBrowserHost implements TikzitHost {
     if (this.updateFromGuiHandler) {
       this.updateFromGuiHandler(tikz);
     }
+  }
+
+  public getConfig(key: string): any {
+    return this.config[key];
   }
 
   public updateToGui(tikz: string) {
@@ -58,6 +63,7 @@ class TikzitBrowserHost implements TikzitHost {
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {
+      this.config = initialContent.config;
       render(<App initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering TikzEditor:", error);
@@ -67,6 +73,7 @@ class TikzitBrowserHost implements TikzitHost {
 
   public renderStyleEditor(container: HTMLElement, initialContent: StyleEditorContent) {
     try {
+      this.config = initialContent.config;
       render(<StyleEditor initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering StyleEditor:", error);

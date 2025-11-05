@@ -60,8 +60,15 @@ class BaseEditorProvider {
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection("tikz");
   }
 
+  protected guiConfig(): { [key: string]: any } {
+    const config = vscode.workspace.getConfiguration("vstikzit");
+    return {
+      enableAnimations: config.get<boolean>("enableAnimations", true),
+    };
+  }
+
   protected async initialContent(document: vscode.TextDocument): Promise<string> {
-    return JSON.stringify({ document: document.getText() });
+    return JSON.stringify({ config: this.guiConfig(), document: document.getText() });
   }
 
   async resolveCustomTextEditor(
@@ -308,6 +315,7 @@ class TikzEditorProvider extends BaseEditorProvider implements vscode.CustomText
   protected async initialContent(document: vscode.TextDocument): Promise<string> {
     const [styleFile, styles] = await this.getTikzStyles();
     const content = {
+      config: this.guiConfig(),
       styleFile: path.basename(styleFile),
       styles: styles,
       document: document.getText(),

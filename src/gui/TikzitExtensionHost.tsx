@@ -11,6 +11,7 @@ declare const acquireVsCodeApi: () => any;
 
 class TikzitExtensionHost implements TikzitHost {
   private vscode: VsCodeApi;
+  private config: { [key: string]: any } = {};
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
   private updateToGuiHandler: ((source: string) => void) | undefined = undefined;
   private commandHandler: ((command: string) => void) | undefined = undefined;
@@ -48,6 +49,10 @@ class TikzitExtensionHost implements TikzitHost {
 
   destroy() {
     window.removeEventListener("message", this.listener!);
+  }
+
+  public getConfig(key: string): any {
+    return this.config[key];
   }
 
   public onUpdateToGui(handler: (source: string) => void) {
@@ -101,6 +106,7 @@ class TikzitExtensionHost implements TikzitHost {
 
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {
+      this.config = initialContent.config;
       render(<TikzEditor initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering TikzEditor:", error);
@@ -110,6 +116,7 @@ class TikzitExtensionHost implements TikzitHost {
 
   public renderStyleEditor(container: HTMLElement, initialContent: StyleEditorContent) {
     try {
+      this.config = initialContent.config;
       render(<StyleEditor initialContent={initialContent} host={this} />, container);
     } catch (error) {
       console.error("Error rendering StyleEditor:", error);

@@ -23,6 +23,16 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "TikZiT",
+      "properties": {
+        "vstikzit.enableAnimations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable animations in the TikZ editor."
+        }
+      }
+    },
     "commands": [
       { "command": "vstikzit.openTikzEditor", "title": "Open TikZ Editor", "category": "TikZiT",
         "when": "(resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html) && activeCustomEditorId != vstikzit.tikzEditor" },

@@ -16,6 +16,7 @@ import Splitpane from "./Splitpane";
 import TikzitHost from "../lib/TikzitHost";
 
 interface TikzEditorContent {
+  config: { [key: string]: any };
   document: string;
   styleFile: string;
   styles: string;

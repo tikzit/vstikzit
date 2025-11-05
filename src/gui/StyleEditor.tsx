@@ -8,6 +8,7 @@ import { StyleData } from "../lib/Data";
 import TikzitHost from "../lib/TikzitHost";
 
 interface StyleEditorContent {
+  config: { [key: string]: any };
   document: string;
 }
 
@@ -179,7 +180,7 @@ const StyleEditor = ({ initialContent, host }: StyleEditorProps) => {
           currentNodeLabel={undefined}
           currentNodeStyle={currentNodeStyle}
           currentEdgeStyle={currentEdgeStyle}
-          onCurrentNodeLabelChanged={() => { }}
+          onCurrentNodeLabelChanged={() => {}}
           onNodeStyleChanged={handleCurrentStyleChange}
           onEdgeStyleChanged={handleCurrentStyleChange}
           editMode={true}
