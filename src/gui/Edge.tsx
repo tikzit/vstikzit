@@ -1,9 +1,10 @@
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { Coord, EdgeData, NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
 import { computeControlPoints, tangent } from "../lib/curve";
 import Styles from "../lib/Styles";
+import TikzitHostContext from "./TikzitHostContext";
 
 interface EdgeProps {
   data: EdgeData;
@@ -26,6 +27,7 @@ const Edge = ({
   onControlPointPointerDown,
   sceneCoords,
 }: EdgeProps) => {
+  const host = useContext(TikzitHostContext);
   const style = tikzStyles.style(data.property("style"));
   const computed = computeControlPoints(tikzStyles, sourceData, targetData, data);
   let [c1, c2, cp1, cp2] = computed[0];
@@ -138,7 +140,7 @@ const Edge = ({
         style={{
           pointerEvents: "none",
           opacity: selected ? 1 : 0,
-          transition: "opacity 0.3s ease-out",
+          transition: host.getConfig("enableAnimations") ? "opacity 0.3s ease-out" : "none",
         }}
       >
         <circle
@@ -147,7 +149,10 @@ const Edge = ({
           r={cpDist}
           fill="none"
           stroke-width={2}
-          style={{ stroke: controlColor2, transition: "stroke 0.3s ease-out" }}
+          style={{
+            stroke: controlColor2,
+            transition: host.getConfig("enableAnimations") ? "opacity 0.3s ease-out" : "none",
+          }}
         />
         <line
           x1={nodeCoord1.x}
@@ -155,7 +160,10 @@ const Edge = ({
           x2={cp1.x}
           y2={cp1.y}
           stroke-width={2}
-          style={{ stroke: controlColor1, transition: "stroke 0.3s ease-out" }}
+          style={{
+            stroke: controlColor1,
+            transition: host.getConfig("enableAnimations") ? "stroke 0.3s ease-out" : "none",
+          }}
         />
         <circle
           cx={nodeCoord2.x}
@@ -163,7 +171,10 @@ const Edge = ({
           r={cpDist}
           fill="none"
           stroke-width={2}
-          style={{ stroke: controlColor2, transition: "stroke 0.3s ease-out" }}
+          style={{
+            stroke: controlColor2,
+            transition: host.getConfig("enableAnimations") ? "stroke 0.3s ease-out" : "none",
+          }}
         />
         <line
           x1={nodeCoord2.x}
@@ -171,7 +182,10 @@ const Edge = ({
           x2={cp2.x}
           y2={cp2.y}
           stroke-width={2}
-          style={{ stroke: controlColor1, transition: "stroke 0.3s ease-out" }}
+          style={{
+            stroke: controlColor1,
+            transition: host.getConfig("enableAnimations") ? "stroke 0.3s ease-out" : "none",
+          }}
         />
       </g>
       {selected && (
