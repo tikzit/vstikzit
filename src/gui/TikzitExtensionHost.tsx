@@ -5,11 +5,12 @@ import "./vscodevars.css";
 import "./gui.css";
 import { ParseError } from "../lib/TikzParser";
 import TikzitHost from "../lib/TikzitHost";
+import TikzitHostContext from "./TikzitHostContext";
 
 // VSCode WebView API (should be available globally in webview context)
 declare const acquireVsCodeApi: () => any;
 
-class TikzitExtensionHost implements TikzitHost {
+class TikzitExtensionHost extends TikzitHost {
   private vscode: VsCodeApi;
   private config: { [key: string]: any } = {};
   private listener: ((event: MessageEvent) => void) | undefined = undefined;
@@ -18,6 +19,7 @@ class TikzitExtensionHost implements TikzitHost {
   private tikzStylesUpdatedHandler: ((filename: string, source: string) => void) | undefined =
     undefined;
   constructor() {
+    super();
     this.vscode = acquireVsCodeApi();
     this.listener = (event: MessageEvent) => {
       const message = event.data;
@@ -107,7 +109,12 @@ class TikzitExtensionHost implements TikzitHost {
   public renderTikzEditor(container: HTMLElement, initialContent: TikzEditorContent) {
     try {
       this.config = initialContent.config;
-      render(<TikzEditor initialContent={initialContent} host={this} />, container);
+      render(
+        <TikzitHostContext value={this}>
+          <TikzEditor initialContent={initialContent} />
+        </TikzitHostContext>,
+        container
+      );
     } catch (error) {
       console.error("Error rendering TikzEditor:", error);
       container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;
@@ -117,7 +124,12 @@ class TikzitExtensionHost implements TikzitHost {
   public renderStyleEditor(container: HTMLElement, initialContent: StyleEditorContent) {
     try {
       this.config = initialContent.config;
-      render(<StyleEditor initialContent={initialContent} host={this} />, container);
+      render(
+        <TikzitHostContext value={this}>
+          <StyleEditor initialContent={initialContent} />
+        </TikzitHostContext>,
+        container
+      );
     } catch (error) {
       console.error("Error rendering StyleEditor:", error);
       container.innerHTML = `<div style="padding: 20px; color: red;">${error}</div>`;

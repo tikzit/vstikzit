@@ -1,25 +1,25 @@
 // Main entry point for the browser version of TikZiT
 
-import { useEffect, useState } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 import CodeEditor from "./CodeEditor";
 import Splitpane from "./Splitpane";
 import TikzEditor, { TikzEditorContent } from "./TikzEditor";
+import TikzitHostContext from "./TikzitHostContext";
 import { TikzitBrowserHost } from "./TikzitBrowserHost";
-
 
 interface AppProps {
   initialContent: TikzEditorContent;
-  host: TikzitBrowserHost;
 }
 
-const App = ({ initialContent, host }: AppProps) => {
+const App = ({ initialContent }: AppProps) => {
   const [code, setCode] = useState<string>(initialContent.document);
   const [initialCode, setInitialCode] = useState<string>(initialContent.document);
+  const host = useContext(TikzitHostContext) as TikzitBrowserHost;
 
   const resetCode = (newCode: string) => {
     setInitialCode(newCode);
     setCode(newCode);
-  }
+  };
 
   useEffect(() => {
     host.onUpdateFromGui(source => {
@@ -34,9 +34,10 @@ const App = ({ initialContent, host }: AppProps) => {
 
   return (
     <Splitpane splitRatio={0.7} orientation="vertical">
-      <TikzEditor initialContent={initialContent} host={host} />
+      <TikzEditor initialContent={initialContent} />
       <CodeEditor value={initialCode} onChange={handleCodeChange} />
-    </Splitpane>);
+    </Splitpane>
+  );
 };
 
 export default App;

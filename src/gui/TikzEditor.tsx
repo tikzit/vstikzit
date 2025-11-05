@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useContext } from "preact/hooks";
 
 import GraphEditor from "./GraphEditor";
 import { GraphTool } from "./GraphEditor";
@@ -13,7 +13,7 @@ import StylePanel from "./StylePanel";
 import Styles from "../lib/Styles";
 import Toolbar from "./Toolbar";
 import Splitpane from "./Splitpane";
-import TikzitHost from "../lib/TikzitHost";
+import TikzitHostContext from "./TikzitHostContext";
 
 interface TikzEditorContent {
   config: { [key: string]: any };
@@ -24,10 +24,10 @@ interface TikzEditorContent {
 
 interface TikzEditorProps {
   initialContent: TikzEditorContent;
-  host: TikzitHost;
 }
 
-const TikzEditor = ({ initialContent, host }: TikzEditorProps) => {
+const TikzEditor = ({ initialContent }: TikzEditorProps) => {
+  const host = useContext(TikzitHostContext);
   const parsed = parseTikzPicture(initialContent.document);
   const [graph, setGraph] = useState<Graph>(parsed.result ?? new Graph());
   const [enabled, setEnabled] = useState<boolean>(parsed.result !== undefined);
