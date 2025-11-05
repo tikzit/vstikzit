@@ -140,7 +140,7 @@ const Edge = ({
         style={{
           pointerEvents: "none",
           opacity: selected ? 1 : 0,
-          transition: host.getConfig("enableAnimations") ? "opacity 0.3s ease-out" : "none",
+          transition: host.getConfig("enableAnimations") ? "opacity 0.2s ease-out" : "none",
         }}
       >
         <circle
@@ -151,7 +151,7 @@ const Edge = ({
           stroke-width={2}
           style={{
             stroke: controlColor2,
-            transition: host.getConfig("enableAnimations") ? "opacity 0.3s ease-out" : "none",
+            transition: host.getConfig("enableAnimations") ? "stroke 0.2s ease-out" : "none",
           }}
         />
         <line
@@ -162,7 +162,7 @@ const Edge = ({
           stroke-width={2}
           style={{
             stroke: controlColor1,
-            transition: host.getConfig("enableAnimations") ? "stroke 0.3s ease-out" : "none",
+            transition: host.getConfig("enableAnimations") ? "stroke 0.2s ease-out" : "none",
           }}
         />
         <circle
@@ -173,7 +173,7 @@ const Edge = ({
           stroke-width={2}
           style={{
             stroke: controlColor2,
-            transition: host.getConfig("enableAnimations") ? "stroke 0.3s ease-out" : "none",
+            transition: host.getConfig("enableAnimations") ? "stroke 0.2s ease-out" : "none",
           }}
         />
         <line

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
 import { NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { formatLabel } from "../lib/labels";
 import { colorToHex } from "../lib/color";
 import Styles from "../lib/Styles";
+import TikzitHostContext from "./TikzitHostContext";
 
 interface NodeProps {
   data: NodeData;
@@ -14,6 +15,7 @@ interface NodeProps {
 }
 
 const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps) => {
+  const host = useContext(TikzitHostContext);
   const style = tikzStyles.style(data.property("style"));
   const coord = sceneCoords.coordToScreen(data.coord);
   const r = sceneCoords.scale * 0.2;
@@ -85,14 +87,29 @@ const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps)
           </text>
         </g>
       )}
-      {selected && shape === "circle" && <circle r={r + 4} fill="rgba(150, 200, 255, 0.4)" />}
-      {selected && shape === "rectangle" && (
+      {shape === "circle" && (
+        <circle
+          r={r + 4}
+          fill="rgba(150, 200, 255, 0.4)"
+          style={{
+            pointerEvents: "none",
+            opacity: selected ? 1 : 0,
+            transition: host.getConfig("enableAnimations") ? "opacity 0.2s ease-out" : "none",
+          }}
+        />
+      )}
+      {shape === "rectangle" && (
         <rect
           x={-r - 4}
           y={-r - 4}
           width={2 * (r + 4)}
           height={2 * (r + 4)}
           fill="rgba(150, 200, 255, 0.4)"
+          style={{
+            pointerEvents: "none",
+            opacity: selected ? 1 : 0,
+            transition: host.getConfig("enableAnimations") ? "opacity 0.2s ease-out" : "none",
+          }}
         />
       )}
       {highlight && shape === "circle" && (

@@ -5,6 +5,8 @@ import Node from "./Node";
 import Edge from "./Edge";
 import { isValidDelimString } from "../lib/TikzParser";
 import { SVGAttributes } from "preact";
+import { useContext } from "preact/hooks";
+import TikzitHostContext from "./TikzitHostContext";
 
 interface StylePanelProps {
   tikzStyles: Styles;
@@ -33,6 +35,7 @@ const StylePanel = ({
   onEditStyles,
   onRefreshStyles,
 }: StylePanelProps) => {
+  const host = useContext(TikzitHostContext);
   const sceneCoords = new SceneCoords()
     .setZoom(0)
     .setLeft(0.35)
@@ -104,7 +107,15 @@ const StylePanel = ({
             <a href="#" title="Refresh styles" onClick={onRefreshStyles}>
               &#10227;
             </a>
-            <span style={{ color: error ? "var(--tikzit-errorForeground)" : "var(--tikzit-editorCodeLens-foreground)", fontStyle: "italic", fontSize: "0.9em" }}>
+            <span
+              style={{
+                color: error
+                  ? "var(--tikzit-errorForeground)"
+                  : "var(--tikzit-editorCodeLens-foreground)",
+                fontStyle: "italic",
+                fontSize: "0.9em",
+              }}
+            >
               {tikzStyles.filename !== "" ? tikzStyles.filename : "no tikzstyles"}
             </span>
           </div>
@@ -148,7 +159,22 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px", borderWidth: 0 }}
                 >
-                  {currentNodeStyle === style.name && <rect {...selectionProps} />}
+                  <rect
+                    x={1}
+                    y={1}
+                    width={43}
+                    height={43}
+                    fill="rgba(150, 200, 255, 0.4)"
+                    stroke="rgba(150, 200, 255, 0.8)"
+                    stroke-width={1}
+                    style={{
+                      pointerEvents: "none",
+                      opacity: currentNodeStyle === style.name ? 1 : 0,
+                      transition: host.getConfig("enableAnimations")
+                        ? "opacity 0.15s ease-out"
+                        : "none",
+                    }}
+                  />
                   <Node
                     data={node.setProperty("style", style.name)}
                     tikzStyles={tikzStyles}
@@ -192,7 +218,22 @@ const StylePanel = ({
                   height={sceneCoords.screenHeight + 12}
                   style={{ margin: "5px" }}
                 >
-                  {currentEdgeStyle === style.name && <rect {...selectionProps} />}
+                  <rect
+                    x={1}
+                    y={1}
+                    width={43}
+                    height={43}
+                    fill="rgba(150, 200, 255, 0.4)"
+                    stroke="rgba(150, 200, 255, 0.8)"
+                    stroke-width={1}
+                    style={{
+                      pointerEvents: "none",
+                      opacity: currentEdgeStyle === style.name ? 1 : 0,
+                      transition: host.getConfig("enableAnimations")
+                        ? "opacity 0.15s ease-out"
+                        : "none",
+                    }}
+                  />
                   <Edge
                     data={edge.setProperty("style", style.name)}
                     sourceData={enode1}
