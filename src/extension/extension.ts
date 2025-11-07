@@ -106,6 +106,8 @@ function activate(context: vscode.ExtensionContext): void {
     "vstikzit.joinPaths",
     "vstikzit.splitPaths",
     "vstikzit.mergeNodes",
+    "vstikzit.reflectNodesHorizontally",
+    "vstikzit.reflectNodesVertically",
     "vstikzit.toggleStylePanel",
   ];
   for (const command of graphCommands) {

@@ -217,6 +217,15 @@ class NodeData extends Data<NodeData> {
     d._label = label;
     return d;
   }
+
+  public reflectNode(center: number, horizontal: boolean): NodeData {
+    return this.setCoord(
+      new Coord(
+        horizontal ? 2 * center - this.coord.x : this.coord.x,
+        !horizontal ? 2 * center - this.coord.y : this.coord.y
+      )
+    );
+  }
 }
 
 class EdgeData extends Data<EdgeData> {
@@ -355,6 +364,24 @@ class EdgeData extends Data<EdgeData> {
       d = d.setProperty("bend right", bend);
     }
     return d;
+  }
+
+  public reflectEdge(horizontal: boolean): EdgeData {
+    if (this.basicBendMode) {
+      return this.setBend(-this.bend);
+    } else {
+      let inAngle = this.propertyFloat("in") ?? 0;
+      let outAngle = this.propertyFloat("out") ?? 0;
+
+      if (horizontal) {
+        inAngle = inAngle > 0 ? 180 - inAngle : -180 - inAngle;
+        outAngle = outAngle > 0 ? 180 - outAngle : -180 - outAngle;
+      } else {
+        inAngle = -inAngle;
+        outAngle = -outAngle;
+      }
+      return this.setProperty("in", inAngle).setProperty("out", outAngle);
+    }
   }
 
   public reverse(): EdgeData {

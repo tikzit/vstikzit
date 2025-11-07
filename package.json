@@ -52,6 +52,7 @@
       { "command": "vstikzit.joinPaths", "title": "Edit > Join Paths", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.splitPaths", "title": "Edit > Split Paths", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.mergeNodes", "title": "Edit > Merge Nodes", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.reflectNodesHorizontally", "title": "Edit > Reflect Nodes Horizontally", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewCurrentTikzFigure", "title": "View > TikZ figure PDF", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewTikzSource", "title": "View > TikZ Source", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.toggleStylePanel", "title": "View > Toggle Style Panel", "category": "TikZiT", "when": "activeCustomEditorId == vstikzit.tikzEditor" }
@@ -71,6 +72,8 @@
       { "command": "vstikzit.joinPaths", "key": "ctrl+alt+p", "mac": "cmd+option+p", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.splitPaths", "key": "ctrl+alt+shift+p", "mac": "cmd+option+shift+p", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.mergeNodes", "key": "ctrl+m", "mac": "cmd+m", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.reflectNodesHorizontally", "key": "alt+right", "mac": "option+right", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.reflectNodesVertically", "key": "alt+down", "mac": "option+down", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewCurrentTikzFigure", "key": "ctrl+alt+v", "mac": "cmd+alt+v", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewTikzSource", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.toggleStylePanel", "key": "ctrl+alt+s", "mac": "cmd+alt+s", "when": "activeCustomEditorId == vstikzit.tikzEditor" }

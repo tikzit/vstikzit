@@ -1,4 +1,4 @@
-import { NodeData, EdgeData, PathData, GraphData, mapEquals } from "./Data";
+import { NodeData, EdgeData, PathData, GraphData, mapEquals, Coord } from "./Data";
 
 function moveForward<T>(m: Map<number, T>, elems: Set<number>): Map<number, T> {
   const arr = Array.from(m.entries());
@@ -521,6 +521,29 @@ class Graph {
 
     g = g.removeNodes(removeNodes);
     return g;
+  }
+
+  public reflectNodes(nodeIds: Set<number>, horizontal: boolean): Graph {
+    if (nodeIds.size === 0) {
+      return this;
+    }
+
+    // find the center coordinate
+    let min = Infinity;
+    let max = -Infinity;
+    for (const n of this.nodes) {
+      if (nodeIds.has(n.id)) {
+        min = Math.min(min, horizontal ? n.coord.x : n.coord.y);
+        max = Math.max(max, horizontal ? n.coord.x : n.coord.y);
+      }
+    }
+    const center = (min + max) / 2;
+
+    return this.mapNodeData(d =>
+      nodeIds.has(d.id) ? d.reflectNode(center, horizontal) : d
+    ).mapEdgeData(d =>
+      nodeIds.has(d.source) && nodeIds.has(d.target) ? d.reflectEdge(horizontal) : d
+    );
   }
 
   public get freshNodeId(): number {

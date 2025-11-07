@@ -585,6 +585,14 @@ const GraphEditor = ({
         }
         break;
       }
+      case "vstikzit.reflectNodesHorizontally": {
+        updateGraph(graph.reflectNodes(selectedNodes, true), true);
+        break;
+      }
+      case "vstikzit.reflectNodesVertically": {
+        updateGraph(graph.reflectNodes(selectedNodes, false), true);
+        break;
+      }
       case "vstikzit.toggleStylePanel": {
         toggleStylePanel(undefined);
         break;
