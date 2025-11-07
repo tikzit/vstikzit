@@ -540,10 +540,14 @@ class Graph {
     const center = (min + max) / 2;
 
     return this.mapNodeData(d =>
-      nodeIds.has(d.id) ? d.reflectNode(center, horizontal) : d
+      nodeIds.has(d.id) ? d.reflect(center, horizontal) : d
     ).mapEdgeData(d =>
-      nodeIds.has(d.source) && nodeIds.has(d.target) ? d.reflectEdge(horizontal) : d
+      nodeIds.has(d.source) && nodeIds.has(d.target) ? d.reflect(horizontal) : d
     );
+  }
+
+  public reverseEdges(edgeIds: Set<number>): Graph {
+    return this.mapEdgeData(d => (edgeIds.has(d.id) ? d.reverse() : d));
   }
 
   public get freshNodeId(): number {

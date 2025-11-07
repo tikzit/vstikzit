@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/tikzit/vstikzit.git"
   },
-  "version": "0.3.1",
+  "version": "0.4.0",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -74,6 +74,7 @@
       { "command": "vstikzit.mergeNodes", "key": "ctrl+m", "mac": "cmd+m", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.reflectNodesHorizontally", "key": "alt+right", "mac": "option+right", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.reflectNodesVertically", "key": "alt+down", "mac": "option+down", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
+      { "command": "vstikzit.reverseEdges", "key": "ctrl+/", "mac": "cmd+/", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewCurrentTikzFigure", "key": "ctrl+alt+v", "mac": "cmd+alt+v", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.viewTikzSource", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "activeCustomEditorId == vstikzit.tikzEditor" },
       { "command": "vstikzit.toggleStylePanel", "key": "ctrl+alt+s", "mac": "cmd+alt+s", "when": "activeCustomEditorId == vstikzit.tikzEditor" }

@@ -593,6 +593,10 @@ const GraphEditor = ({
         updateGraph(graph.reflectNodes(selectedNodes, false), true);
         break;
       }
+      case "vstikzit.reverseEdges": {
+        updateGraph(graph.reverseEdges(selectedEdges), true);
+        break;
+      }
       case "vstikzit.toggleStylePanel": {
         toggleStylePanel(undefined);
         break;
