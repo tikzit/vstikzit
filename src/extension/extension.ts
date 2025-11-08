@@ -93,25 +93,25 @@ function activate(context: vscode.ExtensionContext): void {
   registerTikzLinkProvider(context);
 
   // graph editor commands
-  const graphCommands = [
-    "vstikzit.viewTikzSource",
-    "vstikzit.moveLeft",
-    "vstikzit.moveRight",
-    "vstikzit.moveUp",
-    "vstikzit.moveDown",
-    "vstikzit.nudgeLeft",
-    "vstikzit.nudgeRight",
-    "vstikzit.nudgeUp",
-    "vstikzit.nudgeDown",
-    "vstikzit.joinPaths",
-    "vstikzit.splitPaths",
-    "vstikzit.mergeNodes",
-    "vstikzit.reflectNodesHorizontally",
-    "vstikzit.reflectNodesVertically",
-    "vstikzit.reverseEdges",
-    "vstikzit.toggleStylePanel",
+  const guiCommands = [
+    "vstikzit.gui.viewTikzSource",
+    "vstikzit.gui.moveLeft",
+    "vstikzit.gui.moveRight",
+    "vstikzit.gui.moveUp",
+    "vstikzit.gui.moveDown",
+    "vstikzit.gui.nudgeLeft",
+    "vstikzit.gui.nudgeRight",
+    "vstikzit.gui.nudgeUp",
+    "vstikzit.gui.nudgeDown",
+    "vstikzit.gui.joinPaths",
+    "vstikzit.gui.splitPaths",
+    "vstikzit.gui.mergeNodes",
+    "vstikzit.gui.reflectNodesHorizontally",
+    "vstikzit.gui.reflectNodesVertically",
+    "vstikzit.gui.reverseEdges",
+    "vstikzit.gui.toggleStylePanel",
   ];
-  for (const command of graphCommands) {
+  for (const command of guiCommands) {
     context.subscriptions.push(
       vscode.commands.registerCommand(command, () => sendCommand(command))
     );

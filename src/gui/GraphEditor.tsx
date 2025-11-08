@@ -520,43 +520,43 @@ const GraphEditor = ({
     };
 
     switch (command) {
-      case "vstikzit.viewTikzSource": {
+      case "vstikzit.gui.viewTikzSource": {
         viewTikz();
         break;
       }
-      case "vstikzit.moveLeft": {
+      case "vstikzit.gui.moveLeft": {
         moveSelectedNodes(-0.25, 0);
         break;
       }
-      case "vstikzit.moveRight": {
+      case "vstikzit.gui.moveRight": {
         moveSelectedNodes(0.25, 0);
         break;
       }
-      case "vstikzit.moveUp": {
+      case "vstikzit.gui.moveUp": {
         moveSelectedNodes(0, 0.25);
         break;
       }
-      case "vstikzit.moveDown": {
+      case "vstikzit.gui.moveDown": {
         moveSelectedNodes(0, -0.25);
         break;
       }
-      case "vstikzit.nudgeLeft": {
+      case "vstikzit.gui.nudgeLeft": {
         moveSelectedNodes(-0.025, 0);
         break;
       }
-      case "vstikzit.nudgeRight": {
+      case "vstikzit.gui.nudgeRight": {
         moveSelectedNodes(0.025, 0);
         break;
       }
-      case "vstikzit.nudgeUp": {
+      case "vstikzit.gui.nudgeUp": {
         moveSelectedNodes(0, 0.025);
         break;
       }
-      case "vstikzit.nudgeDown": {
+      case "vstikzit.gui.nudgeDown": {
         moveSelectedNodes(0, -0.025);
         break;
       }
-      case "vstikzit.joinPaths": {
+      case "vstikzit.gui.joinPaths": {
         if (selectedPaths.size > 1) {
           const g = graph.joinPaths(selectedPaths);
           if (!g.equals(graph)) {
@@ -565,7 +565,7 @@ const GraphEditor = ({
         }
         break;
       }
-      case "vstikzit.splitPaths": {
+      case "vstikzit.gui.splitPaths": {
         let g = graph;
         for (const p of selectedPaths) {
           g = g.splitPath(p);
@@ -576,7 +576,7 @@ const GraphEditor = ({
         }
         break;
       }
-      case "vstikzit.mergeNodes": {
+      case "vstikzit.gui.mergeNodes": {
         if (selectedNodes.size > 0) {
           const g = graph.mergeNodes(selectedNodes);
           if (!g.equals(graph)) {
@@ -585,19 +585,19 @@ const GraphEditor = ({
         }
         break;
       }
-      case "vstikzit.reflectNodesHorizontally": {
+      case "vstikzit.gui.reflectNodesHorizontally": {
         updateGraph(graph.reflectNodes(selectedNodes, true), true);
         break;
       }
-      case "vstikzit.reflectNodesVertically": {
+      case "vstikzit.gui.reflectNodesVertically": {
         updateGraph(graph.reflectNodes(selectedNodes, false), true);
         break;
       }
-      case "vstikzit.reverseEdges": {
+      case "vstikzit.gui.reverseEdges": {
         updateGraph(graph.reverseEdges(selectedEdges), true);
         break;
       }
-      case "vstikzit.toggleStylePanel": {
+      case "vstikzit.gui.toggleStylePanel": {
         toggleStylePanel(undefined);
         break;
       }
