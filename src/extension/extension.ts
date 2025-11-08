@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 
 import { StyleEditorProvider, TikzEditorProvider, currentUri } from "./editors";
-import TikzLinkProvider, { registerTikzLinkProvider } from "./TikzLinkProvider";
+import { registerTikzLinkProvider } from "./TikzLinkProvider";
+import { registerTikzfigCompletionProvider } from "./TikzfigCompletionProvider";
 import {
   buildCurrentTikzFigure,
   stopSyncTikzFigures,
@@ -77,6 +78,7 @@ function activate(context: vscode.ExtensionContext): void {
   );
 
   registerTikzLinkProvider(context);
+  registerTikzfigCompletionProvider(context);
 
   // these commands are sent to the webview
   const guiCommands = [
