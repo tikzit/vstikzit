@@ -57,10 +57,9 @@ Both the build and sync commands have variants that will build to SVG instead of
 
 The extension is nearly at feature parity with the desktop application, but there are still some things to do:
 
-- [ ] Rotate and reflect selection
 - [ ] Move nodes/edges up and down in the Z-order
 - [ ] More UI support and testing for multi-edge/filled paths
-- [ ] Customization via user settings (colors, paths, keybindings, etc)
+- [ ] Customization via user settings (colors, paths, etc)
 - [ ] Support for labels next to nodes via `label=` property
 - [ ] Automatically crash editor when `B` key is pressed (currently not planned)
 
