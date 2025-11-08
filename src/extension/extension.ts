@@ -76,25 +76,14 @@ function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("vstikzit.openOrCreateTikz", openOrCreateTikz)
   );
 
-  // // register the tikz link provider for LaTeX files
-  // context.subscriptions.push(
-  //   vscode.languages.registerDocumentLinkProvider(
-  //     [
-  //       { language: "tex", scheme: "file" },
-  //       { language: "latex", scheme: "file" },
-  //       { language: "html", scheme: "file" },
-  //       { pattern: "**/*.tex", scheme: "file" },
-  //       { pattern: "**/*.html", scheme: "file" },
-  //     ],
-  //     new TikzLinkProvider()
-  //   )
-  // );
-
   registerTikzLinkProvider(context);
 
-  // graph editor commands
+  // these commands are sent to the webview
   const guiCommands = [
-    "vstikzit.gui.viewTikzSource",
+    "vstikzit.gui.cut",
+    "vstikzit.gui.copy",
+    "vstikzit.gui.paste",
+    "vstikzit.gui.delete",
     "vstikzit.gui.moveLeft",
     "vstikzit.gui.moveRight",
     "vstikzit.gui.moveUp",
@@ -109,7 +98,20 @@ function activate(context: vscode.ExtensionContext): void {
     "vstikzit.gui.reflectNodesHorizontally",
     "vstikzit.gui.reflectNodesVertically",
     "vstikzit.gui.reverseEdges",
+    "vstikzit.gui.selectAll",
+    "vstikzit.gui.deselectAll",
+    "vstikzit.gui.extendSelectionLeft",
+    "vstikzit.gui.extendSelectionRight",
+    "vstikzit.gui.extendSelectionUp",
+    "vstikzit.gui.extendSelectionDown",
+    "vstikzit.gui.selectTool",
+    "vstikzit.gui.nodeTool",
+    "vstikzit.gui.edgeTool",
+    "vstikzit.gui.viewTikzSource",
     "vstikzit.gui.toggleStylePanel",
+    "vstikzit.gui.zoomIn",
+    "vstikzit.gui.zoomOut",
+    "vstikzit.gui.centerViewport",
   ];
   for (const command of guiCommands) {
     context.subscriptions.push(

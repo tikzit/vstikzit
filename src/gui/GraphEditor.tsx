@@ -44,7 +44,6 @@ interface UIState {
   edgeEndNode?: number;
   addEdgeLineStart?: Coord;
   addEdgeLineEnd?: Coord;
-  helpVisible?: boolean;
 }
 
 const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
@@ -510,6 +509,18 @@ const GraphEditor = ({
   const handleCommand = async (command: string) => {
     let capture = true;
 
+    // check if the graph editor has keyboard focus
+    const editor = document.getElementById("graph-editor");
+    if (document.activeElement !== editor) {
+      return;
+    }
+
+    // // if an input field is focused, ignore commands
+    // const activeElement = document.activeElement;
+    // if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+    //   return;
+    // }
+
     const moveSelectedNodes = (dx: number, dy: number) => {
       if (selectedNodes.size !== 0) {
         const g = graph.mapNodeData(d =>
@@ -520,8 +531,48 @@ const GraphEditor = ({
     };
 
     switch (command) {
-      case "vstikzit.gui.viewTikzSource": {
-        viewTikz();
+      case "vstikzit.gui.cut": {
+        if (selectedNodes.size !== 0) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+          const g = graph.removeNodes(selectedNodes);
+          updateGraph(g, true);
+          updateSelection(new Set(), new Set());
+        }
+        break;
+      }
+      case "vstikzit.gui.copy": {
+        if (selectedNodes.size !== 0) {
+          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
+        }
+        break;
+      }
+      case "vstikzit.gui.paste": {
+        const pastedData = await window.navigator.clipboard.readText();
+        const parsed = parseTikzPicture(pastedData);
+        if (parsed.result !== undefined) {
+          let g = parsed.result;
+          const nodes = g.nodeIds;
+          if (nodes.length !== 0) {
+            const n = nodes[0];
+            while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
+              g = g.shiftGraph(0.5, -0.5);
+            }
+          }
+
+          const g1 = graph.insertGraph(g);
+          const sel = new Set(g1.nodeIds);
+          for (const n of graph.nodeIds) {
+            sel.delete(n);
+          }
+          updateGraph(g1, true);
+          updateSelection(sel, new Set());
+        }
+        break;
+      }
+      case "vstikzit.gui.delete": {
+        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
+        updateGraph(g, true);
+        updateSelection(new Set(), new Set());
         break;
       }
       case "vstikzit.gui.moveLeft": {
@@ -597,8 +648,104 @@ const GraphEditor = ({
         updateGraph(graph.reverseEdges(selectedEdges), true);
         break;
       }
+      case "vstikzit.gui.selectAll": {
+        updateSelection(new Set(graph.nodeIds), new Set());
+        break;
+      }
+      case "vstikzit.gui.deselectAll": {
+        updateSelection(new Set(), new Set());
+        break;
+      }
+      case "vstikzit.gui.extendSelectionLeft": {
+        if (selectedNodes.size !== 0) {
+          const maxX = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.x ?? 0)
+            .reduce((a, b) => (a > b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "vstikzit.gui.extendSelectionRight": {
+        if (selectedNodes.size !== 0) {
+          const minX = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.x ?? 0)
+            .reduce((a, b) => (a < b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "vstikzit.gui.extendSelectionUp": {
+        if (selectedNodes.size !== 0) {
+          const minY = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.y ?? 0)
+            .reduce((a, b) => (a < b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "vstikzit.gui.extendSelectionDown": {
+        if (selectedNodes.size !== 0) {
+          const maxY = Array.from(selectedNodes)
+            .map(n => graph.node(n)?.coord.y ?? 0)
+            .reduce((a, b) => (a > b ? a : b));
+          updateSelection(
+            new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
+            selectedEdges
+          );
+        }
+        break;
+      }
+      case "vstikzit.gui.selectTool": {
+        setTool("select");
+        break;
+      }
+      case "vstikzit.gui.nodeTool": {
+        setTool("vertex");
+        break;
+      }
+      case "vstikzit.gui.edgeTool": {
+        setTool("edge");
+        break;
+      }
+      case "vstikzit.gui.viewTikzSource": {
+        viewTikz();
+        break;
+      }
       case "vstikzit.gui.toggleStylePanel": {
         toggleStylePanel(undefined);
+        break;
+      }
+      case "vstikzit.gui.zoomIn": {
+        const coords = sceneCoords.zoomIn();
+        if (coords.scale <= 1024) {
+          updateSceneCoords(coords);
+        }
+        break;
+      }
+      case "vstikzit.gui.zoomOut": {
+        const coords = sceneCoords.zoomOut();
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        if (
+          coords.screenWidth >= viewport.clientWidth &&
+          coords.screenHeight >= viewport.clientHeight
+        ) {
+          updateSceneCoords(coords);
+        }
+        break;
+      }
+      case "vstikzit.gui.centerViewport": {
+        const viewport = document.getElementById("graph-editor-viewport")!;
+        viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
+        viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
         break;
       }
       default: {
@@ -619,176 +766,14 @@ const GraphEditor = ({
       return;
     }
 
-    let capture = true;
-    const keys = [];
+    // handle Ctrl+A / Cmd+A for select all, in order to prevent text selection
     if (event.getModifierState(window.navigator.platform.includes("Mac") ? "Meta" : "Control")) {
-      keys.push("Ctrl");
-    }
-    if (event.getModifierState("Alt")) {
-      keys.push("Alt");
-    }
-    if (event.getModifierState("Shift")) {
-      keys.push("Shift");
-    }
-
-    keys.push(event.key);
-
-    switch (keys.join("+")) {
-      case "Ctrl+c": {
-        if (selectedNodes.size !== 0) {
-          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-        }
-        break;
+      if (event.key === "a") {
+        handleCommand("vstikzit.gui.selectAll");
+        event.preventDefault();
+        event.stopPropagation();
+        return;
       }
-      case "Ctrl+x": {
-        if (selectedNodes.size !== 0) {
-          window.navigator.clipboard.writeText(graph.subgraphFromNodes(selectedNodes).tikz());
-          const g = graph.removeNodes(selectedNodes);
-          updateGraph(g, true);
-          updateSelection(new Set(), new Set());
-        }
-        break;
-      }
-      case "Ctrl+v": {
-        const pastedData = await window.navigator.clipboard.readText();
-        const parsed = parseTikzPicture(pastedData);
-        if (parsed.result !== undefined) {
-          let g = parsed.result;
-          const nodes = g.nodeIds;
-          if (nodes.length !== 0) {
-            const n = nodes[0];
-            while (graph.nodes.find(d => g.node(n)!.coord.equals(d.coord))) {
-              g = g.shiftGraph(0.5, -0.5);
-            }
-          }
-
-          const g1 = graph.insertGraph(g);
-          const sel = new Set(g1.nodeIds);
-          for (const n of graph.nodeIds) {
-            sel.delete(n);
-          }
-          updateGraph(g1, true);
-          updateSelection(sel, new Set());
-        }
-        break;
-      }
-      case "Ctrl+a": {
-        updateSelection(new Set(graph.nodeIds), new Set());
-        break;
-      }
-      case "Ctrl+d": {
-        updateSelection(new Set(), new Set());
-        break;
-      }
-      case "Shift+ArrowLeft": {
-        if (selectedNodes.size !== 0) {
-          const maxX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x <= maxX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "Shift+ArrowRight": {
-        if (selectedNodes.size !== 0) {
-          const minX = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.x ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.x >= minX).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "Shift+ArrowUp": {
-        if (selectedNodes.size !== 0) {
-          const minY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a < b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y >= minY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "Shift+ArrowDown": {
-        if (selectedNodes.size !== 0) {
-          const maxY = Array.from(selectedNodes)
-            .map(n => graph.node(n)?.coord.y ?? 0)
-            .reduce((a, b) => (a > b ? a : b));
-          updateSelection(
-            new Set(graph.nodes.filter(n => n.coord.y <= maxY).map(n => n.id)),
-            selectedEdges
-          );
-        }
-        break;
-      }
-      case "Shift+?":
-      case "?": {
-        updateUIState({ helpVisible: true });
-        break;
-      }
-      case "Escape":
-      case "s": {
-        setTool("select");
-        break;
-      }
-      case "v":
-      case "n": {
-        setTool("vertex");
-        break;
-      }
-      case "e": {
-        setTool("edge");
-        break;
-      }
-      case "Backspace":
-      case "Delete": {
-        const g = graph.removeNodes(selectedNodes).removeEdges(selectedEdges);
-        updateGraph(g, true);
-        updateSelection(new Set(), new Set());
-        break;
-      }
-      case "_":
-      case "-": {
-        const coords = sceneCoords.zoomOut();
-        const viewport = document.getElementById("graph-editor-viewport")!;
-        if (
-          coords.screenWidth >= viewport.clientWidth &&
-          coords.screenHeight >= viewport.clientHeight
-        ) {
-          updateSceneCoords(coords);
-        }
-        break;
-      }
-      case "+":
-      case "=": {
-        const coords = sceneCoords.zoomIn();
-        if (coords.scale <= 1024) {
-          updateSceneCoords(coords);
-        }
-        break;
-      }
-      case "0": {
-        const viewport = document.getElementById("graph-editor-viewport")!;
-        viewport.scrollLeft = sceneCoords.originX - viewport.clientWidth / 2;
-        viewport.scrollTop = sceneCoords.originY - viewport.clientHeight / 2;
-        break;
-      }
-      default: {
-        capture = false;
-        break;
-      }
-    }
-
-    if (capture) {
-      event.preventDefault();
-      event.stopPropagation();
     }
   };
 
@@ -824,13 +809,6 @@ const GraphEditor = ({
         overflowY: "scroll",
       }}
     >
-      <Help
-        visible={!!uiState.helpVisible}
-        onClose={() => {
-          updateUIState({ helpVisible: false });
-          document.getElementById("graph-editor")?.focus();
-        }}
-      />
       <svg
         id="graph-editor"
         style={{
