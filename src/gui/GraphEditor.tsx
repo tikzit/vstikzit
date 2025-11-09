@@ -12,6 +12,7 @@ import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
 import Help from "./Help";
 import TikzitHost from "../lib/TikzitHost";
+import Path from "./Path";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
@@ -44,6 +45,7 @@ interface UIState {
   edgeEndNode?: number;
   addEdgeLineStart?: Coord;
   addEdgeLineEnd?: Coord;
+  highlightPath?: number;
 }
 
 const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
@@ -830,18 +832,40 @@ const GraphEditor = ({
       >
         <g id="grid"></g>
         <g id="edgeLayer">
-          {graph.edges.map(data => (
-            <Edge
-              key={data.id}
-              data={data}
-              sourceData={graph.node(data.source)!}
-              targetData={graph.node(data.target)!}
-              tikzStyles={tikzStyles}
-              selected={selectedEdges.has(data.id)}
-              onPointerDown={() => (clickedEdge.current = data.id)}
-              onControlPointPointerDown={i => (clickedControlPoint.current = [data.id, i])}
-              sceneCoords={sceneCoords}
-            />
+          {graph.paths.map(pathData => (
+            <g key={pathData.id}>
+              <Path
+                data={pathData}
+                graph={graph}
+                tikzStyles={tikzStyles}
+                sceneCoords={sceneCoords}
+              />
+              {pathData.edges.map(e => {
+                const data = graph.edge(e)!;
+                return (
+                  <Edge
+                    key={data.id}
+                    data={data}
+                    sourceData={graph.node(data.source)!}
+                    targetData={graph.node(data.target)!}
+                    tikzStyles={tikzStyles}
+                    selected={selectedEdges.has(data.id)}
+                    highlighted={
+                      uiState.highlightPath === data.path || selectedPaths.has(data.path)
+                    }
+                    onPointerDown={() => (clickedEdge.current = data.id)}
+                    onMouseOver={() => updateUIState({ highlightPath: data.path })}
+                    onMouseOut={() => {
+                      if (uiState.highlightPath === data.path) {
+                        updateUIState({ highlightPath: undefined });
+                      }
+                    }}
+                    onControlPointPointerDown={i => (clickedControlPoint.current = [data.id, i])}
+                    sceneCoords={sceneCoords}
+                  />
+                );
+              })}
+            </g>
           ))}
         </g>
         <g id="nodeLayer">

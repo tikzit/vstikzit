@@ -48,6 +48,15 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
     parsedStyles.result === undefined
   );
 
+  // path selection is calculated from selected edges or nodes
+  const selectedPaths = new Set(
+    selectedEdges.size > 0
+      ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
+      : graph.edges
+          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
+          .map(d => d.path)
+  );
+
   useEffect(() => {
     host.onUpdateToGui(source => {
       tryParseGraph(source);
@@ -174,10 +183,6 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
   const handleEdgeStyleChanged = (style: string, apply: boolean) => {
     setCurrentEdgeStyle(style);
     if (apply) {
-      const selectedPaths = new Set<number>(
-        Array.from(selectedEdges).map(eid => graph.edge(eid)!.path)
-      );
-
       const g = graph.mapEdgeData(d => {
         if (selectedPaths.has(d.path)) {
           if (style === "none") {

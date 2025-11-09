@@ -12,7 +12,10 @@ interface EdgeProps {
   targetData: NodeData;
   tikzStyles: Styles;
   selected?: boolean;
+  highlighted?: boolean;
   onPointerDown?: () => void;
+  onMouseOver?: () => void;
+  onMouseOut?: () => void;
   onControlPointPointerDown?: (cp: 1 | 2) => void;
   sceneCoords: SceneCoords;
 }
@@ -23,7 +26,10 @@ const Edge = ({
   targetData,
   tikzStyles,
   selected,
+  highlighted,
   onPointerDown,
+  onMouseOver,
+  onMouseOut,
   onControlPointPointerDown,
   sceneCoords,
 }: EdgeProps) => {
@@ -78,19 +84,20 @@ const Edge = ({
   arrowTail = arrowTail?.map(p => sceneCoords.coordToScreen(p));
   arrowHead = arrowHead?.map(p => sceneCoords.coordToScreen(p));
 
-  const [highlightOpacity, setHighlightOpacity] = useState(0);
-
   return (
-    <g onMouseOver={() => setHighlightOpacity(0.3)} onMouseOut={() => setHighlightOpacity(0)}>
+    <g onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
       <g onPointerDown={onPointerDown}>
         {bezier ? (
           <g>
             <path
               d={`M${c1.x},${c1.y} C${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${c2.x},${c2.y}`}
               stroke="rgb(150, 200, 255)"
-              stroke-width={strokeWidth * 3}
+              stroke-width={strokeWidth * 5}
               fill="none"
-              opacity={highlightOpacity}
+              style={{
+                opacity: highlighted ? 0.4 : 0,
+                transition: "opacity 0.2s ease-out",
+              }}
             />
             <path
               d={`M${c1.x},${c1.y} C${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${c2.x},${c2.y}`}
@@ -108,8 +115,11 @@ const Edge = ({
               x2={c2.x}
               y2={c2.y}
               stroke="rgb(150, 200, 255)"
-              stroke-width={strokeWidth * 3}
-              opacity={highlightOpacity}
+              stroke-width={strokeWidth * 5}
+              style={{
+                opacity: highlighted ? 0.4 : 0,
+                transition: "opacity 0.2s ease-out",
+              }}
             />
             <line
               x1={c1.x}
