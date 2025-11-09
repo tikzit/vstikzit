@@ -452,7 +452,13 @@ class TikzParser extends EmbeddedActionsParser {
         d = d.setPath(this.currentPath.id);
         this.currentPath = this.currentPath.addEdge(d.id);
         this.graph = this.graph.addEdgeWithData(d);
-        const d1 = new EdgeData().setId(this.graph.freshEdgeId).setSource(d.target);
+        let d1 = new EdgeData().setId(this.graph.freshEdgeId).setSource(d.target);
+
+        // inherit style from previous edge if present
+        if (d.property("style") !== undefined) {
+          d1 = d1.setProperty("style", d.property("style"));
+        }
+
         this.d = d1;
       }
     });
