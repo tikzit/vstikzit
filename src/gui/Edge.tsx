@@ -1,4 +1,4 @@
-import { useContext, useState } from "preact/hooks";
+import { useContext, useMemo, useState } from "preact/hooks";
 import { Coord, EdgeData, NodeData, StyleData } from "../lib/Data";
 import SceneCoords from "../lib/SceneCoords";
 import { colorToHex } from "../lib/color";
@@ -29,7 +29,10 @@ const Edge = ({
 }: EdgeProps) => {
   const host = useContext(TikzitHostContext);
   const style = tikzStyles.style(data.property("style"));
-  const computed = computeControlPoints(tikzStyles, sourceData, targetData, data);
+  const computed = useMemo(
+    () => computeControlPoints(tikzStyles, sourceData, targetData, data),
+    [tikzStyles, sourceData, targetData, data]
+  );
   let [c1, c2, cp1, cp2] = computed[0];
   let cpDist = computed[1];
   const bezier = computed[2];
