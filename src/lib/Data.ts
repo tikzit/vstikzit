@@ -366,6 +366,10 @@ class EdgeData extends Data<EdgeData> {
     return d;
   }
 
+  public pathProperties(): EdgeData {
+    return new EdgeData(this).unset("style");
+  }
+
   public reflect(horizontal: boolean): EdgeData {
     if (this.basicBendMode) {
       return this.setBend(-this.bend);

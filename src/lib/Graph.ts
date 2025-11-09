@@ -628,28 +628,34 @@ class Graph {
     result += "\t\\end{pgfonlayer}\n";
     result += "\t\\begin{pgfonlayer}{edgelayer}\n";
     for (const pd of this.paths) {
-      let d = this.edge(pd.edges[0])!;
-      const dt = d.tikz();
-      result += `\t\t\\draw ${dt}`;
+      for (const [i, e] of pd.edges.entries()) {
+        const d = this.edge(e)!;
+        const edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
 
-      if (path === pd.id) {
-        // return the position of the end of the edge property list
-        const lines = result.split("\n");
-        position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
-      }
+        if (i === 0) {
+          const dt = d.tikz();
+          result += `\t\t\\draw ${dt}`;
 
-      if (dt !== "") {
-        result += " ";
-      }
+          if (path === pd.id) {
+            // return the position of the end of the edge property list
+            const lines = result.split("\n");
+            position = { line: lines.length - 1, column: lines[lines.length - 1].length - 1 };
+          }
 
-      let edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
-      result += `${d.sourceRef} to${edgeNode} ${d.targetRef}`;
+          if (dt !== "") {
+            result += " ";
+          }
 
-      for (const edgeId of pd.edges.slice(1)) {
-        d = this.edge(edgeId)!;
-        edgeNode = d.edgeNode !== undefined ? ` node${d.edgeNode.tikz()}` : "";
-        // TODO: deal with cycles properly here
-        result += ` to${d.tikz()}${edgeNode} ${d.targetRef}`;
+          result += `${d.sourceRef} to${edgeNode} ${d.targetRef}`;
+        } else {
+          const targetRef =
+            i === pd.edges.length - 1 && d.target === this.edge(pd.edges[0])!.source
+              ? "cycle"
+              : d.targetRef;
+
+          // pathProperties does not contain "style", which is inherited from the first edge in the path
+          result += ` to${d.pathProperties().tikz()}${edgeNode} ${targetRef}`;
+        }
       }
       result += ";\n";
     }

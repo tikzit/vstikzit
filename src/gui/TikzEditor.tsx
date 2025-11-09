@@ -174,8 +174,12 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
   const handleEdgeStyleChanged = (style: string, apply: boolean) => {
     setCurrentEdgeStyle(style);
     if (apply) {
+      const selectedPaths = new Set<number>(
+        Array.from(selectedEdges).map(eid => graph.edge(eid)!.path)
+      );
+
       const g = graph.mapEdgeData(d => {
-        if (selectedEdges.has(d.id)) {
+        if (selectedPaths.has(d.path)) {
           if (style === "none") {
             return d.unset("style");
           } else {

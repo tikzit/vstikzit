@@ -7,6 +7,7 @@ import { isValidDelimString } from "../lib/TikzParser";
 import { SVGAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import TikzitHostContext from "./TikzitHostContext";
+import { colorToHex } from "../lib/color";
 
 interface StylePanelProps {
   tikzStyles: Styles;
@@ -65,6 +66,9 @@ const StylePanel = ({
   const enode1 = new NodeData().setId(0).setCoord(new Coord(-0.25, 0.0));
   const enode2 = new NodeData().setId(1).setCoord(new Coord(0.25, 0.0));
   const edge = new EdgeData().setSource(0).setTarget(1);
+
+  // compute rectangle for fill
+  const fillRectP = sceneCoords.coordToScreen(new Coord(-0.25, 0));
 
   return (
     <div
@@ -204,6 +208,7 @@ const StylePanel = ({
               return null;
             }
             const shortName = style.name.length > 8 ? style.name.slice(0, 8) + "…" : style.name;
+            const fillColor = colorToHex(style.property("tikzit fill") ?? style.property("fill"));
             return (
               <a
                 key={style.name}
@@ -234,6 +239,15 @@ const StylePanel = ({
                         : "none",
                     }}
                   />
+                  {fillColor && (
+                    <rect
+                      x={fillRectP.x}
+                      y={fillRectP.y}
+                      width={sceneCoords.scale * 0.5}
+                      height={sceneCoords.scale * 0.25}
+                      fill={fillColor}
+                    />
+                  )}
                   <Edge
                     data={edge.setProperty("style", style.name)}
                     sourceData={enode1}
