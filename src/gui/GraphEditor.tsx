@@ -650,6 +650,26 @@ const GraphEditor = ({
         updateGraph(graph.reverseEdges(selectedEdges), true);
         break;
       }
+      case "vstikzit.gui.bringToFront": {
+        const g = graph.reorderElements(selectedNodes, selectedPaths, "front");
+        updateGraph(g, true);
+        break;
+      }
+      case "vstikzit.gui.sendToBack": {
+        const g = graph.reorderElements(selectedNodes, selectedPaths, "back");
+        updateGraph(g, true);
+        break;
+      }
+      case "vstikzit.gui.bringForward": {
+        const g = graph.reorderElements(selectedNodes, selectedPaths, "forward");
+        updateGraph(g, true);
+        break;
+      }
+      case "vstikzit.gui.sendBackward": {
+        const g = graph.reorderElements(selectedNodes, selectedPaths, "backward");
+        updateGraph(g, true);
+        break;
+      }
       case "vstikzit.gui.selectAll": {
         updateSelection(new Set(graph.nodeIds), new Set());
         break;
