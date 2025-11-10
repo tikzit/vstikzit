@@ -88,9 +88,10 @@ async function buildTikz(
   svg: boolean = false
 ): Promise<number | null> {
   // console.log(`trying to build ${fileName} in ${workspaceRoot.fsPath}, svg = ${svg}`);
+  const config = vscode.workspace.getConfiguration("vstikzit");
   const tikzCacheFolder = svg
-    ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
-    : vscode.Uri.joinPath(workspaceRoot, "cache");
+    ? vscode.Uri.joinPath(workspaceRoot, config.get<string>("svgCacheFolder", "svgcache"))
+    : vscode.Uri.joinPath(workspaceRoot, config.get<string>("pdfCacheFolder", "cache"));
   // if source is null, load it from the file
   if (!source) {
     try {
@@ -125,7 +126,6 @@ async function buildTikz(
     Buffer.from(tex)
   );
 
-  const config = vscode.workspace.getConfiguration("vstikzit");
   const texCommand = config.get<string>("texCommand", "pdflatex");
   const texCommandArgs = tokenizeArgs(
     config.get<string>("texCommandArgs", "-interaction=nonstopmode -halt-on-error")
@@ -169,6 +169,7 @@ async function buildTikz(
 
 async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
   // console.log(`Building current TikZ figure, svg = ${svg}`);
+  const config = vscode.workspace.getConfiguration("vstikzit");
   const document = TikzEditorProvider.currentDocument();
   // console.log("Building current TikZ figure...", document?.uri.fsPath);
   const workspaceRoot = document?.uri
@@ -180,8 +181,8 @@ async function buildCurrentTikzFigure(svg: boolean = false): Promise<void> {
 
   try {
     const tikzCacheFolder = svg
-      ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
-      : vscode.Uri.joinPath(workspaceRoot, "cache");
+      ? vscode.Uri.joinPath(workspaceRoot, config.get<string>("svgCacheFolder", "svgcache"))
+      : vscode.Uri.joinPath(workspaceRoot, config.get<string>("pdfCacheFolder", "cache"));
     const tikzIncludes = await prepareBuildDir(workspaceRoot, tikzCacheFolder);
     // create a status bar item with a spinning arrow to show progress
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -212,9 +213,10 @@ async function getTikzFiguresToRebuild(
   svg: boolean = false
 ): Promise<string[]> {
   const figuresFolder = vscode.Uri.joinPath(workspaceRoot, "figures");
+  const config = vscode.workspace.getConfiguration("vstikzit");
   const tikzCacheFolder = svg
-    ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
-    : vscode.Uri.joinPath(workspaceRoot, "cache");
+    ? vscode.Uri.joinPath(workspaceRoot, config.get<string>("svgCacheFolder", "svgcache"))
+    : vscode.Uri.joinPath(workspaceRoot, config.get<string>("pdfCacheFolder", "cache"));
   const outExt = svg ? ".svg" : ".pdf";
 
   // Get all files in the figures folder
@@ -267,11 +269,13 @@ async function rebuildTikzFigures(svg: boolean = false): Promise<void> {
     return;
   }
 
+  // TODO: scope config to each workspace folder?
+  const config = vscode.workspace.getConfiguration("vstikzit");
   for (const folder of workspaceFolders) {
     const workspaceRoot = folder.uri;
     const tikzCacheFolder = svg
-      ? vscode.Uri.joinPath(workspaceRoot, "tikzcache")
-      : vscode.Uri.joinPath(workspaceRoot, "cache");
+      ? vscode.Uri.joinPath(workspaceRoot, config.get<string>("svgCacheFolder", "svgcache"))
+      : vscode.Uri.joinPath(workspaceRoot, config.get<string>("pdfCacheFolder", "cache"));
     const figuresToRebuild = await getTikzFiguresToRebuild(workspaceRoot, svg);
     if (figuresToRebuild.length > 0) {
       const tikzIncludes = await prepareBuildDir(workspaceRoot, tikzCacheFolder);
