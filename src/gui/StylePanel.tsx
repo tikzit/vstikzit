@@ -65,7 +65,7 @@ const StylePanel = ({
   const node = new NodeData();
   const enode1 = new NodeData().setId(0).setCoord(new Coord(-0.25, 0.0));
   const enode2 = new NodeData().setId(1).setCoord(new Coord(0.25, 0.0));
-  const edge = new EdgeData().setSource(0).setTarget(1);
+  const edge = new EdgeData().setSource(enode1).setTarget(enode2);
 
   // compute rectangle for fill
   const fillRectP = sceneCoords.coordToScreen(new Coord(-0.25, 0));

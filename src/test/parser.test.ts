@@ -65,12 +65,12 @@ describe("Graph parser", () => {
     assert.strictEqual(g.node(1)?.property("style"), "B");
     assert.strictEqual(g.node(2)?.property("style"), "C");
     assert.strictEqual(g.node(3)?.property("style"), "D");
-    assert.strictEqual(g.edge(0)?.source, 0);
-    assert.strictEqual(g.edge(0)?.target, 1);
-    assert.strictEqual(g.edge(1)?.source, 1);
-    assert.strictEqual(g.edge(1)?.target, 2);
-    assert.strictEqual(g.edge(2)?.source, 2);
-    assert.strictEqual(g.edge(2)?.target, 3);
+    assert.strictEqual(g.edge(0)?.sourceId, 0);
+    assert.strictEqual(g.edge(0)?.targetId, 1);
+    assert.strictEqual(g.edge(1)?.sourceId, 1);
+    assert.strictEqual(g.edge(1)?.targetId, 2);
+    assert.strictEqual(g.edge(2)?.sourceId, 2);
+    assert.strictEqual(g.edge(2)?.targetId, 3);
     assert.strictEqual(g.path(0)?.edges.length, 1);
     assert.strictEqual(g.path(1)?.edges.length, 2);
     assert.strictEqual(strip(g.tikz()), strip(input));

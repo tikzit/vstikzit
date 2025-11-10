@@ -97,8 +97,8 @@ class Data<T extends Data<T>> {
     }
   }
 
-  public equals(other: T): boolean {
-    return this._id === other._id && mapEquals(this._map, other._map);
+  public equals(other: T | undefined): boolean {
+    return other !== undefined && this._id === other._id && mapEquals(this._map, other._map);
   }
 
   public get id(): number {
@@ -194,8 +194,8 @@ class NodeData extends Data<NodeData> {
     this._label = data?._label ?? "";
   }
 
-  public equals(other: NodeData): boolean {
-    return super.equals(other) && this._coord.equals(other._coord) && this._label === other._label;
+  public equals(other: NodeData | undefined): boolean {
+    return other !== undefined && super.equals(other) && this._coord.equals(other._coord) && this._label === other._label;
   }
 
   public get coord(): Coord {
@@ -229,33 +229,33 @@ class NodeData extends Data<NodeData> {
 }
 
 class EdgeData extends Data<EdgeData> {
-  private _source: number;
-  private _target: number;
-  private _path: number;
+  private _source?: NodeData;
+  private _target?: NodeData;
+  private _pathId: number;
   private _sourceAnchor?: string;
   private _targetAnchor?: string;
   private _edgeNode?: NodeData;
 
   constructor(data?: EdgeData) {
     super(data);
-    this._source = data?._source ?? -1;
-    this._target = data?._target ?? -1;
-    this._path = data?._path ?? -1;
+    this._source = data?._source;
+    this._target = data?._target;
+    this._pathId = data?._pathId ?? -1;
     this._sourceAnchor = data?._sourceAnchor;
     this._targetAnchor = data?._targetAnchor;
     this._edgeNode = data?._edgeNode;
   }
 
-  public equals(other: EdgeData): boolean {
-    return this.id === other.id && this.hasSameData(other);
+  public equals(other: EdgeData | undefined): boolean {
+    return other !== undefined && this.id === other.id && this.hasSameData(other);
   }
 
-  public hasSameData(other: EdgeData): boolean {
+  public hasSameData(other: EdgeData | undefined): boolean {
     return (
-      mapEquals(this._map, other._map) &&
-      this._source === other._source &&
-      this._target === other._target &&
-      this._path === other._path &&
+      other !== undefined && mapEquals(this._map, other._map) &&
+      !!this._source?.equals(other._source) &&
+      !!this._target?.equals(other._target) &&
+      this._pathId === other._pathId &&
       this._sourceAnchor === other._sourceAnchor &&
       this._targetAnchor === other._targetAnchor &&
       (this._edgeNode === other._edgeNode ||
@@ -265,11 +265,11 @@ class EdgeData extends Data<EdgeData> {
     );
   }
 
-  public get source(): number {
+  public get source(): NodeData | undefined {
     return this._source;
   }
 
-  public get target(): number {
+  public get target(): NodeData | undefined {
     return this._target;
   }
 
@@ -278,7 +278,7 @@ class EdgeData extends Data<EdgeData> {
   }
 
   public get path(): number {
-    return this._path;
+    return this._pathId;
   }
 
   public get sourceAnchor(): string | undefined {
@@ -293,21 +293,21 @@ class EdgeData extends Data<EdgeData> {
     return this._edgeNode;
   }
 
-  public setSource(source: number): EdgeData {
+  public setSource(source: NodeData | undefined): EdgeData {
     const d = new EdgeData(this);
     d._source = source;
     return d;
   }
 
-  public setTarget(target: number): EdgeData {
+  public setTarget(target: NodeData | undefined): EdgeData {
     const d = new EdgeData(this);
     d._target = target;
     return d;
   }
 
-  public setPath(path: number): EdgeData {
+  public setPathId(pathId: number): EdgeData {
     const d = new EdgeData(this);
-    d._path = path;
+    d._pathId = pathId;
     return d;
   }
 
@@ -327,6 +327,14 @@ class EdgeData extends Data<EdgeData> {
     const d = new EdgeData(this);
     d._edgeNode = edgeNode;
     return d;
+  }
+
+  public get sourceId(): number {
+    return this._source ? this._source.id : -1;
+  }
+
+  public get targetId(): number {
+    return this._target ? this._target.id : -1;
   }
 
   public get sourceRef(): string {
@@ -392,9 +400,9 @@ class EdgeData extends Data<EdgeData> {
     const d = this.basicBendMode
       ? this.setBend(-this.bend)
       : this.setProperty("in", this.propertyFloat("out") ?? 0).setProperty(
-          "out",
-          this.propertyFloat("in") ?? 0
-        );
+        "out",
+        this.propertyFloat("in") ?? 0
+      );
     [d._source, d._target] = [d._target, d._source];
     return d;
   }
@@ -409,8 +417,8 @@ class PathData {
     this._edges = data?._edges ?? [];
   }
 
-  public equals(other: PathData): boolean {
-    return this._id === other._id && arrayEquals(this._edges, other._edges);
+  public equals(other: PathData | undefined): boolean {
+    return other !== undefined && this._id === other._id && arrayEquals(this._edges, other._edges);
   }
 
   public get id(): number {

@@ -53,8 +53,8 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(d => d.path)
+        .filter(d => selectedNodes.has(d.sourceId) && selectedNodes.has(d.targetId))
+        .map(d => d.path)
   );
 
   useEffect(() => {
@@ -152,8 +152,8 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
       let g = graph;
       g = g.mapEdgeData(d => {
         let d1 = d;
-        if (selectedNodes.has(d.source)) {
-          const oldStyle = g.node(d.source)?.property("style");
+        if (selectedNodes.has(d.sourceId)) {
+          const oldStyle = g.node(d.sourceId)?.property("style");
           if (style === "none" && oldStyle !== "none" && d1.sourceAnchor === undefined) {
             d1 = d1.setSourceAnchor("center");
           } else if (style !== "none" && oldStyle === "none" && d1.sourceAnchor === "center") {
@@ -161,8 +161,8 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
           }
         }
 
-        if (selectedNodes.has(d.target)) {
-          const oldStyle = g.node(d.target)?.property("style");
+        if (selectedNodes.has(d.targetId)) {
+          const oldStyle = g.node(d.targetId)?.property("style");
           if (style === "none" && oldStyle !== "none" && d1.targetAnchor === undefined) {
             d1 = d1.setTargetAnchor("center");
           } else if (style !== "none" && oldStyle === "none" && d1.targetAnchor === "center") {

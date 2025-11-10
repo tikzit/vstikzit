@@ -85,8 +85,8 @@ const GraphEditor = ({
     selectedEdges.size > 0
       ? Array.from(selectedEdges).map(e => graph.edge(e)!.path)
       : graph.edges
-          .filter(d => selectedNodes.has(d.source) && selectedNodes.has(d.target))
-          .map(d => d.path)
+        .filter(d => selectedNodes.has(d.sourceId) && selectedNodes.has(d.targetId))
+        .map(d => d.path)
   );
 
   useEffect(() => {
@@ -281,8 +281,8 @@ const GraphEditor = ({
         } else if (clickedControlPoint.current !== undefined) {
           const [edge, pt] = clickedControlPoint.current;
           let d = graph.edge(edge)!;
-          const sourceCoord = sceneCoords.coordToScreen(graph.node(d.source)!.coord);
-          const targetCoord = sceneCoords.coordToScreen(graph.node(d.target)!.coord);
+          const sourceCoord = sceneCoords.coordToScreen(graph.node(d.sourceId)!.coord);
+          const targetCoord = sceneCoords.coordToScreen(graph.node(d.targetId)!.coord);
           const dx1 = targetCoord.x - sourceCoord.x;
           const dy1 = targetCoord.y - sourceCoord.y;
           let dx2: number, dy2: number;
@@ -414,8 +414,8 @@ const GraphEditor = ({
           ) {
             const edge = clickedEdge.current ?? clickedControlPoint.current![0];
             let d = graph.edge(edge)!;
-            const sCoord = graph.node(d.source)!.coord;
-            const tCoord = graph.node(d.target)!.coord;
+            const sCoord = d.source!.coord;
+            const tCoord = d.target!.coord;
             const baseAngle =
               (Math.atan2(tCoord.y - sCoord.y, tCoord.x - sCoord.x) * 180) / Math.PI;
 
@@ -481,16 +481,16 @@ const GraphEditor = ({
           const pathId = graph.freshPathId;
           let edge = new EdgeData()
             .setId(graph.freshEdgeId)
-            .setSource(uiState.edgeStartNode)
-            .setTarget(uiState.edgeEndNode)
-            .setPath(pathId);
+            .setSource(graph.node(uiState.edgeStartNode))
+            .setTarget(graph.node(uiState.edgeEndNode))
+            .setPathId(pathId);
           if (currentEdgeStyle !== "none") {
             edge = edge.setProperty("style", currentEdgeStyle);
           }
-          if (graph.node(edge.source)?.property("style") === "none") {
+          if (edge.source?.property("style") === "none") {
             edge = edge.setSourceAnchor("center");
           }
-          if (graph.node(edge.target)?.property("style") === "none") {
+          if (edge.target?.property("style") === "none") {
             edge = edge.setTargetAnchor("center");
           }
           const path = new PathData().setId(pathId).setEdges([edge.id]);
@@ -866,8 +866,8 @@ const GraphEditor = ({
                   <Edge
                     key={data.id}
                     data={data}
-                    sourceData={graph.node(data.source)!}
-                    targetData={graph.node(data.target)!}
+                    sourceData={data.source!}
+                    targetData={data.target!}
                     tikzStyles={tikzStyles}
                     selected={selectedEdges.has(data.id)}
                     highlighted={

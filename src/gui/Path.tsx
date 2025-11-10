@@ -19,14 +19,12 @@ const Path = ({ data, graph, tikzStyles, sceneCoords }: PathProps) => {
   const fillColor = colorToHex(sty.property("tikzit fill") ?? sty.property("fill"));
   if (fillColor === undefined) return <></>;
 
-  const start = sceneCoords.coordToScreen(graph.node(edgeData.source)!.coord);
+  const start = sceneCoords.coordToScreen(edgeData.source!.coord);
   let d = `M${start.x},${start.y}`;
 
   for (const e in data.edges) {
     edgeData = graph.edge(data.edges[e])!;
-    const sourceData = graph.node(edgeData.source)!;
-    const targetData = graph.node(edgeData.target)!;
-    let [cps] = computeControlPoints(tikzStyles, sourceData, targetData, edgeData);
+    let [cps] = computeControlPoints(tikzStyles, edgeData.source!, edgeData.target!, edgeData);
     cps = cps.slice(1).map(c => sceneCoords.coordToScreen(c));
     d += ` C${cps[1].x},${cps[1].y} ${cps[2].x},${cps[2].y} ${cps[0].x},${cps[0].y}`;
   }

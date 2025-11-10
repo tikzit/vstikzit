@@ -233,33 +233,23 @@ class Graph {
   }
 
   public edgeSourceData(id: number): NodeData | undefined {
-    const edge = this._edgeData.get(id);
-    if (edge) {
-      return this._nodeData.get(edge.source);
-    } else {
-      return undefined;
-    }
+    return this._edgeData.get(id)?.source;
   }
 
   public edgeTargetData(id: number): NodeData | undefined {
-    const edge = this._edgeData.get(id);
-    if (edge) {
-      return this._nodeData.get(edge.target);
-    } else {
-      return undefined;
-    }
+    return this._edgeData.get(id)?.target;
   }
 
-  public pathSource(id: number): number {
+  public pathSourceId(id: number): number {
     const edge = this._edgeData.get(this._pathData.get(id)!.edges[0])!;
-    return edge.source;
+    return edge.sourceId;
   }
 
-  public pathTarget(id: number): number {
+  public pathTargetId(id: number): number {
     const edge = this._edgeData.get(
       this._pathData.get(id)!.edges[this._pathData.get(id)!.edges.length - 1]
     )!;
-    return edge.target;
+    return edge.targetId;
   }
 
   public removeNodes(nodes: Iterable<number>): Graph {
@@ -272,7 +262,7 @@ class Graph {
     }
 
     for (const ed of g._edgeData.values()) {
-      if (nodeSet.has(ed.source) || nodeSet.has(ed.target)) {
+      if (nodeSet.has(ed.sourceId) || nodeSet.has(ed.targetId)) {
         g._edgeData.delete(ed.id);
       }
     }
@@ -336,7 +326,7 @@ class Graph {
         // reuse the existing path ID for the first part
         g = g.addPathWithData(new PathData().setId(pathId).setEdges(part));
         part.forEach(e => {
-          g = g.updateEdgeData(e, ed => ed.setPath(pathId));
+          g = g.updateEdgeData(e, ed => ed.setPathId(pathId));
         });
         pathId = g.freshPathId;
       }
@@ -365,7 +355,7 @@ class Graph {
       for (const e of pd.edges.slice(1)) {
         const newPathId = graph.freshPathId;
         graph = graph.addPathWithData(new PathData().setId(newPathId).setEdges([e]));
-        graph = graph.updateEdgeData(e, ed => ed.setPath(newPathId));
+        graph = graph.updateEdgeData(e, ed => ed.setPathId(newPathId));
       }
     }
 
@@ -386,17 +376,17 @@ class Graph {
     // there are four cases. Depending on how the paths connect, we may need to reverse
     // path2 then either prepend or append its edges to path1
 
-    if (this.pathTarget(path1) === this.pathSource(path2)) {
+    if (this.pathTargetId(path1) === this.pathSourceId(path2)) {
       // I join two paths in the morning
       graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
-    } else if (this.pathSource(path1) === this.pathTarget(path2)) {
+    } else if (this.pathSourceId(path1) === this.pathTargetId(path2)) {
       // I join two paths at night
       graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
-    } else if (this.pathTarget(path1) === this.pathTarget(path2)) {
+    } else if (this.pathTargetId(path1) === this.pathTargetId(path2)) {
       // I join two paths in the afternoon
       graph = graph.reversePath(path2);
       graph = graph.updatePathData(path1, p => p.setEdges(pd1.edges.concat(pd2.edges)));
-    } else if (this.pathSource(path1) === this.pathSource(path2)) {
+    } else if (this.pathSourceId(path1) === this.pathSourceId(path2)) {
       // It makes me feel alright
       graph = graph.reversePath(path2);
       graph = graph.updatePathData(path1, p => p.setEdges(pd2.edges.concat(pd1.edges)));
@@ -406,7 +396,7 @@ class Graph {
 
     graph = graph.removePath(path2);
     for (const e of pd2.edges) {
-      graph = graph.updateEdgeData(e, ed => ed.setPath(path1));
+      graph = graph.updateEdgeData(e, ed => ed.setPathId(path1));
     }
 
     return graph;
@@ -479,18 +469,19 @@ class Graph {
   // insert the other graph, setting fresh IDs where necessary
   public insertGraph(other: Graph): Graph {
     let g = new Graph(this);
-    const ntab: { [key: number]: number } = {};
+    const ntab: { [key: number]: NodeData } = {};
     const etab: { [key: number]: number } = {};
     const ptab: { [key: number]: number } = {};
 
     for (const [id, data] of other._nodeData) {
-      ntab[id] = g._nodeData.has(id) ? g.freshNodeId : id;
-      g = g.addNodeWithData(data.setId(ntab[id]));
+      const newId = g._nodeData.has(id) ? g.freshNodeId : id;
+      ntab[id] = data.setId(newId);
+      g = g.addNodeWithData(data);
     }
 
     for (const [id, data] of other._edgeData) {
       etab[id] = g._edgeData.has(id) ? g.freshEdgeId : id;
-      const d = data.setId(etab[id]).setSource(ntab[data.source]).setTarget(ntab[data.target]);
+      const d = data.setId(etab[id]).setSource(ntab[data.sourceId]).setTarget(ntab[data.targetId]);
       g = g.addEdgeWithData(d);
     }
 
@@ -500,7 +491,7 @@ class Graph {
       g = g.addPathWithData(d);
     }
 
-    g = g.mapEdgeData(d => (!this.hasEdge(d.id) ? d.setPath(ptab[d.path]) : d));
+    g = g.mapEdgeData(d => (!this.hasEdge(d.id) ? d.setPathId(ptab[d.path]) : d));
 
     return g;
   }
@@ -543,11 +534,11 @@ class Graph {
     }
 
     for (const e of g.edges) {
-      if (mergeMap.has(e.source) || mergeMap.has(e.target)) {
-        const newSource = mergeMap.get(e.source) ?? e.source;
-        const newTarget = mergeMap.get(e.target) ?? e.target;
-        const newEdge = e.setSource(newSource).setTarget(newTarget);
+      if (mergeMap.has(e.sourceId) || mergeMap.has(e.targetId)) {
+        const newSource = mergeMap.get(e.sourceId) ?? e.sourceId;
+        const newTarget = mergeMap.get(e.targetId) ?? e.targetId;
         const createsLoop = e.source !== e.target && newSource === newTarget;
+        const newEdge = e.setSource(g.node(newSource)).setTarget(g.node(newTarget));
 
         // only keep the edge if it doesn't already exist and it isn't creating a new self-loop
         if (!createsLoop && g.edges.find(ed => newEdge.hasSameData(ed)) === undefined) {
@@ -581,7 +572,7 @@ class Graph {
     return this.mapNodeData(d =>
       nodeIds.has(d.id) ? d.reflect(center, horizontal) : d
     ).mapEdgeData(d =>
-      nodeIds.has(d.source) && nodeIds.has(d.target) ? d.reflect(horizontal) : d
+      nodeIds.has(d.sourceId) && nodeIds.has(d.targetId) ? d.reflect(horizontal) : d
     );
   }
 

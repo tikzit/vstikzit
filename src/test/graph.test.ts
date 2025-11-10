@@ -101,7 +101,7 @@ describe("Graph", () => {
       const graph = new Graph();
       const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
       const path = new PathData().setId(1).setEdges([1]);
 
       const newGraph = graph
@@ -112,14 +112,14 @@ describe("Graph", () => {
 
       assert.strictEqual(newGraph.numEdges, 1);
       assert.ok(newGraph.hasEdge(1));
-      assert.strictEqual(newGraph.edge(1)?.source, 1);
-      assert.strictEqual(newGraph.edge(1)?.target, 2);
+      assert.strictEqual(newGraph.edge(1)?.sourceId, 1);
+      assert.strictEqual(newGraph.edge(1)?.targetId, 2);
     });
 
     it("should create a self-loop edge", () => {
       const graph = new Graph();
       const node = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
-      const selfLoop = new EdgeData().setId(1).setSource(1).setTarget(1).setPath(1);
+      const selfLoop = new EdgeData().setId(1).setSource(node).setTarget(node).setPathId(1);
       const path = new PathData().setId(1).setEdges([1]);
 
       const newGraph = graph.addNodeWithData(node).addEdgeWithData(selfLoop).addPathWithData(path);
@@ -135,8 +135,8 @@ describe("Graph", () => {
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
       const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
+      const edge2 = new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(2);
       const path1 = new PathData().setId(1).setEdges([1]);
       const path2 = new PathData().setId(2).setEdges([2]);
 
@@ -160,8 +160,8 @@ describe("Graph", () => {
       const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(1).setPath(2);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
+      const edge2 = new EdgeData().setId(2).setSource(node2).setTarget(node1).setPathId(2);
       const path1 = new PathData().setId(1).setEdges([1]);
       const path2 = new PathData().setId(2).setEdges([2]);
 
@@ -186,9 +186,9 @@ describe("Graph", () => {
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
       const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
-      const edge3 = new EdgeData().setId(3).setSource(1).setTarget(3).setPath(3);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
+      const edge2 = new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(2);
+      const edge3 = new EdgeData().setId(3).setSource(node1).setTarget(node3).setPathId(3);
 
       const path1 = new PathData().setId(1).setEdges([1]);
       const path2 = new PathData().setId(2).setEdges([2]);
@@ -220,7 +220,7 @@ describe("Graph", () => {
       const graph = new Graph();
       const node1 = new NodeData().setId(1).setLabel("Node 1").setCoord(new Coord(0, 0));
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
-      const edge = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
       const path = new PathData().setId(1).setEdges([1]);
 
       const graphWithEdge = graph
@@ -239,8 +239,10 @@ describe("Graph", () => {
 
     it("should generate fresh edge IDs", () => {
       const graph = new Graph();
-      const edge1 = new EdgeData().setId(5).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(15).setSource(2).setTarget(1).setPath(2);
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const edge1 = new EdgeData().setId(5).setSource(node1).setTarget(node2).setPathId(1);
+      const edge2 = new EdgeData().setId(15).setSource(node2).setTarget(node1).setPathId(2);
       const path1 = new PathData().setId(1).setEdges([5]);
       const path2 = new PathData().setId(2).setEdges([15]);
 
@@ -299,8 +301,8 @@ describe("Graph", () => {
       const node2 = new NodeData().setId(2).setLabel("Node 2").setCoord(new Coord(1, 1));
       const node3 = new NodeData().setId(3).setLabel("Node 3").setCoord(new Coord(2, 2));
 
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
-      const edge2 = new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
+      const edge2 = new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(2);
       const path1 = new PathData().setId(1).setEdges([1]);
       const path2 = new PathData().setId(2).setEdges([2]);
 
@@ -336,7 +338,7 @@ describe("Graph", () => {
     it("should insert another graph correctly", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
       const path1 = new PathData().setId(1).setEdges([1]);
 
       const graph1 = new Graph()
@@ -347,7 +349,7 @@ describe("Graph", () => {
 
       const node3 = new NodeData().setId(3);
       const node4 = new NodeData().setId(4);
-      const edge2 = new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2);
+      const edge2 = new EdgeData().setId(2).setSource(node3).setTarget(node4).setPathId(2);
       const path2 = new PathData().setId(2).setEdges([2]);
 
       const graph2 = new Graph()
@@ -365,8 +367,8 @@ describe("Graph", () => {
       assert.ok(combinedGraph.hasNode(4), "Node 4 should be present");
       assert.ok(combinedGraph.hasEdge(2), "Edge 2 should be present");
       assert.ok(combinedGraph.hasPath(2), "Path 2 should be present");
-      assert.strictEqual(combinedGraph.edge(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edge(2)?.target, 4, "Edge 2 should have target 4");
+      assert.strictEqual(combinedGraph.edge(2)?.sourceId, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edge(2)?.targetId, 4, "Edge 2 should have target 4");
       assert.strictEqual(combinedGraph.edge(2)?.path, 2, "Edge 2 should belong to path 2");
       assert.ok(combinedGraph.path(2)?.edges.includes(2), "Path 2 should include edge 2");
     });
@@ -374,7 +376,7 @@ describe("Graph", () => {
     it("should assign fresh names correctly", () => {
       const node1 = new NodeData().setId(1);
       const node2 = new NodeData().setId(2);
-      const edge1 = new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1);
+      const edge1 = new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1);
       const path1 = new PathData().setId(1).setEdges([1]);
 
       const graph1 = new Graph()
@@ -399,10 +401,10 @@ describe("Graph", () => {
       assert.ok(combinedGraph.hasEdge(2), "Edge 3 should be present");
       assert.ok(combinedGraph.hasPath(2), "Path 3 should be present");
 
-      assert.strictEqual(combinedGraph.edge(2)?.source, 3, "Edge 2 should have source 3");
-      assert.strictEqual(combinedGraph.edge(2)?.target, 4, "Edge 2 should have target 4");
-      assert.strictEqual(combinedGraph.edge(3)?.source, 5, "Edge 3 should have source 5");
-      assert.strictEqual(combinedGraph.edge(3)?.target, 6, "Edge 3 should have target 6");
+      assert.strictEqual(combinedGraph.edge(2)?.sourceId, 3, "Edge 2 should have source 3");
+      assert.strictEqual(combinedGraph.edge(2)?.targetId, 4, "Edge 2 should have target 4");
+      assert.strictEqual(combinedGraph.edge(3)?.sourceId, 5, "Edge 3 should have source 5");
+      assert.strictEqual(combinedGraph.edge(3)?.targetId, 6, "Edge 3 should have target 6");
       assert.strictEqual(combinedGraph.edge(2)?.path, 2, "Edge 2 should belong to path 2");
       assert.strictEqual(combinedGraph.edge(3)?.path, 3, "Edge 3 should belong to path 3");
       assert.ok(combinedGraph.path(2)?.edges.includes(2), "Path 2 should include edge 2");
@@ -413,13 +415,17 @@ describe("Graph", () => {
   describe("Path operations", () => {
     it("should remove a path when removing all its edges", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node4).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
@@ -435,13 +441,17 @@ describe("Graph", () => {
 
     it("should shorten a path when removing an edge at the beginning or end", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node4).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
@@ -462,13 +472,17 @@ describe("Graph", () => {
 
     it("should split a path when removing an edge in the middle", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node4).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       assert.strictEqual(graph.numPaths, 1);
@@ -487,9 +501,11 @@ describe("Graph", () => {
   describe("Path splitting operations", () => {
     it("should split a single-edge path (no change)", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const splitGraph = graph.splitPath(1);
@@ -503,11 +519,14 @@ describe("Graph", () => {
 
     it("should split a two-edge path into two single-edge paths", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2]));
 
       const splitGraph = graph.splitPath(1);
@@ -530,15 +549,20 @@ describe("Graph", () => {
 
     it("should split a multi-edge path into individual single-edge paths", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
-      graph = graph.addNodeWithData(new NodeData().setId(5));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      const node5 = new NodeData().setId(5);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
+      graph = graph.addNodeWithData(node5);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node4).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(node4).setTarget(node5).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3, 4]));
 
       const splitGraph = graph.splitPath(1);
@@ -562,12 +586,15 @@ describe("Graph", () => {
 
     it("should split a cyclic path correctly", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node1).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2, 3]));
 
       const splitGraph = graph.splitPath(1);
@@ -581,14 +608,18 @@ describe("Graph", () => {
     it("should join two connecting paths (target to source)", () => {
       let graph = new Graph();
       // Create nodes 1 -> 2 -> 3 -> 4
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
 
       // Create two separate paths that connect: path1 (1->2) and path2 (2->3)
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(2));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
       graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
@@ -609,14 +640,17 @@ describe("Graph", () => {
     it("should join two connecting paths (source to target) with reversal", () => {
       let graph = new Graph();
       // Create nodes 1 -> 2 -> 3
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
 
       // Create two paths: path1 (2->3) and path2 (1->2)
       // These connect at node 2, but path2 needs to be prepended to path1
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(2).setTarget(3).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(1).setTarget(2).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node2).setTarget(node3).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node1).setTarget(node2).setPathId(2));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
       graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
@@ -632,16 +666,20 @@ describe("Graph", () => {
 
     it("should join paths that connect at their endpoints with reversal", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
 
       // Create two paths: path1 (1->2) and path2 (4->3)
       // Both have target 2 and 3 respectively, so path2 needs to be reversed and appended
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node4).setTarget(node3).setPathId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node2).setTarget(node3).setPathId(3));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
       graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
       graph = graph.addPathWithData(new PathData().setId(3).setEdges([3]));
@@ -660,14 +698,18 @@ describe("Graph", () => {
 
     it("should not join paths that don't connect", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
-      graph = graph.addNodeWithData(new NodeData().setId(4));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      const node4 = new NodeData().setId(4);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addNodeWithData(node4);
 
       // Create two separate, non-connecting paths: path1 (1->2) and path2 (3->4)
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(3).setTarget(4).setPath(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node3).setTarget(node4).setPathId(2));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
       graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
 
@@ -685,15 +727,18 @@ describe("Graph", () => {
     it("should handle joining multiple paths in sequence", () => {
       let graph = new Graph();
       // Create a chain: 1 -> 2 -> 3 -> 4 -> 5
+      const nodes: NodeData[] = [];
       for (let i = 1; i <= 5; i++) {
-        graph = graph.addNodeWithData(new NodeData().setId(i));
+        const node = new NodeData().setId(i);
+        nodes.push(node);
+        graph = graph.addNodeWithData(node);
       }
 
       // Create separate paths for each edge
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(4).setPath(3));
-      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(4).setTarget(5).setPath(4));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(nodes[0]).setTarget(nodes[1]).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(nodes[1]).setTarget(nodes[2]).setPathId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(nodes[2]).setTarget(nodes[3]).setPathId(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(4).setSource(nodes[3]).setTarget(nodes[4]).setPathId(4));
 
       for (let i = 1; i <= 4; i++) {
         graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
@@ -718,14 +763,17 @@ describe("Graph", () => {
 
     it("should create a cycle when joining paths that form a loop", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addNodeWithData(new NodeData().setId(3));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      const node3 = new NodeData().setId(3);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
 
       // Create a triangle: 1->2, 2->3, 3->1
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(3).setTarget(1).setPath(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(node3).setTarget(node1).setPathId(3));
 
       for (let i = 1; i <= 3; i++) {
         graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
@@ -746,14 +794,17 @@ describe("Graph", () => {
     it("should handle joining with partially connecting paths", () => {
       let graph = new Graph();
       // Create nodes 1,2,3,4,5
+      const nodes: NodeData[] = [];
       for (let i = 1; i <= 5; i++) {
-        graph = graph.addNodeWithData(new NodeData().setId(i));
+        const node = new NodeData().setId(i);
+        nodes.push(node);
+        graph = graph.addNodeWithData(node);
       }
 
       // Create paths: 1->2, 2->3, 4->5
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(4).setTarget(5).setPath(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(nodes[0]).setTarget(nodes[1]).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(nodes[1]).setTarget(nodes[2]).setPathId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(nodes[3]).setTarget(nodes[4]).setPathId(3));
 
       for (let i = 1; i <= 3; i++) {
         graph = graph.addPathWithData(new PathData().setId(i).setEdges([i]));
@@ -767,9 +818,11 @@ describe("Graph", () => {
 
     it("should return original graph when trying to join empty path list", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const joinedGraph = graph.joinPaths([]);
@@ -779,9 +832,11 @@ describe("Graph", () => {
 
     it("should return original graph when trying to join single path", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1));
-      graph = graph.addNodeWithData(new NodeData().setId(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
+      const node1 = new NodeData().setId(1);
+      const node2 = new NodeData().setId(2);
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
 
       const joinedGraph = graph.joinPaths([1]);
@@ -792,17 +847,20 @@ describe("Graph", () => {
     it("should handle complex path reversal scenarios", () => {
       let graph = new Graph();
       // Create nodes for a more complex scenario
+      const nodes: NodeData[] = [];
       for (let i = 1; i <= 4; i++) {
-        graph = graph.addNodeWithData(new NodeData().setId(i));
+        const node = new NodeData().setId(i);
+        nodes.push(node);
+        graph = graph.addNodeWithData(node);
       }
 
       // Create paths that require different types of reversals:
       // path1: 1->2 (normal)
       // path2: 4->3 (will be reversed to connect 3->4 with path3)
       // path3: 2->3 (connects with path1: 1->2->3)
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(4).setTarget(3).setPath(2));
-      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(2).setTarget(3).setPath(3));
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(nodes[0]).setTarget(nodes[1]).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(nodes[3]).setTarget(nodes[2]).setPathId(2));
+      graph = graph.addEdgeWithData(new EdgeData().setId(3).setSource(nodes[1]).setTarget(nodes[2]).setPathId(3));
 
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1]));
       graph = graph.addPathWithData(new PathData().setId(2).setEdges([2]));
@@ -832,17 +890,20 @@ describe("Graph", () => {
   describe("Node merging operations", () => {
     it("should merge two nodes correctly", () => {
       let graph = new Graph();
-      graph = graph.addNodeWithData(new NodeData().setId(1).setCoord(new Coord(0, 0)));
-      graph = graph.addNodeWithData(new NodeData().setId(2).setCoord(new Coord(1, 0)));
-      graph = graph.addNodeWithData(new NodeData().setId(3).setCoord(new Coord(1, 0)));
-      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(1).setTarget(2).setPath(1));
-      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(2).setTarget(3).setPath(1));
+      const node1 = new NodeData().setId(1).setCoord(new Coord(0, 0));
+      const node2 = new NodeData().setId(2).setCoord(new Coord(1, 0));
+      const node3 = new NodeData().setId(3).setCoord(new Coord(1, 0));
+      graph = graph.addNodeWithData(node1);
+      graph = graph.addNodeWithData(node2);
+      graph = graph.addNodeWithData(node3);
+      graph = graph.addEdgeWithData(new EdgeData().setId(1).setSource(node1).setTarget(node2).setPathId(1));
+      graph = graph.addEdgeWithData(new EdgeData().setId(2).setSource(node2).setTarget(node3).setPathId(1));
       graph = graph.addPathWithData(new PathData().setId(1).setEdges([1, 2]));
       const mergedGraph = graph.mergeNodes(new Set([3]));
       assert.strictEqual(mergedGraph.numNodes, 2, "Graph should have 2 nodes after merging");
       assert.strictEqual(mergedGraph.numEdges, 1, "Graph should have 1 edge after merging");
-      assert.strictEqual(mergedGraph.edge(1)?.source, 1, "Remaining edge should have source 1");
-      assert.strictEqual(mergedGraph.edge(1)?.target, 3, "Remaining edge should have target 3");
+      assert.strictEqual(mergedGraph.edge(1)?.sourceId, 1, "Remaining edge should have source 1");
+      assert.strictEqual(mergedGraph.edge(1)?.targetId, 3, "Remaining edge should have target 3");
     });
   });
 });

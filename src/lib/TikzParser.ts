@@ -394,7 +394,7 @@ class TikzParser extends EmbeddedActionsParser {
     const nodeRef = this.SUBRULE(this.nodeRef);
 
     this.ACTION(() => {
-      this.d = (this.d as EdgeData).setSource(nodeRef[0]).setSourceAnchor(nodeRef[1]);
+      this.d = (this.d as EdgeData).setSource(this.graph?.node(nodeRef[0])).setSourceAnchor(nodeRef[1]);
     });
   });
 
@@ -409,7 +409,7 @@ class TikzParser extends EmbeddedActionsParser {
           const nodeRef = this.SUBRULE(this.nodeRef);
 
           this.ACTION(() => {
-            this.d = (this.d as EdgeData).setTarget(nodeRef[0]).setTargetAnchor(nodeRef[1]);
+            this.d = (this.d as EdgeData).setTarget(this.graph?.node(nodeRef[0])).setTargetAnchor(nodeRef[1]);
           });
         },
       },
@@ -433,7 +433,7 @@ class TikzParser extends EmbeddedActionsParser {
             const d = this.d as EdgeData;
             if (this.currentPath && this.currentPath.edges.length > 0) {
               const firstEdge = this.currentPath.edges[0];
-              this.d = d.setTarget(this.graph?.edge(firstEdge)?.source ?? -1);
+              this.d = d.setTarget(this.graph?.edge(firstEdge)?.source);
             } else {
               throw new ParseError(
                 cycleToken.startLine ?? 1,
@@ -449,7 +449,7 @@ class TikzParser extends EmbeddedActionsParser {
     this.ACTION(() => {
       let d = this.d as EdgeData;
       if (this.graph !== undefined && this.currentPath !== undefined) {
-        d = d.setPath(this.currentPath.id);
+        d = d.setPathId(this.currentPath.id);
         this.currentPath = this.currentPath.addEdge(d.id);
         this.graph = this.graph.addEdgeWithData(d);
         let d1 = new EdgeData().setId(this.graph.freshEdgeId).setSource(d.target);
@@ -560,9 +560,9 @@ function parseTikz(
     return parseStyles
       ? { result: parser.styles, errors: [] }
       : {
-          result: parser.graph,
-          errors: [],
-        };
+        result: parser.graph,
+        errors: [],
+      };
   } catch (e) {
     if (e instanceof ParseError) {
       return {
