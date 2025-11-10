@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
 import { TikzEditorProvider } from "./editors";
+import { tokenizeArgs } from "args-tokenizer";
 
 async function prepareBuildDir(workspaceRoot: vscode.Uri, cacheDir: vscode.Uri): Promise<string> {
   let tikzIncludes = "";
@@ -124,11 +125,13 @@ async function buildTikz(
     Buffer.from(tex)
   );
 
-  code = await sh(tikzCacheFolder.fsPath, "pdflatex", [
-    "-interaction=nonstopmode",
-    "-halt-on-error",
-    texFile,
-  ]);
+  const config = vscode.workspace.getConfiguration("vstikzit");
+  const texCommand = config.get<string>("texCommand", "pdflatex");
+  const texCommandArgs = tokenizeArgs(
+    config.get<string>("texCommandArgs", "-interaction=nonstopmode -halt-on-error")
+  );
+
+  code = await sh(tikzCacheFolder.fsPath, texCommand, [...texCommandArgs, texFile]);
   if (code !== 0) {
     throw code;
   }
@@ -136,10 +139,12 @@ async function buildTikz(
   let outExt = "pdf";
   if (svg) {
     outExt = "svg";
-    code = await sh(tikzCacheFolder.fsPath, "dvisvgm", [
-      "--pdf",
-      "--no-fonts",
-      "--scale=2,2",
+    const svgCommand = config.get<string>("svgCommand", "dvisvgm");
+    const svgCommandArgs = tokenizeArgs(
+      config.get<string>("svgCommandArgs", "--pdf --no-fonts --scale=2,2")
+    );
+    code = await sh(tikzCacheFolder.fsPath, svgCommand, [
+      ...svgCommandArgs,
       baseName + ".tmp.pdf",
       "-o",
       baseName + ".tmp.svg",

@@ -30,6 +30,26 @@
           "type": "boolean",
           "default": true,
           "description": "Enable animations in the TikZ editor."
+        },
+        "vstikzit.texCommand": {
+          "type": "string",
+          "default": "pdflatex",
+          "description": "The command to use for previewing TikZ figures with (La)TeX."
+        },
+        "vstikzit.texCommandArgs": {
+          "type": "string",
+          "default": "-interaction=nonstopmode -halt-on-error",
+          "description": "The command line arguments to use with the TeX command."
+        },
+        "vstikzit.svgCommand": {
+          "type": "string",
+          "default": "dvisvgm",
+          "description": "The command to use for translating PDFs of TikZ figures to SVG."
+        },
+        "vstikzit.svgCommandArgs": {
+          "type": "string",
+          "default": "--pdf --no-fonts --scale=2,2",
+          "description": "The command line arguments to use with the SVG command."
         }
       }
     },
@@ -218,6 +238,7 @@
   },
   "dependencies": {
     "@preact/preset-vite": "^2.10.2",
+    "args-tokenizer": "^0.3.0",
     "chevrotain": "^11.0.3",
     "monaco-editor": "^0.54.0",
     "preact": "^10.27.2"

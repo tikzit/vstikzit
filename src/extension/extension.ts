@@ -10,7 +10,6 @@ import {
   syncTikzFiguresSVG,
 } from "./buildTikz";
 import { viewCurrentTikzFigure } from "./viewTikz";
-import path from "path";
 
 function activate(context: vscode.ExtensionContext): void {
   // register the custom tikz editor
