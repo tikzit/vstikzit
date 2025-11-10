@@ -96,7 +96,7 @@ const Edge = ({
               fill="none"
               style={{
                 opacity: highlighted ? 0.4 : 0,
-                transition: "opacity 0.2s ease-out",
+                transition: host.getConfig("enableAnimations") ? "opacity 0.2s ease-out" : "none",
               }}
             />
             <path
@@ -118,7 +118,7 @@ const Edge = ({
               stroke-width={strokeWidth * 5}
               style={{
                 opacity: highlighted ? 0.4 : 0,
-                transition: "opacity 0.2s ease-out",
+                transition: host.getConfig("enableAnimations") ? "opacity 0.2s ease-out" : "none",
               }}
             />
             <line
