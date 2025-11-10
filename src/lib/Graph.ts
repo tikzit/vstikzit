@@ -474,9 +474,9 @@ class Graph {
     const ptab: { [key: number]: number } = {};
 
     for (const [id, data] of other._nodeData) {
-      const newId = g._nodeData.has(id) ? g.freshNodeId : id;
-      ntab[id] = data.setId(newId);
-      g = g.addNodeWithData(data);
+      const newData = data.setId(g._nodeData.has(id) ? g.freshNodeId : id);
+      ntab[id] = newData;
+      g = g.addNodeWithData(newData);
     }
 
     for (const [id, data] of other._edgeData) {

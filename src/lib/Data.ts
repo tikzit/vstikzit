@@ -338,11 +338,11 @@ class EdgeData extends Data<EdgeData> {
   }
 
   public get sourceRef(): string {
-    return this._sourceAnchor ? `(${this._source}.${this._sourceAnchor})` : `(${this._source})`;
+    return this._sourceAnchor ? `(${this.sourceId}.${this._sourceAnchor})` : `(${this.sourceId})`;
   }
 
   public get targetRef(): string {
-    return this._targetAnchor ? `(${this._target}.${this._targetAnchor})` : `(${this._target})`;
+    return this._targetAnchor ? `(${this.targetId}.${this._targetAnchor})` : `(${this.targetId})`;
   }
 
   public get basicBendMode(): boolean {
