@@ -4,7 +4,7 @@
 
 [TikZiT](https://tikzit.github.io) is a simple GUI editor for graphs and diagrams. Its native file format is a subset of PGF/TikZ, which means TikZiT files can be included directly in papers typeset using LaTeX. It is a stand-alone application that has been around for about 15 years. This is a VS Code extension that provides a very similar UI to TikZiT directly inside of the editor.
 
-This is still experimental, with some features, bugfixes, and documentation still to come. However, the main features of TikZiT have been implemented, along with some new goodies that make use of the VS Code environment. Please try it and tell me what you think! As usual, you can report issues on the [issue tracker](https://github.com/tikzit/vstikzit/issues).
+This is a relatively new project and hasn't yet been extensively tested. However, all of the main features of TikZiT have been implemented, along with some new goodies that make use of the VS Code environment. Please try it and tell me what you think! As usual, you can report issues on the [issue tracker](https://github.com/tikzit/vstikzit/issues).
 
 ## Installation
 
@@ -49,19 +49,12 @@ For TikZ previews, I find it is most convenient to configure the LaTeX Workshop 
 
 Unlike the desktop application, the VS Code extension has features to automatically sync your entire figures directory with prebuild PDFs in `cache`. This is especially useful if you are using draft mode for `tikzit.sty`, via `\usepackage[draft]{tikzit}`. In draft mode, the LaTeX document will include prebuilt PDFs instead of the full TikZ code (if available), which can significantly reduce build time.
 
-To start syncing, open the command palette and select "TikZiT: Sync TikZ Figures". This will watch your `figures/` directory for changes to `.tikz` files, and automatically build the corresponding PDFs in `cache/`. You can stop syncing at any time by selecting "TikZiT: Stop Syncing Figures" from the command palette. 
+To start syncing, open the command palette and select "TikZiT: Sync TikZ Figures". This will watch your `figures/` directory for changes to `.tikz` files, and automatically build the corresponding PDFs in `cache/`. You can stop syncing at any time by selecting "TikZiT: Stop Syncing Figures" from the command palette.
 
 Both the build and sync commands have variants that will build to SVG instead of PDF, e.g. for use on the web or in [HTML slides](https://www.cs.ox.ac.uk/people/aleks.kissinger/slides/zx/pqs-zx-seminar-sept2025-60min.html). These are both available from the command palette.
 
-## TODO
+PDF and SVG build produces outputs in `cache/` and `svgcache/` respectively by default. Both can be configured in the TikZiT extension settings.
 
-The extension is nearly at feature parity with the desktop application, but there are still some things to do:
-
-- [ ] Move nodes/edges up and down in the Z-order
-- [ ] More UI support and testing for multi-edge/filled paths
-- [ ] Customization via user settings (colors, paths, etc)
-- [ ] Support for labels next to nodes via `label=` property
-- [ ] Automatically crash editor when `B` key is pressed (currently not planned)
 
 ## Development
 
