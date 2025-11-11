@@ -31,7 +31,7 @@ const Path = ({ data, graph, tikzStyles, sceneCoords }: PathProps) => {
     d += ` C${cps[1].x},${cps[1].y} ${cps[2].x},${cps[2].y} ${cps[0].x},${cps[0].y}`;
   }
 
-  return <path opacity={0.7} fill={fillColor} d={d} />;
+  return <path opacity={0.7} fill={fillColor} d={d} style={{ pointerEvents: "none" }} />;
 };
 
 export default Path;
