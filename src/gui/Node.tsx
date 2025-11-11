@@ -23,12 +23,21 @@ const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps)
   const labelRef = useRef<SVGTextElement>(null);
   const [labelWidth, setLabelWidth] = useState<number>(0);
 
+  const outerLabelRef = useRef<SVGTextElement>(null);
+  const [outerLabelWidth, setOuterLabelWidth] = useState<number>(0);
+  const outerLabel = (data.property("label") ?? "").replace(/^[^:]*:/, "");
+
   const shape = style.property("tikzit shape") ?? style.property("shape") ?? "circle";
   const fillColor = colorToHex(style.property("tikzit fill") ?? style.property("fill")) ?? "white";
   const drawColor = colorToHex(style.property("tikzit draw") ?? style.property("draw")) ?? "black";
+
   useEffect(() => {
     setLabelWidth(labelRef.current?.getComputedTextLength() ?? 0);
   }, [data, labelRef]);
+
+  useEffect(() => {
+    setOuterLabelWidth(outerLabelRef.current?.getComputedTextLength() ?? 0);
+  }, [data, outerLabelRef]);
 
   return (
     <g id={`node-${data.id}`} transform={`translate(${coord.x}, ${coord.y})`}>
@@ -84,6 +93,32 @@ const Node = ({ data, tikzStyles, selected, highlight, sceneCoords }: NodeProps)
             style={{ cursor: "default" }}
           >
             {formatLabel(data.label)}
+          </text>
+        </g>
+      )}
+      {outerLabel !== "" && (
+        <g>
+          <rect
+            x={-outerLabelWidth / 2 - 2}
+            y={-0.5 * sceneCoords.scale - 12}
+            width={outerLabelWidth + 4}
+            height={24}
+            fill="#6cf"
+            stroke="#09f"
+            stroke-dasharray="4 4"
+            opacity={0.6}
+          />
+          <text
+            ref={outerLabelRef}
+            x={0}
+            y={-0.5 * sceneCoords.scale}
+            text-anchor="middle"
+            alignment-baseline="middle"
+            font-family="monospace"
+            font-weight="bold"
+            style={{ cursor: "default" }}
+          >
+            {formatLabel(outerLabel)}
           </text>
         </g>
       )}
