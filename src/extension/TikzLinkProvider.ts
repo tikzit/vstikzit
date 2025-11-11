@@ -10,6 +10,7 @@ export default class TikzLinkProvider implements vscode.DocumentLinkProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.DocumentLink[]> {
+    const config = vscode.workspace.getConfiguration("vstikzit");
     const links: vscode.DocumentLink[] = [];
     const text = document.getText();
 
@@ -28,7 +29,10 @@ export default class TikzLinkProvider implements vscode.DocumentLinkProvider {
     const figuresDir = path.join(baseDir, "figures");
 
     // Regular expression to match \tikzfig{filename} or \ctikzfig{filename}
-    const regex = /\\c?tikzfig\{([^}]+)\}|"tikzcache\/([^"]+).svg"/g;
+    const svgOutputDir = config
+      .get<string>("svgOutputDir", "svgcache")
+      .replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+    const regex = new RegExp(`\\\\c?tikzfig\\{([^}]+)\\}|"${svgOutputDir}\\/([^"]+).svg"`, "g");
     let match;
 
     while ((match = regex.exec(text)) !== null) {
