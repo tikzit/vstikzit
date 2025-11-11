@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useReducer, useRef, useState } from "preact/hooks";
 import { TargetedMouseEvent, TargetedPointerEvent, TargetedWheelEvent } from "preact";
 
 import Graph from "../lib/Graph";
@@ -10,14 +10,12 @@ import Styles from "../lib/Styles";
 import { Coord, EdgeData, NodeData, PathData } from "../lib/Data";
 import { shortenLine } from "../lib/curve";
 import { parseTikzPicture } from "../lib/TikzParser";
-import Help from "./Help";
-import TikzitHost from "../lib/TikzitHost";
 import Path from "./Path";
+import TikzitHostContext from "./TikzitHostContext";
 
 export type GraphTool = "select" | "vertex" | "edge";
 
 interface GraphEditorProps {
-  host: TikzitHost;
   tool: GraphTool;
   onToolChanged: (tool: GraphTool) => void;
   enabled: boolean;
@@ -57,7 +55,6 @@ const uiStateReducer = (state: UIState, action: UIState | "reset"): UIState => {
 };
 
 const GraphEditor = ({
-  host,
   tool,
   onToolChanged: setTool,
   enabled,
@@ -72,6 +69,7 @@ const GraphEditor = ({
   currentEdgeStyle,
   toggleStylePanel,
 }: GraphEditorProps) => {
+  const host = useContext(TikzitHostContext);
   const [sceneCoords, setSceneCoords] = useState<SceneCoords>(new SceneCoords());
   const [uiState, updateUIState] = useReducer(uiStateReducer, {});
   const numClicks = useRef<number>(0);
@@ -103,7 +101,13 @@ const GraphEditor = ({
     let prevH = viewport.clientHeight;
     viewport.scrollLeft = initCoords.originX - prevW / 2;
     viewport.scrollTop = initCoords.originY - prevH / 2;
-    drawGrid(editor, initCoords);
+    drawGrid(
+      editor,
+      initCoords,
+      host.getConfig("axisColor"),
+      host.getConfig("majorGridColor"),
+      host.getConfig("minorGridColor")
+    );
 
     const resizeObserver = new ResizeObserver(() => {
       const w = viewport.clientWidth;
@@ -139,7 +143,13 @@ const GraphEditor = ({
       if (!sceneCoords.equals(coords)) {
         setSceneCoords(coords);
         const editor = document.getElementById("graph-editor")!;
-        drawGrid(editor, coords);
+        drawGrid(
+          editor,
+          coords,
+          host.getConfig("axisColor"),
+          host.getConfig("majorGridColor"),
+          host.getConfig("minorGridColor")
+        );
 
         const viewport = document.getElementById("graph-editor-viewport")!;
         const c0 =
@@ -167,7 +177,7 @@ const GraphEditor = ({
     event.currentTarget.focus();
 
     const CTRL = window.navigator.platform.includes("Mac") ? "Meta" : "Control";
-    const multiSelect = event.getModifierState(CTRL) || event.shiftKey;
+    const multiSelect = event.getModifierState(CTRL) || event.getModifierState("Shift");
     const p = mousePositionToCoord(event);
     const p1 = sceneCoords.coordFromScreen(p);
     const clickedNode = graph.nodes.find(
@@ -211,8 +221,22 @@ const GraphEditor = ({
             }
           }
         } else if (clickedEdge.current !== undefined) {
-          // select a single edge
-          if (multiSelect) {
+          if (event.getModifierState(CTRL)) {
+            // select the whole path the edge is on
+            const path = graph.edge(clickedEdge.current)!.path;
+            const pathNodes = new Set(graph.pathNodes(path));
+            const pathEdges = new Set(graph.pathEdges(path));
+
+            if (!selectedEdges.has(clickedEdge.current)) {
+              updateSelection(selectedNodes.union(pathNodes), selectedEdges.union(pathEdges));
+            } else {
+              updateSelection(
+                selectedNodes.difference(pathNodes),
+                selectedEdges.difference(pathEdges)
+              );
+            }
+          } else if (event.getModifierState("Shift")) {
+            // add/remove an edge from selection
             updateSelection(selectedNodes, selectedEdges.add(clickedEdge.current));
           } else {
             updateSelection(new Set(), new Set([clickedEdge.current]));

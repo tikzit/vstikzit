@@ -1,14 +1,16 @@
 import SceneCoords from "./SceneCoords";
 
-const drawGrid = (svg: HTMLElement, sceneCoords: SceneCoords) => {
+const drawGrid = (
+  svg: HTMLElement,
+  sceneCoords: SceneCoords,
+  axisColor: string,
+  majorColor: string,
+  minorColor: string
+) => {
   const gridSize = sceneCoords.scale;
   const gridMinorSize = sceneCoords.scale >= 32 ? gridSize / 4 : gridSize;
   const width = sceneCoords.screenWidth;
   const height = sceneCoords.screenHeight;
-
-  const axisColor = "#8839ef";
-  const majorColor = "#ccc";
-  const minorColor = "#eee";
 
   // create a group for the grid lines if it doesn't exist. Otherwise clear it
   const gridGroup = svg.querySelector("#grid")! as SVGGElement;

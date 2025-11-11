@@ -31,6 +31,21 @@
           "default": true,
           "description": "Enable animations in the TikZ editor."
         },
+        "vstikzit.axisColor": {
+          "type": "string",
+          "default": "#8839ef",
+          "description": "Color of the main axes in the TikZ editor."
+        },
+        "vstikzit.majorGridColor": {
+          "type": "string",
+          "default": "#cccccc",
+          "description": "Color of the major grid lines in the TikZ editor."
+        },
+        "vstikzit.minorGridColor": {
+          "type": "string",
+          "default": "#eeeeee",
+          "description": "Color of the minor grid lines in the TikZ editor."
+        },
         "vstikzit.texCommand": {
           "type": "string",
           "default": "pdflatex",

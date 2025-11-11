@@ -262,6 +262,29 @@ class Graph {
     return edge.target;
   }
 
+  public pathNodes(id: number): number[] {
+    const path = this._pathData.get(id);
+    if (!path) {
+      return [];
+    }
+    const nodes: number[] = [];
+    for (const e of path!.edges) {
+      if (nodes.length === 0) {
+        nodes.push(this.edge(e)!.source);
+      }
+      nodes.push(this.edge(e)!.target);
+    }
+    return nodes;
+  }
+
+  public pathEdges(id: number): number[] {
+    const path = this._pathData.get(id);
+    if (path) {
+      return path.edges;
+    }
+    return [];
+  }
+
   public removeNodes(nodes: Iterable<number>): Graph {
     const g = new Graph(this);
     g._nodeData = new Map(this._nodeData);

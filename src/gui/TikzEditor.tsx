@@ -253,7 +253,6 @@ const TikzEditor = ({ initialContent }: TikzEditorProps) => {
             }}
           />
           <GraphEditor
-            host={host}
             tool={tool}
             onToolChanged={setTool}
             enabled={enabled}

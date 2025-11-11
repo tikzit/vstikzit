@@ -64,6 +64,9 @@ class BaseEditorProvider {
     const config = vscode.workspace.getConfiguration("vstikzit");
     return {
       enableAnimations: config.get<boolean>("enableAnimations", true),
+      axisColor: config.get<string>("axisColor", "#8839ef"),
+      majorGridColor: config.get<string>("majorGridColor", "#cccccc"),
+      minorGridColor: config.get<string>("minorGridColor", "#eeeeee"),
     };
   }
 
