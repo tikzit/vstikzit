@@ -339,7 +339,6 @@
       {
         "command": "vstikzit.openTikzEditor",
         "key": "ctrl+alt+t",
-        "mac": "cmd+alt+t",
         "when": "(resourceExtname == .tikz || resourceExtname == .tex || resourceExtname == .html) && activeCustomEditorId != vstikzit.tikzEditor"
       },
       {
@@ -381,61 +380,59 @@
       {
         "command": "vstikzit.gui.moveLeft",
         "key": "ctrl+left",
-        "mac": "cmd+left",
+        "mac": "cmd+shift+left",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.moveRight",
         "key": "ctrl+right",
-        "mac": "cmd+right",
+        "mac": "cmd+shift+right",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.moveUp",
         "key": "ctrl+up",
-        "mac": "cmd+up",
+        "mac": "cmd+shift+up",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.moveDown",
         "key": "ctrl+down",
-        "mac": "cmd+down",
+        "mac": "cmd+shift+down",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.nudgeLeft",
         "key": "ctrl+shift+left",
-        "mac": "cmd+shift+left",
+        "mac": "ctrl+shift+left",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.nudgeRight",
         "key": "ctrl+shift+right",
-        "mac": "cmd+shift+right",
+        "mac": "ctrl+shift+right",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.nudgeUp",
         "key": "ctrl+shift+up",
-        "mac": "cmd+shift+up",
+        "mac": "ctrl+shift+up",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.nudgeDown",
         "key": "ctrl+shift+down",
-        "mac": "cmd+shift+down",
+        "mac": "ctrl+shift+down",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.joinPaths",
         "key": "ctrl+alt+p",
-        "mac": "cmd+option+p",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.splitPaths",
         "key": "ctrl+alt+shift+p",
-        "mac": "cmd+option+shift+p",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
@@ -447,13 +444,13 @@
       {
         "command": "vstikzit.gui.reflectNodesHorizontally",
         "key": "alt+right",
-        "mac": "option+right",
+        "mac": "alt+h",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
         "command": "vstikzit.gui.reflectNodesVertically",
         "key": "alt+down",
-        "mac": "option+down",
+        "mac": "alt+v",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
@@ -541,7 +538,6 @@
       {
         "command": "vstikzit.gui.viewTikzSource",
         "key": "ctrl+alt+t",
-        "mac": "cmd+option+t",
         "when": "activeCustomEditorId == vstikzit.tikzEditor && !inputFocus"
       },
       {
