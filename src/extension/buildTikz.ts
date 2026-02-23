@@ -119,7 +119,7 @@ async function buildTikz(
   // if this document has a file name, get the base name
   const baseName = path.basename(fileName, ".tikz") ?? "tikzfigure";
   const texFile = baseName + ".tmp.tex";
-  let code: number | null = null;
+  // let code: number | null = null;
 
   await vscode.workspace.fs.writeFile(
     vscode.Uri.joinPath(tikzCacheFolder, texFile),
@@ -131,7 +131,7 @@ async function buildTikz(
     config.get<string>("texCommandArgs", "-interaction=nonstopmode -halt-on-error")
   );
 
-  code = await sh(tikzCacheFolder.fsPath, texCommand, [...texCommandArgs, texFile]);
+  let code = await sh(tikzCacheFolder.fsPath, texCommand, [...texCommandArgs, texFile]);
   if (code !== 0) {
     throw code;
   }

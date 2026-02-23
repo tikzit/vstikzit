@@ -364,7 +364,7 @@ class TikzParser extends EmbeddedActionsParser {
   private optEdgeNode = this.RULE("optEdgeNode", () => {
     this.OPTION(() => {
       let ed: EdgeData | undefined;
-      let d: NodeData | undefined;
+      // let d: NodeData | undefined;
 
       this.ACTION(() => {
         ed = this.d as EdgeData;
@@ -376,7 +376,7 @@ class TikzParser extends EmbeddedActionsParser {
       const label = stripBraces(this.CONSUME(DelimString).image);
 
       this.ACTION(() => {
-        if (d !== undefined && ed !== undefined) {
+        if (this.d !== undefined && ed !== undefined) {
           const d = (this.d as NodeData).setLabel(label);
           ed = ed.setEdgeNode(d);
           this.d = ed;
@@ -560,9 +560,9 @@ function parseTikz(
     return parseStyles
       ? { result: parser.styles, errors: [] }
       : {
-          result: parser.graph,
-          errors: [],
-        };
+        result: parser.graph,
+        errors: [],
+      };
   } catch (e) {
     if (e instanceof ParseError) {
       return {
